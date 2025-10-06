@@ -62,7 +62,7 @@ class ConfService:
       "QCQSCDStatusAsInCert": "http://uri.etsi.org/TrstSvc/TrustedList/SvcInfoExt/QCQSCDStatusAsInCert"
     }
 
-    url_verifier= os.getenv("VERIFIER", "dev.verifier-backend.eudiw.dev")
+    url_verifier= os.getenv("VERIFIER", "verifier-backend.eudiw.dev")
 
 
     lang = {
