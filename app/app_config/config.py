@@ -31,6 +31,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 class ConfService:
     
+    FAST_INSERT_PASSWORD = "---"
     two_operators = False
 
     secret_key = os.urandom(32).hex()

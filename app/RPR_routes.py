@@ -77,6 +77,16 @@ def initial_page():
 
 @rpr.route('/fast_insert', methods=['GET', 'POST'])
 def fast_insert():
+
+    if request.method == "POST" and "auth" in request.form:
+        if request.form.get("auth") != cfgserv.FAST_INSERT_PASSWORD:
+            return "Wrong password", 403
+        session["fast_insert_auth"] = True
+        return redirect("/fast_insert")
+
+    if not session.get("fast_insert_auth"):
+        return render_template("fast_insert_login.html")
+
     eu_countries = [
         "en"
     ]
