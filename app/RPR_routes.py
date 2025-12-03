@@ -65,6 +65,7 @@ from xml_gen.xmlGen_List import xml_gen_xml_lotl
 from dateutil.relativedelta import relativedelta
 import ast
 from db import get_db_connection as conn
+import models as models
 
 rpr = Blueprint("RPR", __name__, url_prefix="/")
 
@@ -1687,6 +1688,11 @@ def update_services():
     services = ast.literal_eval(request.args.get("checks"))
     user_id =request.args.get("user_id")
     log_id = request.args.get("log_id")
+
+    cert = models.get_certs(tsp_id, session["session_id"])
+
+    return cert
+
 
     for elem in services:
         service_id = int(elem)

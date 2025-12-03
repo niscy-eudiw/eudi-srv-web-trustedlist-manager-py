@@ -2108,3 +2108,44 @@ def get_lotl_old_cert(id, log_id):
         if connection:
             cursor.close()
             connection.close()
+
+def get_certs(tsp_id, log_id):
+    try:
+        connection = conn()
+        if connection:
+            cursor = connection.cursor()
+
+            select_query = """
+                SELECT service_id
+                FROM trust_services
+                WHERE tsp_id = %s
+            """
+            
+            cursor.execute(select_query, (tsp_id,))
+            result = cursor.fetchall()
+            
+            if result: 
+                certs = [
+                    {"service_id": row[0]} 
+                    for row in result
+                ]
+                extra = {'code': log_id} 
+                logger.info(f"Found Service for the tsp_id: {tsp_id}", extra=extra)
+                return certs
+            else:
+                extra = {'code': log_id}
+                logger.info("Service with tsp_id not found.", extra=extra)
+                print("Service with tsp_id not found.")
+                return None
+        else:
+            return None
+
+    except pymysql.MySQLError as e:
+        extra = {'code': log_id}
+        logger.error(f"Error checking user: {e}", extra=extra)
+        print(f"Error checking user: {e}")
+        return None
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
