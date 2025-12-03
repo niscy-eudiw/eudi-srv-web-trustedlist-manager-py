@@ -132,7 +132,7 @@ def fast_insert():
                 s_number = service_numbers[idx]
 
                 if s_type == "http://uri.etsi.org/TrstSvc/Svctype/EAA":
-                    name = "QEAA"
+                    name = "EAA"
                 elif s_type == "http://uri.etsi.org/TrstSvc/Svctype/EAA/Pub-EAA":
                     name = "Pub EAA"
                 elif s_type == "http://uri.etsi.org/Svc/Svctype/Provider/Wallet":
