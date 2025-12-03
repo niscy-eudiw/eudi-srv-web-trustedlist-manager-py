@@ -1691,11 +1691,10 @@ def update_services():
 
     cert = models.get_certs(tsp_id, session["session_id"])
 
-    print("\n\n\n")
-    print(cert)
-    print(services)
-    print("\n\n\n")
+    cert_ids = [str(c['service_id']) for c in cert]
 
+    to_remove = [c for c in cert_ids if c not in services]
+    print("IDs a desassociar:", to_remove)
 
     for elem in services:
         service_id = int(elem)
