@@ -1691,7 +1691,7 @@ def update_services():
 
     cert = models.get_certs(tsp_id, session["session_id"])
 
-    return cert
+    print(cert)
 
 
     for elem in services:
