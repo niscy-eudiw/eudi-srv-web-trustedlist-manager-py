@@ -1689,8 +1689,9 @@ def update_services():
     user_id = request.args.get("user_id")
     log_id = request.args.get("log_id")
 
-    cert = models.get_certs(tsp_id, session["session_id"])
+    cert = models.get_certs(tsp_id, session["session_id"]) or []
     cert_ids = [str(c['service_id']) for c in cert]
+
 
     to_remove = [c for c in cert_ids if c not in services]
 
