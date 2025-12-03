@@ -2149,3 +2149,33 @@ def get_certs(tsp_id, log_id):
         if connection:
             cursor.close()
             connection.close()
+
+def update_checks(id, log_id):
+    try:
+        connection = conn()
+        if connection:
+            cursor = connection.cursor()
+
+            insert_query = """
+                                UPDATE trust_services 
+                                SET tsp_id = NULL
+                                WHERE service_id = %s
+                            """
+            cursor.execute(insert_query, (id,))
+            
+            connection.commit()
+            
+            extra = {'code': log_id} 
+            logger.info(f"Service successfully updated: {id}", extra=extra)
+
+            print(f"Service successfully updated: {id}")
+            return cursor.lastrowid
+
+    except pymysql.MySQLError as e:
+        extra = {'code': log_id} 
+        logger.error(f"Error inserting user: {e}", extra=extra)
+        print(f"Error updating user: {e}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()

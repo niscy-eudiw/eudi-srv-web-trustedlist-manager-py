@@ -1694,7 +1694,9 @@ def update_services():
     cert_ids = [str(c['service_id']) for c in cert]
 
     to_remove = [c for c in cert_ids if c not in services]
-    print("IDs a desassociar:", to_remove)
+    
+    for elem in to_remove:
+        models.update_checks(elem, session["session_id"])
 
     for elem in services:
         service_id = int(elem)
