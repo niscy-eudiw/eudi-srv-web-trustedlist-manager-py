@@ -110,6 +110,8 @@ def fast_insert():
             service_number = request.form.get("service_number")
             number_of_services = int(request.form.get("service_count") or 1)
 
+            return cert_input
+
             service_types = []
             service_numbers = []
 
