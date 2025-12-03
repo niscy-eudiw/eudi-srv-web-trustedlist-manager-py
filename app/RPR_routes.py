@@ -64,6 +64,7 @@ from xml_gen.xmlGen import xml_gen_xml, xml_gen_lotl_xml, xml_validator
 from xml_gen.xmlGen_List import xml_gen_xml_lotl
 from dateutil.relativedelta import relativedelta
 import ast
+from db import get_db_connection as conn
 
 rpr = Blueprint("RPR", __name__, url_prefix="/")
 
@@ -73,6 +74,122 @@ rpr.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '
 def initial_page():
 
     return render_template('initial_page.html', redirect_url= cfgserv.service_url, pid_auth = cfgserv.service_url + "authentication", certificateList=cfgserv.service_url + "authentication_List")
+
+@rpr.route('/fast_insert', methods=['GET', 'POST'])
+def fast_insert():
+    eu_countries = [
+        "en"
+    ]
+
+    available_services = [
+        "http://uri.etsi.org/TrstSvc/Svctype/EAA",
+        "http://uri.etsi.org/TrstSvc/Svctype/EAA/Pub-EAA",
+        "http://uri.etsi.org/Svc/Svctype/Provider/Wallet",
+        "http://uri.etsi.org/Svc/Svctype/Provider/PID",
+        "http://uri.etsi.org/Svc/Svctype/CA/RPaccess",
+        "http://uri.etsi.org/TrstSvc/Svctype/EAA/Q",
+    ]
+
+    if request.method == "POST":
+        try:
+            lang = request.form.get("lang")
+            operator_id = request.form.get("operator_id")
+            country_code = request.form.get("country_code")
+            cert_input = request.form.get("certificate")
+            service_number = request.form.get("service_number")
+            number_of_services = int(request.form.get("service_count") or 1)
+
+            service_types = []
+            service_numbers = []
+
+            for i in range(number_of_services):
+                service_types.append(request.form.get(f"service_type_{i}"))
+                service_numbers.append(request.form.get(f"number_{i}"))
+
+            connection = conn()
+            if not connection:
+                print("ERRO: Conexão falhou")
+                return "Database connection failed", 500
+
+            cursor = connection.cursor()
+
+            from datetime import datetime
+            today = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            for idx in range(number_of_services):
+
+                s_type = service_types[idx]
+                s_number = service_numbers[idx]
+
+                if s_type == "http://uri.etsi.org/TrstSvc/Svctype/EAA":
+                    name = "QEAA"
+                elif s_type == "http://uri.etsi.org/TrstSvc/Svctype/EAA/Pub-EAA":
+                    name = "Pub EAA"
+                elif s_type == "http://uri.etsi.org/Svc/Svctype/Provider/Wallet":
+                    name = "Wallet Provider"
+                elif s_type == "http://uri.etsi.org/Svc/Svctype/Provider/PID":
+                    name = "PID Provider"
+                elif s_type == "http://uri.etsi.org/Svc/Svctype/CA/RPaccess":
+                    name = "Access Certificate Authority"
+                elif s_type == "http://uri.etsi.org/TrstSvc/Svctype/EAA/Q":
+                    name = "QEAA"  
+
+                if s_type == "http://uri.etsi.org/TrstSvc/Svctype/EAA/Q":
+                    status = "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
+                else:
+                    status = "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel"
+
+                service_name = f"EUDIW Issuer {name} - {country_code}{service_number}"
+
+                digital_identity = cert_input
+
+                scheme_def_uri = f'[{{"lang":"{lang}", "URI":"https://trustedlist.serviceproviders.eudiw.dev/"}}]'
+
+                service_name_json = f'[{{"lang":"{lang}", "text":"{service_name}"}}]'
+
+                insert_sql = """
+                    INSERT INTO trust_services
+                    (service_type, digital_identity, status, status_start_date, qualifier,
+                     ServiceName, SchemeServiceDefinitionURI, operator_id, tsp_id)
+                    VALUES (%s, %s, %s, %s, NULL, %s, %s, %s, NULL)
+                """
+
+                cursor.execute(insert_sql, (
+                    s_type,
+                    digital_identity,
+                    status,
+                    today,
+                    service_name_json,
+                    scheme_def_uri,
+                    operator_id
+                ))
+
+                print(f"[OK] Inserido serviço {s_type} com número {s_number}")
+
+            connection.commit()
+            return render_template(
+                "fast_insert.html",
+                eu_countries=eu_countries,
+                services=available_services
+            )
+
+        except Exception as e:
+            print("ERRO NO FAST INSERT:", e)
+            return str(e), 500
+
+        finally:
+            try:
+                cursor.close()
+                connection.close()
+            except:
+                pass
+
+    return render_template(
+        "fast_insert.html",
+        eu_countries=eu_countries,
+        services=available_services
+    )
+
 
 @rpr.route('/menu', methods=['GET','POST'])
 def menu():
