@@ -1685,29 +1685,27 @@ def tsp_edit_db():
 def update_services():
 
     tsp_id = request.args.get("id")
-    services = ast.literal_eval(request.args.get("checks"))
-    user_id =request.args.get("user_id")
+    services = ast.literal_eval(request.args.get("checks"))  
+    user_id = request.args.get("user_id")
     log_id = request.args.get("log_id")
 
     cert = models.get_certs(tsp_id, session["session_id"])
-
     cert_ids = [str(c['service_id']) for c in cert]
 
     to_remove = [c for c in cert_ids if c not in services]
-    
+
     for elem in to_remove:
-        models.update_checks(elem, session["session_id"])
+        models.update_checks(elem, session["session_id"]) 
 
     for elem in services:
         service_id = int(elem)
-
         check = func.update_service(service_id, tsp_id, session["session_id"])
         
         if check is None:
-            return ("erro")
+            return "erro"
 
     return redirect('/tsp/list')
-    
+
 # Service
 @rpr.route('/service/list')
 def list_service():

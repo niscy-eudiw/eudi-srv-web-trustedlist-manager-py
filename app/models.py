@@ -2156,25 +2156,22 @@ def update_checks(id, log_id):
         if connection:
             cursor = connection.cursor()
 
-            insert_query = """
-                                UPDATE trust_services 
-                                SET tsp_id = NULL
-                                WHERE service_id = %s
-                            """
-            cursor.execute(insert_query, (id,))
+            update_query = """
+                UPDATE trust_services 
+                SET tsp_id = NULL
+                WHERE service_id = %s
+            """
+            cursor.execute(update_query, (id,))
             
             connection.commit()
-            
-            extra = {'code': log_id} 
-            logger.info(f"Service successfully updated: {id}", extra=extra)
+            print(f"Service successfully unassigned: {id}")
 
-            print(f"Service successfully updated: {id}")
-            return cursor.lastrowid
+            return True
 
     except pymysql.MySQLError as e:
-        extra = {'code': log_id} 
-        logger.error(f"Error inserting user: {e}", extra=extra)
         print(f"Error updating user: {e}")
+        return None
+
     finally:
         if connection:
             cursor.close()
