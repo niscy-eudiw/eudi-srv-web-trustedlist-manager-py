@@ -106,7 +106,7 @@ def fast_insert():
             lang = request.form.get("lang")
             operator_id = request.form.get("operator_id")
             country_code = request.form.get("country_code")
-            cert_input = request.form.get("certificate")
+            cert_input = request.form.get("certificates")
             service_number = request.form.get("service_number")
             number_of_services = int(request.form.get("service_count") or 1)
 
