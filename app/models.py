@@ -1330,32 +1330,29 @@ def get_service_update(id, log_id):
         if connection:
             cursor.close()
             connection.close()
-
+            
 def update_service(service_id, tsp_id, log_id):
     try:
         connection = conn()
         if connection:
             cursor = connection.cursor()
 
-            insert_query = """
-                                UPDATE trust_services 
-                                SET tsp_id = %s
-                                WHERE service_id = %s
-                            """
-            cursor.execute(insert_query, (tsp_id, service_id))
+            update_query = """
+                UPDATE trust_services 
+                SET tsp_id = %s
+                WHERE service_id = %s
+            """
+            cursor.execute(update_query, (tsp_id, service_id))
             
             connection.commit()
-            
-            extra = {'code': log_id} 
-            logger.info(f"SERVICE successfully updated: {service_id}", extra=extra)
+            print(f"Service successfully assigned: {service_id}")
 
-            print(f"service successfully updated: {service_id}")
-            return cursor.lastrowid
+            return True
 
     except pymysql.MySQLError as e:
-        extra = {'code': log_id} 
-        logger.error(f"Error inserting user: {e}", extra=extra)
         print(f"Error updating user: {e}")
+        return None
+
     finally:
         if connection:
             cursor.close()
