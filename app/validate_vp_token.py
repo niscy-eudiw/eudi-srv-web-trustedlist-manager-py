@@ -35,12 +35,14 @@ from cryptography import x509
 import datetime
 import hashlib
 from . import trusted_CAs
+from app_config.config import ConfService as cfgservice
 
 
 def validate_vp_token(response_json):
     """
     Validate VP token, checking document and presentation_submission attributes
     """
+
     auth_request_values = {
         "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
         "id": "eu.europa.ec.eudi.pid.1",
@@ -48,97 +50,81 @@ def validate_vp_token(response_json):
             "family_name",
             "given_name",
             "birth_date",
+            "age_over_18",
             "issuing_authority",
             "issuing_country",
         ],
     }
 
-    if (
-        response_json["presentation_submission"]["definition_id"]
-        != auth_request_values["definition_id"]
-    ):
 
-        return True, "Definition id received is different from the requested."
-
-    elif (
-        response_json["presentation_submission"]["descriptor_map"][0]["id"]
-        != auth_request_values["id"]
-    ):
-
-        return (
-            True,
-            "Id from descriptor is not same as the id in the authorization request.",
-        )
-
-    elif response_json["presentation_submission"]["descriptor_map"][0]["path"] == "$":
-
-        pos = 0
-
-    else:
-        matcher = re.search(
-            r"\d+",
-            response_json["presentation_submission"]["descriptor_map"][0]["path"],
-        )
-        if matcher:
-            pos = int(matcher.group())
-        else:
-            pos = -1
-
-    if pos == -1:
-
+    if "vp_token" not in response_json:
+        return True, "The path value from presentation_submission is not valid."
+    
+    if "query_0" not in response_json["vp_token"]:
         return True, "The path value from presentation_submission is not valid."
 
-    else:
+    
 
-        mdoc = response_json["vp_token"][0]
-        
-        mdoc_ver = None
+    mdoc = response_json["vp_token"]["query_0"][0]
+    mdoc_ver = None
 
-        try:
-            mdoc_ver = base64.urlsafe_b64decode(mdoc)
+    try:
+        mdoc_ver = base64.urlsafe_b64decode(mdoc)
 
-        except:
-            mdoc_ver = base64.urlsafe_b64decode(mdoc + "==")
+    except:
+        mdoc_ver = base64.urlsafe_b64decode(mdoc + "==")
 
-        mdoc_cbor = cbor2.decoder.loads(mdoc_ver)
+    mdoc_cbor = cbor2.decoder.loads(mdoc_ver)
 
-        if mdoc_cbor["status"] != 0:
+    if mdoc_cbor["status"] != 0:
 
-            return True, "Status invalid:" + str(mdoc_cbor["status"])
+        return True, "Status invalid:" + str(mdoc_cbor["status"])
 
-        error, errorMsg = validate_certificate(mdoc_cbor["documents"][pos])
+    print("\nmdoc_cbor: ", mdoc_cbor)
 
-        if error == False:
+    error, errorMsg = validate_certificate(mdoc_cbor["documents"][0])
 
-            return True, errorMsg
+    if error == False:
 
-        # Validate values received are the same values requested
-        for pos in range(len(mdoc_cbor["documents"])):
-            namespaces = mdoc_cbor["documents"][pos]["issuerSigned"]["nameSpaces"]
-            attributes_requested = auth_request_values["input_descriptor"]
-            attributes_received = []
+        return True, errorMsg
 
-            for n in namespaces.keys():
-                l = []
-                for e in namespaces[n]:  # e is a CBORTag
-                    val = cbor2.decoder.loads(e.value)
-                    id = val["elementIdentifier"]
-                    attributes_received.append(id)
+    # Validate values received are the same values requested
+    # namespaces = mdoc_cbor["documents"][0]["issuerSigned"]["nameSpaces"]
 
-            if len(attributes_received) != len(attributes_requested):
+    # attributes_requested = []
 
-                if set(attributes_received).issubset(set(attributes_requested)):
+    # for id in credentials_requested:
+    #     for doctype in cfgservice.dynamic_issuing[id]:
+    #         for namespace in cfgservice.dynamic_issuing[id][doctype]:
+    #             for attribute in cfgservice.dynamic_issuing[id][doctype][namespace]:
+    #                 attributes_requested.append(attribute)
 
-                    missing_attributes = list(set(attributes_requested) - set(attributes_received))
-                    # if pos == len(mdoc_cbor["documents"]) - 1:
-                    #     return True, "Missing attributes: " + str(missing_attributes) + "Received Attributes: " + str(attributes_received)  # missing_attributes
-                    # else:
-                    #     return True, "There are values that weren't requested."
-            if all(x in attributes_requested for x in attributes_received) and all(
-                x in attributes_received for x in attributes_requested
-            ):
+    # attributes_requested = auth_request_values["input_descriptor"]
+    """ attributes_received = []
 
-                return False, "", pos
+    for n in namespaces.keys():
+        l = []
+        for e in namespaces[n]:  # e is a CBORTag
+            val = cbor2.decoder.loads(e.value)
+            id = val["elementIdentifier"]
+            attributes_received.append(id)
+
+    if len(attributes_received) != len(attributes_requested):
+
+        if set(attributes_received).issubset(set(attributes_requested)):
+
+            # missing_attributes = list(set(attributes_requested) - set(attributes_received))
+            return True, "Missing attributes"  # missing_attributes
+        else:
+            return True, "There are values that weren't requested."
+
+    if all(x in attributes_requested for x in attributes_received) and all(
+        x in attributes_received for x in attributes_requested
+    ):
+
+        return False, "" """
+    
+    return False, ""
 
 
 def validate_certificate(mdoc):
@@ -161,7 +147,7 @@ def validate_certificate(mdoc):
     certificate = x509.load_der_x509_certificate(
         unprotected[X5chain], default_backend()
     )
-    
+
     # Validate Certificate (MSO Header)
     if certificate.issuer not in trusted_CAs:
 
@@ -276,7 +262,7 @@ def validate_certificate(mdoc):
 
     return True, ""
 
-def cbor2elems(mdoc, pos):
+def cbor2elems(mdoc):
     """Receives the base64 encoded mdoc and returns a dict with the (element, value) contained in the namespaces of the mdoc
 
     Keyword arguments:
@@ -285,7 +271,7 @@ def cbor2elems(mdoc, pos):
     Return: Returns a dict with (element, values) contained in the namespaces of the mdoc. E.g. {'ns1': [('e1', 'v1'), ('e2', 'v2')], 'ns2': [('e3', 'v3')]}
     """
     d = {}
-    namespaces = cbor2.decoder.loads(base64.urlsafe_b64decode(mdoc))["documents"][pos][
+    namespaces = cbor2.decoder.loads(base64.urlsafe_b64decode(mdoc))["documents"][0][
         "issuerSigned"
     ]["nameSpaces"]
     for n in namespaces.keys():

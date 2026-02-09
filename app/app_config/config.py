@@ -47,7 +47,7 @@ class ConfService:
     cert_UT = os.getenv("CERT","/etc/eudiw/pid-issuer/cert/PID-DS-0001_UT_cert.der")
 
     #priv_key_UT = "app/xml_gen/privkey_UT.pem"
-    priv_key_UT = os.getenv("PRIV_KEY", "/etc/eudiw/pid-issuer/privkey/PID-DS-0001_UT.pem")
+    priv_key_UT = os.getenv("PRIV_KEY", "/etc/eudiw/pid-issuer/privKey/PID-DS-0001_UT.pem")
 
 
     roles = {
@@ -138,8 +138,8 @@ class ConfService:
     eu_languages = [
     "bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr",
     "ga", "hr", "hu", "it", "lt", "lv", "mt", "nl", "pl", "pt",
-    "ro", "sk", "sl", "sv"]
+    "ro", "sk", "sl", "sv", "no"]
     eu_countries = [
     "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
     "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
-    "PL", "PT", "RO", "SK", "SI", "ES", "SE","UT", "EU"]
+    "PL", "PT", "RO", "SK", "SI", "ES", "SE","UT","NO","EU"]
