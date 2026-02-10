@@ -59,7 +59,7 @@ import app.EJBCA_and_DB_func as func
 from app_config.Crypto_Info import Crypto_Info as crypto
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
-from xml_gen.xml_config import ConfXML as confxml
+from app.app_config.xml_config import ConfXML as confxml
 from xml_gen.xmlGen import xml_gen_xml, xml_gen_lotl_xml, xml_validator
 from xml_gen.xmlGen_List import xml_gen_xml_lotl
 from dateutil.relativedelta import relativedelta
@@ -815,6 +815,8 @@ def xml():
     #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
 
     file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+
+    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
     
     if(cfgserv.two_operators):
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])

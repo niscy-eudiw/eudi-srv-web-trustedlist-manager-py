@@ -27,7 +27,7 @@ from signxml.xades import (XAdESSigner, XAdESSignaturePolicy, XAdESDataObjectFor
 import xml_gen.trustedlists_api as test
 from signxml import DigestAlgorithm
 from signxml.xades import (XAdESSigner, XAdESSignaturePolicy, XAdESDataObjectFormat)
-from xml_gen.xml_config import ConfXML as confxml
+from app.app_config.xml_config import ConfXML as confxml
 from signxml import XMLSigner, algorithms
 import json
 
