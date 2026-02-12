@@ -16,6 +16,7 @@
 #
 ###############################################################################
 import base64
+from dataclasses import asdict
 import datetime
 from io import StringIO
 import io
@@ -165,12 +166,10 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     #OtherTSLPointerType-LoTL
 
     ServiceDigitalIdentities= list
-    serviceDigitalIdentity=list
+    serviceDigitalIdentity=JSON.ServiceDigitalIdentity
 
-    digitalID=JSON.ServiceDigitalIdentity
-    digitalID.X509Certificates.append(base64.b64decode(cert_cleaned))
+    serviceDigitalIdentity.X509Certificates.append(base64.b64decode(cert_cleaned))
 
-    serviceDigitalIdentity.append(digitalID)
     ServiceDigitalIdentities.append(serviceDigitalIdentity)
 
     Pointer= JSON.OtherLoTEPointer
@@ -180,76 +179,50 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     
     #TSLTypeAdditionalInformation
 
-    TSLTypeAdditionalInformation=test.NonEmptyURIType()
-    TSLTypeAdditionalInformation.original_tagname_="TSLType"
-    TSLTypeAdditionalInformation.valueOf_=confxml.TSLType["LoTL"]
+    AdditionalInfo = JSON.LoTEQualifier
 
-    objecttest=test.AnyType()
-    objecttest.valueOf_=TSLTypeAdditionalInformation
-    
-    AdditionalInfo=test.AdditionalInformationType()
-    AdditionalInfo.add_OtherInformation(objecttest)
+    AdditionalInfo.LoTEType=confxml.TSLType["LoTL"]
+
 
     #SchemeNameOperatorAdditionalInformation
     #for cycle
-    schemeNametest=test.InternationalNamesType()
-    schemeNametest.add_Name(test.MultiLangNormStringType("en", "EU-LOTL"))
 
-    testes=test.TakenOverByType()
-    testes.SchemeOperatorName=schemeNametest
+    AdditionalInfo_SchemeOperatorName=list
+    AdditionalInfo_SchemeOperatorName.append(JSON.MultiLangString("en", "EU-LOTL"))
 
-    AdditionalInfo.add_OtherInformation(testes)
+    AdditionalInfo.SchemeOperatorName= AdditionalInfo_SchemeOperatorName
 
     #SchemeTerritoryAdditionalInformation
 
-    scheme=test.TakenOverByType()
-    scheme.SchemeTerritory="EU"
-
-    AdditionalInfo.add_OtherInformation(scheme)
-
+    AdditionalInfo.SchemeTerritory="EU"
 
     #SchemeTypeCommunityRules
-    
-    schemetypeCommunityRules_add=test.NonEmptyMultiLangURIListType()
-    schemetypeCommunityRules_add.original_tagname_="SchemeTypeCommunityRules"
-    
-    objecttest_stcr=test.AnyType()
-    objecttest_stcr.original_tagname_="SchemeTypeCommunityRules"
+    schemetypeCommunityRules_add=list
 
     #for cycle
-    schemetypeCommunityRules_add.add_URI(test.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["LoTL"]))
 
-    objecttest_stcr.valueOf_=schemetypeCommunityRules_add
-
-    AdditionalInfo.add_OtherInformation(objecttest_stcr)
+    AdditionalInfo.SchemeTypeCommunityRules= schemetypeCommunityRules_add
 
     #MimeType
-    ObjectType=test.ObjectType()
-    ObjectType.original_tagname_="MimeType"
-    ObjectType.set_valueOf_("application/vnd.etsi.tsl+xml")
 
-    objectMimeType=test.AnyType()
-    objectMimeType.set_valueOf_(ObjectType)
-
-    AdditionalInfo.add_OtherInformation(objectMimeType)
+    AdditionalInfo.MimeType= "application/vnd.etsi.tsl+xml"
 
     Pointer.LoTELocation=confxml.lotl_location
 
-    Pointer.AdditionalInformation=AdditionalInfo
+    Pointer.LoTEQualifiers.append(AdditionalInfo)
     Pointers.append(Pointer)
 
-    schemeInfo.PointersToOtherTSL=Pointers
+    schemeInfo.PointersToOtherLoTE=Pointers
     
     schemeInfo.ListIssueDateTime=dictFromDB_trusted_lists["issue_date"]
     
     #Next Update
-    NUpdate=test.NextUpdateType()
-    NUpdate.set_dateTime(dictFromDB_trusted_lists["next_update"])
     
-    schemeInfo.NextUpdate= NUpdate
+    schemeInfo.NextUpdate= dictFromDB_trusted_lists["next_update"]
 
     #DistribuitionPoints
-    URIDP=test.NonEmptyURIListType()
+    URIDP=list
 
     #for cycle
     
@@ -257,69 +230,67 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     #     URIDP.add_URI(test.NonEmptyURIType(dp))
     last= dictFromDB_trusted_lists["SchemeInformationURI"][-1].get("URI")
 
-    URIDP.add_URI(test.NonEmptyURIType(last))
+    URIDP.append(last)
 
     schemeInfo.DistributionPoints=URIDP
-
-    root.SchemeInformation=schemeInfo
 
     #--------------------------------------------#
 
     #TrustServiceProviderList
 
-    TrustServiceProviderList=test.TrustServiceProviderListType()
+    TrustServiceProviderList=JSON.TrustedEntitiesList
 
 
     for tsp in tsp_data:
-        TrustServiceProvider= test.TSPType()
-        TSPInformation=test.TSPInformationType()
-        TSPName=test.InternationalNamesType()
-        TSPTradeName= test.InternationalNamesType()
-        TSPAddress=test.AddressType()
-        TSPPostalAddress=test.PostalAddressListType()
-        TSPEletronicAddress=test.ElectronicAddressType()
-        TSPInformationURI= test.NonEmptyMultiLangURIListType()
+        TrustServiceProvider= JSON.TrustedEntity
+        TSPInformation=JSON.TrustedEntityInformation
+        TSPName=list
+        TSPTradeName= list
+        TSPAddress=JSON.TEAddress
+        TSPPostalAddress=JSON.PostalAddresses
+        TSPEletronicAddress=JSON.ElectronicAddress
+        TSPInformationURI= list
 
         name = parse_json_field(tsp["name"])
         for item in name:
-            TSPName.add_Name(test.MultiLangNormStringType(item['lang'], item["text"]))
+            TSPName.append(JSON.MultiLangString(item['lang'], item["text"]))
 
         trade_name = parse_json_field(tsp["trade_name"])
         for item in trade_name:
-            TSPTradeName.add_Name(test.MultiLangNormStringType(item['lang'], item["text"]))
+            TSPTradeName.append(JSON.MultiLangString(item['lang'], item["text"]))
 
         address = parse_json_field(tsp["postal_address"])
         for item in address:
-            postal1=test.PostalAddressType()
-            postal1.set_lang(item['lang'])
-            postal1.set_CountryName(item["CountryName"])
-            postal1.set_StreetAddress(item["StreetAddress"])
-            postal1.set_Locality(item["Locality"])
-            postal1.set_StateOrProvince(item["StateOrProvince"])
-            postal1.set_PostalCode(item["PostalCode"])
-            TSPPostalAddress.add_PostalAddress(postal1)
+            postal1=JSON.PostalAddress
+            postal1.lang=item['lang']
+            postal1.Country=item["CountryName"]
+            postal1.StreetAddress=item["StreetAddress"]
+            postal1.Locality=item["Locality"]
+            postal1.StateOrProvince=item["StateOrProvince"]
+            postal1.PostalCode=item["PostalCode"]
+            TSPPostalAddress.append(postal1)
         
         
     
         ele_address = parse_json_field(tsp["EletronicAddress"])
         for item in ele_address:
-            TSPEletronicAddress.add_URI(test.NonEmptyMultiLangURIType(item['lang'],item["URI"]))
+            TSPEletronicAddress.append(JSON.NonEmptyMultiLangURI(item['lang'],item["URI"]))
 
 
         uri = parse_json_field(tsp["TSPInformationURI"])
         for item in uri:
-            TSPInformationURI.add_URI(test.NonEmptyMultiLangURIType(item['lang'],item["URI"]))
+            TSPInformationURI.append(JSON.NonEmptyMultiLangURI(item['lang'],item["URI"]))
 
-        TSPAddress.set_PostalAddresses(TSPPostalAddress)
-        TSPAddress.set_ElectronicAddress(TSPEletronicAddress)
-        TSPInformation.set_TSPName(TSPName)
-        TSPInformation.set_TSPTradeName(TSPTradeName)
-        TSPInformation.set_TSPAddress(TSPAddress)
-        TSPInformation.set_TSPInformationURI(TSPInformationURI)
-        TrustServiceProvider.set_TSPInformation(TSPInformation)
+        TSPAddress.TEPostalAddress=TSPPostalAddress
+        TSPAddress.TEElectronicAddress=TSPEletronicAddress
+        TSPInformation.TEName=TSPName
+        TSPInformation.TETradeName=TSPTradeName
+        TSPInformation.TEAddress=TSPAddress
+        TSPInformation.TEInformationURI=TSPInformationURI
+        TrustServiceProvider.TrustedEntityInformation=TSPInformation
 
         #Services
-        TSPServices=test.TSPServicesListType()
+        TSPServices=list
 
         #ServiceInformationExtensions=test.ExtensionsListType()
         # Extension =test.ExtensionType()
@@ -340,33 +311,33 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
             if each["tsp_id"] == tsp["tsp_id"]:
                 
-                TSPService=test.TSPServiceType()
-                ServiceInformation=test.TSPServiceInformationType()
-                ServiceName=test.InternationalNamesType()
-                SchemeServiceDefinitionURI=test.NonEmptyMultiLangURIListType()
+                TSPService=JSON.TrustedEntityService
+                ServiceInformation=JSON.ServiceInformation
+                ServiceName=list
+                SchemeServiceDefinitionURI=list
 
-                ServiceInformation.set_ServiceTypeIdentifier(test.NonEmptyURIType(each["service_type"]))
+                ServiceInformation.ServiceTypeIdentifier=each["service_type"]
 
                 serv_name = parse_json_field(each["ServiceName"])
                 for item in serv_name:
-                    ServiceName.add_Name(test.MultiLangNormStringType(item["lang"], item["text"]))
+                    ServiceName.append(JSON.MultiLangString(item["lang"], item["text"]))
 
-                ServiceInformation.set_ServiceName(ServiceName)
+                ServiceInformation.ServiceName=ServiceName
 
-                ServiceDigitalIdentity=test.DigitalIdentityListType()
-                digitalID = test.DigitalIdentityType()
-                digitalID.set_X509Certificate(base64.b64decode(each["digital_identity"]))
-                ServiceDigitalIdentity.add_DigitalId(digitalID)
-                ServiceInformation.set_ServiceDigitalIdentity(ServiceDigitalIdentity)
+                ServiceDigitalIdentity=JSON.ServiceDigitalIdentity
+                X509Certificates= list
+                X509Certificates.append(base64.b64decode(each["digital_identity"]))
+                ServiceDigitalIdentity.X509Certificates= X509Certificates
+                ServiceInformation.ServiceDigitalIdentity=ServiceDigitalIdentity
 
-                ServiceInformation.set_ServiceStatus(test.NonEmptyURIType(each["status"]))
-                ServiceInformation.set_StatusStartingTime(each["status_start_date"])
+                ServiceInformation.ServiceStatus=each["status"]
+                ServiceInformation.StatusStartingTime=each["status_start_date"]
 
                 uri = parse_json_field(each["SchemeServiceDefinitionURI"])
                 for item in uri:
-                    SchemeServiceDefinitionURI.add_URI(test.NonEmptyMultiLangURIType(item["lang"],item["URI"]))
+                    SchemeServiceDefinitionURI.append(JSON.NonEmptyMultiLangURI(item["lang"],item["URI"]))
                 
-                ServiceInformation.set_SchemeServiceDefinitionURI(SchemeServiceDefinitionURI)
+                ServiceInformation.ServiceDefinitionURI=SchemeServiceDefinitionURI
 
                 #Extensions
 
@@ -392,7 +363,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 # Qualifications.add_QualificationElement(qualificationElement)
 
                 
-                # AdditionalServiceInformation.set_URI(test.NonEmptyMultiLangURIType("en","	https://www.teste.com"))
+                # AdditionalServiceInformation.set_URI(JSON.NonEmptyMultiLangURI("en","	https://www.teste.com"))
                 # Extension.set_valueOf_(Qualifications)
                 # Extension.set_Critical(True)
 
@@ -403,73 +374,23 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 # ServiceInformationExtensions.add_Extension(ExtensionAdditionalServiceInformation)
                 # ServiceInformation.set_ServiceInformationExtensions(ServiceInformationExtensions)
 
-                TSPService.set_ServiceInformation(ServiceInformation)
-                TSPServices.add_TSPService(TSPService)
+                TSPService.ServiceInformation=ServiceInformation
+                TSPServices.append(TSPService)
 
         #AdditionalServiceInformation		
-        TrustServiceProvider.set_TSPServices(TSPServices)
-        TrustServiceProviderList.add_TrustServiceProvider(TrustServiceProvider)
+        TrustServiceProvider.TrustedEntityServices=TSPServices
+        TrustServiceProviderList.append(TrustServiceProvider)
 
-    root.set_TrustServiceProviderList(TrustServiceProviderList)
+    root.TrustedEntitiesList=TrustServiceProviderList
 
-    xml_buffer=StringIO()
-    root.export(xml_buffer,0,"")
-    xml_string=xml_buffer.getvalue()
-    
-    content=xml_string
-    content = re.sub(r'xmlns:ns0="([^"]+)"', r'xmlns="\1"', content)
-
-    content = re.sub(r'<ns0:', r'<', content)
-    content = re.sub(r'</ns0:', r'</', content)
-
-    # with open ("cert_UT.pem", "rb") as file: 
-    #     cert = file.read()
-    #     cert=x509.load_pem_x509_certificate(cert)
+    json_str = json.dumps(asdict(root))
 
     cert_for_hash=x509.load_pem_x509_certificate(cert, default_backend())
     thumbprint= hashlib.sha256(cert_for_hash.tbs_certificate_bytes).hexdigest()
-
-    # with open ("privkey_UT.pem", "rb") as key_file: 
-    #     key = serialization.load_pem_private_key(key_file.read(),password=None,backend=default_backend())
-        
+ 
     key=open(cfgserv.priv_key_UT, "rb").read()
     
-    ET.register_namespace("", "http://uri.etsi.org/02231/v2#")
-
-    rootTemp=ET.fromstring(content)
-
-    new_root = ET.Element(rootTemp.tag, attrib=rootTemp.attrib)
-    new_root.text = rootTemp.text
-
-    new_root.attrib["xmlns:ns2"] = "http://www.w3.org/2000/09/xmldsig#"
-    new_root.attrib["xmlns:ns3"] = "http://uri.etsi.org/01903/v1.3.2#"
-
-    for child in rootTemp:
-        new_root.append(child )
-
-    root_temp_str = ET.tostring(rootTemp, encoding="utf-8")
-    root_lxml = etree.fromstring(root_temp_str)
-    root_bytes = etree.tostring(root_lxml, method="c14n")
     xml_hash_before_sign = hashlib.sha256(root_bytes).hexdigest()
-
-    data_object_format = XAdESDataObjectFormat(
-        Description="TSL signature",
-        MimeType="text/xml",
-    )
-
-    signer = XAdESSigner(
-        claimed_roles=["signer"],
-        data_object_format=data_object_format,
-        c14n_algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315",
-        signature_algorithm=algorithms.SignatureMethod.ECDSA_SHA256,
-        method=methods.enveloped
-    )
-
-    signed_root = signer.sign(data=new_root, key=key, cert=cert)
-    
-    tree = etree.ElementTree(signed_root)
-
-    signed_root_bytes=etree.tostring(tree, encoding="utf-8", xml_declaration=True) 
 
     # with open ("teste.xml", "w") as file: 
     #     signed_root.write(file, level=0) 
@@ -488,293 +409,228 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     pem_str = cert.decode('utf-8')
     cert_cleaned = ''.join(line for line in pem_str.splitlines() if "CERTIFICATE" not in line)
 
-    root=test.TrustStatusListType()
+    root=JSON.LoTE
 
     root.set_TSLTag("http://uri.etsi.org/19612/TSLTag")
     root.set_Id("TrustServiceStatusList")
 
-    schemeInfo = test.TSLSchemeInformationType()
-    TSLType=test.NonEmptyURIType()
+    schemeInfo = JSON.ListAndSchemeInformation
 
-    schemeInfo.TSLVersionIdentifier=confxml.TLSVersionIdentifier
-    schemeInfo.TSLSequenceNumber=dict_tsl_mom["SequenceNumber"] + 1
+    schemeInfo.LoTEVersionIdentifier=confxml.TLSVersionIdentifier
+    schemeInfo.LoTESequenceNumber=dict_tsl_mom["SequenceNumber"] + 1
     
-    TSLType.set_valueOf_(confxml.TSLType["LoTL"])
-    schemeInfo.TSLType=TSLType
+    schemeInfo.LoTEType=confxml.TSLType["LoTL"]
 
     #schemeOperatorName
 
-    schemeOName = test.InternationalNamesType()
+    schemeOName = JSON.SchemeOperatorName
 
     #for cycle
     op_name = parse_json_field(user_info["operator_name"])
     for item in op_name:
-        schemeOName.add_Name(test.MultiLangNormStringType(item['lang'], item["text"]))
+        schemeOName.append(JSON.MultiLangString(item['lang'], item["text"]))
 
     schemeInfo.SchemeOperatorName=schemeOName
 
     #Scheme Operator Address
-    schemeOAddress= test.AddressType()
+    schemeOAddress= JSON.SchemeOperatorAddress
 
-    eletronic=test.ElectronicAddressType()
+    eletronic=JSON.ElectronicAddress
 
     #for cycle
     EletronicAddress = parse_json_field(user_info["EletronicAddress"])
     for item in EletronicAddress:
-        eletronic.add_URI(test.NonEmptyMultiLangURIType(item['lang'],item["URI"]))
+        eletronic.append(JSON.NonEmptyMultiLangURI(item['lang'],item["URI"]))
     #----------------------------------------------------#
-    schemeOAddress.set_ElectronicAddress(eletronic)
+    schemeOAddress.SchemeOperatorElectronicAddress=eletronic
 
-    PostalAdresses=test.PostalAddressListType()
+    PostalAdresses=JSON.PostalAddresses
 
     #for cycle for postal address
     postal = parse_json_field(user_info["postal_address"])
     for item in postal:
-        postal=test.PostalAddressType()
-        postal.set_lang(item['lang'])
-        postal.set_CountryName(item["CountryName"])
-        postal.set_StreetAddress(item["StreetAddress"])
-        postal.set_Locality(item["Locality"])
-        postal.set_StateOrProvince(item["StateOrProvince"])
-        postal.set_PostalCode(item["PostalCode"])
-        PostalAdresses.add_PostalAddress(postal)
+        postal=JSON.PostalAddress
+        postal.lang=item['lang']
+        postal.Country=item["CountryName"]
+        postal.StreetAddress=item["StreetAddress"]
+        postal.Locality=item["Locality"]
+        postal.StateOrProvince=item["StateOrProvince"]
+        postal.PostalCode=item["PostalCode"]
+        PostalAdresses.append(postal)
 
-    schemeOAddress.set_PostalAddresses(PostalAdresses)
+    schemeOAddress.SchemeOperatorPostalAddress=PostalAdresses
     schemeInfo.SchemeOperatorAddress=schemeOAddress
     
-    schemeName=test.InternationalNamesType()
-    PolicyOrLegalNotice= test.PolicyOrLegalnoticeType()
-    schemeInformationURI=test.NonEmptyMultiLangURIListType()
-    schemeCRules= test.NonEmptyMultiLangURIListType()
-    Pointers=test.OtherTSLPointersType()
+    schemeName=JSON.SchemeName
+    PolicyOrLegalNotice= JSON.PolicyOrLegalNotice
+    schemeInformationURI=JSON.SchemeInformationURI
+    schemeCRules= JSON.SchemeTypeCommunityRules
+    Pointers=JSON.PointersToOtherLoTE
     
 
     #schemeName
     #for cycle
     for scheme in dict_tsl_mom["SchemeName"]:
-        schemeName.add_Name(test.MultiLangNormStringType(scheme["lang"], scheme["text"]))
+        schemeName.append(JSON.MultiLangString(scheme["lang"], scheme["text"]))
     
-    schemeInfo.set_SchemeName(schemeName)
+    schemeInfo.SchemeName = schemeName
 
     #SchemeInformationURI
     
     #for cycle
     for scheme in dict_tsl_mom["SchemeInformationURI"]:
-        schemeInformationURI.add_URI(test.NonEmptyMultiLangURIType(scheme["lang"], scheme["URI"]))
+        schemeInformationURI.append(JSON.NonEmptyMultiLangURI(scheme["lang"], scheme["URI"]))
     
-    schemeInfo.set_SchemeInformationURI(schemeInformationURI)
+    schemeInfo.SchemeInformationURI= schemeInformationURI
 
     #StatusDeterminationApproach
-    schemeInfo.StatusDeterminationApproach=test.NonEmptyURIType(confxml.StatusDeterminationApproach["LoTL"])
+    schemeInfo.StatusDeterminationApproach=confxml.StatusDeterminationApproach["LoTL"]
     
     #schemeTypeCommunityRules
 
-#for cycle
-    schemeCRules.add_URI(test.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["LoTL"]))
-    schemeInfo.set_SchemeTypeCommunityRules(schemeCRules)
+    #for cycle
+    schemeCRules.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemeInfo.SchemeTypeCommunityRules=schemeCRules
 
     #SchemeTerritory
-    schemeInfo.set_SchemeTerritory("EU")
+    schemeInfo.SchemeTerritory= "EU"
 
     #PolicyOrLegalNotice
 
     #for cycle
     for scheme in dict_tsl_mom["PolicyOrLegalNotice"]:
-        PolicyOrLegalNotice.add_TSLLegalNotice(test.MultiLangStringType(scheme["lang"], scheme["text"]))
+        PolicyOrLegalNotice.append(JSON.MultiLangString(scheme["lang"], scheme["text"]))
     
-    schemeInfo.set_PolicyOrLegalNotice(PolicyOrLegalNotice)
+    schemeInfo.PolicyOrLegalNotice(PolicyOrLegalNotice)
 
     #HistoricalInformationPeriod
-    schemeInfo.set_HistoricalInformationPeriod(dict_tsl_mom["HistoricalInformationPeriod"])
+    schemeInfo.HistoricalInformationPeriod= dict_tsl_mom["HistoricalInformationPeriod"]
 
     #PointerToOtherTSL
 
     #OtherTSLPointerType-LoTL
 
-    ServiceDigitalIdentities= test.ServiceDigitalIdentityListType()
-    serviceDigitalIdentity=test.DigitalIdentityListType()
+    ServiceDigitalIdentities=list
+    serviceDigitalIdentity=JSON.ServiceDigitalIdentity
 
-    digitalID=test.DigitalIdentityType()
-    digitalID.set_X509Certificate(base64.b64decode(cert_cleaned))
+    serviceDigitalIdentity.X509Certificates.append(base64.b64decode(cert_cleaned))
 
-    serviceDigitalIdentity.add_DigitalId(digitalID)
-    ServiceDigitalIdentities.add_ServiceDigitalIdentity(serviceDigitalIdentity)
-    Pointer= test.OtherTSLPointerType()
-    Pointer.set_ServiceDigitalIdentities(ServiceDigitalIdentities)
+    ServiceDigitalIdentities.append(serviceDigitalIdentity)
+    Pointer= JSON.OtherLoTEPointer
+    Pointer.ServiceDigitalIdentities = ServiceDigitalIdentities
 
     #additional Info
-    
+    AdditionalInfo=JSON.LoTEQualifier
     #TSLTypeAdditionalInformation
 
-    TSLTypeAdditionalInformation=test.NonEmptyURIType()
-    TSLTypeAdditionalInformation.original_tagname_="TSLType"
-    TSLTypeAdditionalInformation.valueOf_=confxml.TSLType["LoTL"]
-
-    objecttest=test.AnyType()
-    objecttest.valueOf_=TSLTypeAdditionalInformation
-    
-    AdditionalInfo=test.AdditionalInformationType()
-    AdditionalInfo.add_OtherInformation(objecttest)
+    AdditionalInfo.LoTEType= confxml.TSLType["LoTL"]
 
     #SchemeNameOperatorAdditionalInformation
     #for cycle
-    schemeNametest=test.InternationalNamesType()
+    schemeNametest=JSON.SchemeOperatorName
     for item in op_name:
-        schemeNametest.add_Name(test.MultiLangNormStringType(item['lang'], item["text"]))
+        schemeNametest.append(JSON.MultiLangString(item['lang'], item["text"]))
     
-    testes=test.TakenOverByType()
-    testes.SchemeOperatorName=schemeNametest
-
-    AdditionalInfo.add_OtherInformation(testes)
+    AdditionalInfo.SchemeOperatorName = schemeNametest
 
     #SchemeTerritoryAdditionalInformation
 
-    scheme=test.TakenOverByType()
-    scheme.SchemeTerritory="EU"
-
-    AdditionalInfo.add_OtherInformation(scheme)
+    AdditionalInfo.SchemeTerritory="EU"
 
 
     #SchemeTypeCommunityRules
     
-    schemetypeCommunityRules_add=test.NonEmptyMultiLangURIListType()
-    schemetypeCommunityRules_add.original_tagname_="SchemeTypeCommunityRules"
-    
-    objecttest_stcr=test.AnyType()
-    objecttest_stcr.original_tagname_="SchemeTypeCommunityRules"
+    schemetypeCommunityRules_add=JSON.SchemeTypeCommunityRules
 
     #for cycle
-    schemetypeCommunityRules_add.add_URI(test.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["LoTL"]))
 
-    objecttest_stcr.valueOf_=schemetypeCommunityRules_add
-
-    AdditionalInfo.add_OtherInformation(objecttest_stcr)
+    AdditionalInfo.SchemeTypeCommunityRules = schemetypeCommunityRules_add
 
     #MimeType
-    ObjectType=test.ObjectType()
-    ObjectType.original_tagname_="MimeType"
-    ObjectType.set_valueOf_("application/vnd.etsi.tsl+xml")
 
-    objectMimeType=test.AnyType()
-    objectMimeType.set_valueOf_(ObjectType)
-
-    AdditionalInfo.add_OtherInformation(objectMimeType)
+    AdditionalInfo.MimeType = "application/vnd.etsi.tsl+xml"
 
     last = dict_tsl_mom["SchemeInformationURI"][-1].get("URI")
-    Pointer.TSLLocation=test.NonEmptyURIType(last)
+    Pointer.LoTELocation = last
 
-    Pointer.AdditionalInformation=AdditionalInfo
-    Pointers.add_OtherTSLPointer(Pointer)
+    Pointer.LoTEQualifiers.append(AdditionalInfo)
+    Pointers.append(Pointer)
 
     #for cycle
     for tsl_data in tsl_list:
-        ServiceDigitalIdentities= test.ServiceDigitalIdentityListType()
-        serviceDigitalIdentity=test.DigitalIdentityListType()
+        Pointer = JSON.OtherLoTEPointer
+
+        ServiceDigitalIdentities= list
+        serviceDigitalIdentity=JSON.ServiceDigitalIdentity
 
         #for cycle novo
         aux = func.get_old_cert(tsl_data["id"], log_id)
 
         for each in aux:
-            digitalID=test.DigitalIdentityType()
-            digitalID.set_X509Certificate(base64.b64decode(each["cert"]))
-            serviceDigitalIdentity.add_DigitalId(digitalID)
+            serviceDigitalIdentity.X509Certificates.append(base64.b64decode(each["cert"]))
+        
         #end
 
-        ServiceDigitalIdentities.add_ServiceDigitalIdentity(serviceDigitalIdentity)
-        Pointer= test.OtherTSLPointerType()
-        Pointer.set_ServiceDigitalIdentities(ServiceDigitalIdentities)
+        ServiceDigitalIdentities.append(serviceDigitalIdentity)
+        Pointer.ServiceDigitalIdentities = ServiceDigitalIdentities
 
         #additional Info
-        
+        AdditionalInfo= JSON.LoTEQualifier
         #TSLTypeAdditionalInformation
-        TSLTypeAdditionalInformation=test.NonEmptyURIType()
-        TSLTypeAdditionalInformation.original_tagname_="TSLType"
-        TSLTypeAdditionalInformation.valueOf_=(confxml.TSLType["EU"])
-
-        objecttest=test.AnyType()
-        objecttest.valueOf_=TSLTypeAdditionalInformation
         
-        AdditionalInfo=test.AdditionalInformationType()
-        AdditionalInfo.add_OtherInformation(objecttest)
+        AdditionalInfo.LoTEType= confxml.TSLType["EU"]
 
         #SchemeNameOperatorAdditionalInformation
         #for cycle
-        schemeNametest=test.InternationalNamesType()
+        schemeNametest=JSON.SchemeOperatorName
         for item in tsl_data["SchemeName"]:
-            schemeNametest.add_Name(test.MultiLangNormStringType(item['lang'], item["text"]))
+            schemeNametest.append(JSON.MultiLangString(item['lang'], item["text"]))
 
-        testes=test.TakenOverByType()
-        testes.SchemeOperatorName=schemeNametest
-
-        AdditionalInfo.add_OtherInformation(testes)
+        AdditionalInfo.SchemeOperatorName=schemeNametest
 
         #SchemeTerritoryAdditionalInformatio
 
-        scheme=test.TakenOverByType()
-        scheme.SchemeTerritory=tsl_data["schemeTerritory"]
-
-        AdditionalInfo.add_OtherInformation(scheme)
+        AdditionalInfo.SchemeTerritory= tsl_data["schemeTerritory"]
 
 
         #SchemeTypeCommunityRules
         
-        schemetypeCommunityRules_add=test.NonEmptyMultiLangURIListType()
-        schemetypeCommunityRules_add.original_tagname_="SchemeTypeCommunityRules"
-        
-        objecttest_stcr=test.AnyType()
-        objecttest_stcr.original_tagname_="SchemeTypeCommunityRules"
+        schemetypeCommunityRules_add=JSON.SchemeTypeCommunityRules
 
         #for cycle
-        schemetypeCommunityRules_add.add_URI(test.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["EU"]))
-        schemetypeCommunityRules_add.add_URI(test.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["Country"] + tsl_data["schemeTerritory"]))
-        objecttest_stcr.valueOf_=schemetypeCommunityRules_add
+        schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["EU"]))
+        schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["Country"] + tsl_data["schemeTerritory"]))
 
-        AdditionalInfo.add_OtherInformation(objecttest_stcr)
+        AdditionalInfo.SchemeTypeCommunityRules = schemetypeCommunityRules_add
 
         #MimeType
-        ObjectType=test.ObjectType()
-        ObjectType.original_tagname_="MimeType"
-        ObjectType.set_valueOf_("application/vnd.etsi.tsl+xml")
 
-        objectMimeType=test.AnyType()
-        objectMimeType.set_valueOf_(ObjectType)
-
-        AdditionalInfo.add_OtherInformation(objectMimeType)
+        AdditionalInfo.MimeType="application/vnd.etsi.tsl+xml"
 
         last= tsl_data["SchemeInformationURI"][-1].get("URI")
-        Pointer.TSLLocation=test.NonEmptyURIType(last)
+        Pointer.LoTELocation=last
 
-        Pointer.AdditionalInformation=AdditionalInfo
-        Pointers.add_OtherTSLPointer(Pointer)
+        Pointer.LoTEQualifiers.append(AdditionalInfo)
+        Pointers.append(Pointer)
     
-    schemeInfo.PointersToOtherTSL=Pointers
+    schemeInfo.PointersToOtherLoTE=Pointers
     
     schemeInfo.ListIssueDateTime=dict_tsl_mom["issue_date"]
     #Next Update
-    NUpdate=test.NextUpdateType()
-    NUpdate.set_dateTime(dict_tsl_mom["next_update"])
-    schemeInfo.NextUpdate= NUpdate
+    
+    schemeInfo.NextUpdate= dict_tsl_mom["next_update"]
 
     #DistribuitionPoints
 
     #for cycle
-    URIDP=test.NonEmptyURIListType()
+    URIDP=list
     last= dict_tsl_mom["SchemeInformationURI"][-1].get("URI")
-    URIDP.add_URI(test.NonEmptyURIType(last))
+    URIDP.append(last)
 
     schemeInfo.DistributionPoints=URIDP
 
-    root.SchemeInformation=schemeInfo
-
-    xml_buffer=StringIO()
-    root.export(xml_buffer,0,"")
-    xml_string=xml_buffer.getvalue()
-
-    content=xml_string
-    content = re.sub(r'xmlns:ns0="([^"]+)"', r'xmlns="\1"', content)
-
-    content = re.sub(r'<ns0:', r'<', content)
-    content = re.sub(r'</ns0:', r'</', content)
+    root.ListAndSchemeInformation=schemeInfo
 
     # with open ("cert_UT.pem", "rb") as file: 
     #     cert = file.read()
@@ -788,20 +644,7 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         
     key=open(cfgserv.priv_key_UT, "rb").read()
     
-    rootTemp=ET.fromstring(content)
 
-    new_root = ET.Element(rootTemp.tag, attrib=rootTemp.attrib)
-    new_root.text = rootTemp.text
-
-    new_root.attrib["xmlns:ns2"] = "http://www.w3.org/2000/09/xmldsig#"
-    new_root.attrib["xmlns:ns3"] = "http://uri.etsi.org/01903/v1.3.2#"
-
-    for child in rootTemp:
-        new_root.append(child )
-
-    root_temp_str = ET.tostring(rootTemp, encoding="utf-8")
-    root_lxml = etree.fromstring(root_temp_str)
-    root_bytes = etree.tostring(root_lxml, method="c14n")
     xml_hash_before_sign = hashlib.sha256(root_bytes).hexdigest()
 
     data_object_format = XAdESDataObjectFormat(
@@ -816,12 +659,6 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         signature_algorithm=algorithms.SignatureMethod.ECDSA_SHA256,
         method=methods.enveloped
     )
-
-    signed_root = signer.sign(data=new_root, key=key, cert=cert)
-    
-    tree = etree.ElementTree(signed_root)
-
-    signed_root_bytes=etree.tostring(tree, encoding="utf-8", xml_declaration=True) 
 
     encoded_file = base64.b64encode(signed_root_bytes).decode('utf-8')
 
