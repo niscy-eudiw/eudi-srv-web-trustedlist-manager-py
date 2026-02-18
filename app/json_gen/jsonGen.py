@@ -1,6 +1,6 @@
 # coding: latin-1
 ###############################################################################
-# Copyright (c) 2023 European Commission
+# Copyright (c) 2026 European Commission
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,10 +33,10 @@ from cryptography.hazmat.primitives import serialization
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 import hashlib
-from lxml import etree
 import xml.etree.ElementTree as ET
 from cryptography.hazmat.primitives.serialization import Encoding
 import app.EJBCA_and_DB_func as func
+from jadessigner import jadesigner
 
 def parse_json_field(field):
     try:
@@ -384,23 +384,22 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     root.TrustedEntitiesList=TrustServiceProviderList
 
     json_str = json.dumps(asdict(root))
+    json_bytes= json_str.decode('utf-8')
 
     cert_for_hash=x509.load_pem_x509_certificate(cert, default_backend())
     thumbprint= hashlib.sha256(cert_for_hash.tbs_certificate_bytes).hexdigest()
  
     key=open(cfgserv.priv_key_UT, "rb").read()
-    
-    xml_hash_before_sign = hashlib.sha256(root_bytes).hexdigest()
+
+    encoded_file, json_hash_before_sign= jadesigner(base64.b64encode(json_bytes).decode("utf-8"),base64.b64encode(cert).decode("utf-8"), cfgserv.priv_key_UT )
 
     # with open ("teste.xml", "w") as file: 
     #     signed_root.write(file, level=0) 
 
-    encoded_file = base64.b64encode(signed_root_bytes).decode('utf-8')
-
-    return encoded_file, thumbprint, xml_hash_before_sign
+    return encoded_file, thumbprint, json_hash_before_sign
 
 
-def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
+def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()
     cert_der= x509.load_der_x509_certificate(der_data, backend=default_backend())
@@ -642,51 +641,23 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     # with open ("privkey_UT.pem", "rb") as key_file: 
     #     key = serialization.load_pem_private_key(key_file.read(),password=None,backend=default_backend())
         
-    key=open(cfgserv.priv_key_UT, "rb").read()
+    key_location=open(cfgserv.priv_key_UT, "rb").read()
     
+    json_str = json.dumps(asdict(root))
+    json_bytes= json_str.decode('utf-8')
 
-    xml_hash_before_sign = hashlib.sha256(root_bytes).hexdigest()
+    cert_for_hash=x509.load_pem_x509_certificate(cert, default_backend())
+    thumbprint= hashlib.sha256(cert_for_hash.tbs_certificate_bytes).hexdigest()
+ 
+    key=open(cfgserv.priv_key_UT, "rb").read()
 
-    data_object_format = XAdESDataObjectFormat(
-        Description="TSL signature",
-        MimeType="text/xml",
-    )
+    encoded_file, json_hash_before_sign= jadesigner(base64.b64encode(json_bytes).decode("utf-8"),base64.b64encode(cert).decode("utf-8"), cfgserv.priv_key_UT )
 
-    signer = XAdESSigner(
-        claimed_roles=["signer"],
-        data_object_format=data_object_format,
-        c14n_algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315",
-        signature_algorithm=algorithms.SignatureMethod.ECDSA_SHA256,
-        method=methods.enveloped
-    )
+    # with open ("teste.xml", "w") as file: 
+    #     signed_root.write(file, level=0) 
 
-    encoded_file = base64.b64encode(signed_root_bytes).decode('utf-8')
+    return encoded_file, thumbprint, json_hash_before_sign
 
 
-    return encoded_file, thumbprint, xml_hash_before_sign
-
-
-def xml_validator(file):
-
-    # Load Schema
-    with open(confxml.schema, 'rb') as f:
-        schema_root = etree.parse(f)
-        schema = etree.XMLSchema(schema_root)
-
-    # Load XML
-    # with open("teste2.xml", 'rb') as f:
-    #     xml_tree = etree.parse(f)
-
-    xml_tree= etree.fromstring(file)
-
-    # Validate XML
-    if schema.validate(xml_tree):
-        return 200,"Valid XML"
-    else:
-        msg= "Invalid XML"
-        for error in schema.error_log:
-            msg = msg + f"\nLine {error.line}: {error.message}"
-        
-        return 500, msg
 
     
