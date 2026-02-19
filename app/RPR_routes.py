@@ -48,6 +48,7 @@ import requests
 
 import base64
 import urllib.parse
+from app.json_gen.jsonGen import json_gen_json, json_gen_lote_json
 from app_config.config import ConfService as cfgserv
 import segno
 
@@ -111,7 +112,7 @@ def authentication():
 
     url = "https://" + cfgserv.url_verifier +"/ui/presentations"
     payload ={
-       "type": "vp_token",
+        "type": "vp_token",
         "nonce": "hiCV7lZi5qAeCy7NFzUWSR4iCfSmRb99HfIvCkPaCLc=",
         "dcql_query": {
             "credentials": [
@@ -169,6 +170,7 @@ def authentication():
     }
 
     response = requests.request("POST", url, headers=headers, data=json.dumps(payload)).json()
+    
 
     QR_code_url = (
         "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
@@ -177,23 +179,25 @@ def authentication():
         + response["request_uri"]
     )
 
-    payload_sameDevice=payload
+    
     session["session_id"]=str(uuid.uuid4())
     session["certificate_List"]=False
 
-    payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
-                                                       "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
+    # payload_sameDevice=payload
 
-    response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
+    # payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
+    #                                                    "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
 
-    deeplink_url = (
-        "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
-        + response_same_device["client_id"]
-        + "&request_uri="
-        + response_same_device["request_uri"]
-    )
+    # response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
 
-    oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry)}})
+    # deeplink_url = (
+    #     "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
+    #     + response_same_device["client_id"]
+    #     + "&request_uri="
+    #     + response_same_device["request_uri"]
+    # )
+
+    # oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry), "certificate_List":False}})
 
 
     # Generate QR code
@@ -219,7 +223,7 @@ def authentication():
 
     return render_template(
         "pid_login_qr_code.html",
-        url_data=deeplink_url,
+        url_data="deeplink_url",
         qrcode=qr_img_base64,
         presentation_id=response["transaction_id"],
         redirect_url= cfgserv.service_url
@@ -816,8 +820,6 @@ def xml():
 
     file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
 
-    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
-    
     if(cfgserv.two_operators):
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
@@ -833,6 +835,106 @@ def xml():
 
     return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
+@rpr.route('/tsl/json', methods=["GET", "POST"])
+def json_file():
+    
+    temp_user_id = session['temp_user_id']
+    user = session[temp_user_id]
+
+    tsl_id = request.args.get("id")
+
+    check = func.check_tsl(tsl_id, session["session_id"])
+
+    if check == "tsp":
+        flash("This TSL doesn't have at least one TSP associated.", "danger")
+        return redirect('/tsl/list')
+    elif check == "service":
+        flash("This TSL doesn't have at least one Service associated to an TSP.", "warning")
+        return redirect('/tsl/list')
+    
+    user_info = func.get_user_info(user["id"], session["session_id"])
+
+    tsl_info = func.tsl_info(tsl_id, session["session_id"])
+
+    lang_based_fields = [
+        "SchemeName_lang",
+        "Uri_lang",
+        "SchemeTypeCommunityRules_lang",
+        "PolicyOrLegalNotice_lang"
+    ]
+
+    for key in lang_based_fields:
+        try:
+            tsl_info[key] = json.loads(tsl_info[key]) if tsl_info[key] else []
+        except json.JSONDecodeError:
+            extra = {'code': session["session_id"]} 
+            logger.error(f"Error decoding : {key}: {tsl_info[key]}", extra=extra)
+            print(f"Error decoding {key}: {tsl_info[key]}")
+            tsl_info[key] = []
+
+    try:
+        tsl_info["DistributionPoints"] = json.loads(tsl_info["DistributionPoints"]) if tsl_info["DistributionPoints"] else []
+        if not isinstance(tsl_info["DistributionPoints"], list):
+            raise ValueError("DistributionPoints não é uma lista válida!")
+    except (json.JSONDecodeError, ValueError):
+        extra = {'code': session["session_id"]} 
+        logger.error(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}", extra=extra)
+        print(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}")
+        tsl_info["DistributionPoints"] = []
+
+    
+    dictFromDB_trusted_lists={
+        "Version":  confxml.TLSVersionIdentifier,
+        "SequenceNumber":   tsl_info["SequenceNumber"],
+        #"TSLType":  confxml.TSLType.get("EU"),
+        "SchemeName":   tsl_info["SchemeName_lang"],
+        "SchemeInformationURI": tsl_info["Uri_lang"],
+        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
+        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
+        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
+        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+        "schemeTerritory": tsl_info["schemeTerritory"],
+        #AdditionalInformation,ver
+
+        #"DistributionPoints" :  tsl_info["DistributionPoints"],
+        "issue_date" :  tsl_info["issue_date"],
+        "next_update":  tsl_info["next_update"],
+        "status":   tsl_info["status"]
+    }
+    
+    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
+
+    service_data = []
+
+    for item in tsp_data:
+        tsp_id = item["tsp_id"]
+        
+        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
+    
+        service_data.append(service_info)
+
+    # for service_list in service_data:
+    #     for service in service_list:
+    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
+
+    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+    
+    if(cfgserv.two_operators):
+        role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
+        if(role == "tsl_op"):
+            menu= cfgserv.service_url + "menu_tsl"
+            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
+        elif(role == "tsp_op"):
+            menu= cfgserv.service_url + "menu_tsp"
+            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
+        else:
+            return ("error")
+    else:
+        menu= cfgserv.service_url + "menu"
+
+    return render_template("download_tsl.html", menu = menu,json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id, url= cfgserv.service_url)
+
     
 @rpr.route('/download', methods=["GET", "POST"])
 def download_tsl():
@@ -846,6 +948,19 @@ def download_tsl():
         download_name="generated_file.xml",
         as_attachment=True,
         mimetype='application/xml'
+    )
+@rpr.route('/download_json', methods=["GET", "POST"])
+def download_json():
+
+    encoded_file = request.form.get("file_data")
+
+    file_data = base64.b64decode(encoded_file)
+
+    return send_file(
+        io.BytesIO(file_data),
+        download_name="generated_file.json",
+        as_attachment=True,
+        mimetype='application/json'
     )
 
 @rpr.route('/validate_xml', methods=["GET", "POST"])
@@ -1979,7 +2094,111 @@ def lotl_xml():
             menu= cfgserv.service_url + "menu"
 
         return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+
+@rpr.route('/lotl/json', methods=["GET", "POST"])
+def lotl_json():
+    temp_user_id = session['temp_user_id']
+    user = session[temp_user_id]
+
+    role = func.check_role_user(user["id"], session["session_id"])
+    if(role != "lotl_op"):
+        return redirect('/menu')
     
+    user_info = func.get_user_info(user["id"], session["session_id"])
+    tsl_list = []
+
+    tsl_info = func.get_tsl_loft(session["session_id"])
+
+    tsl_data = func.get_lotltsl_info(user["id"], session["session_id"])
+
+    if(tsl_data == "err"):
+        flash("You don't have a Lotl Trusted List created, so it's not possible to generate the XML. Please create a new Lotl TSL.", "danger")
+        return redirect('/lotl/list')
+    lang_based_fields = [
+        "SchemeName_lang",
+        "Uri_lang",
+        "SchemeTypeCommunityRules_lang",
+        "PolicyOrLegalNotice_lang"
+    ]
+
+    for key in lang_based_fields:
+        try:
+            tsl_data[key] = json.loads(tsl_data[key]) if tsl_data[key] else []
+        except json.JSONDecodeError:
+            extra = {'code': session["session_id"]} 
+            logger.error(f"Error decoding : {key}: {tsl_data[key]}", extra=extra)
+            print(f"Error decoding {key}: {tsl_data[key]}")
+            tsl_data[key] = []
+    
+    else:
+        tsl_mom = tsl_data
+        dict_tsl_mom = {
+            "Version":  confxml.TLSVersionIdentifier,
+            "SequenceNumber":   tsl_mom["SequenceNumber"],
+            "SchemeName":   tsl_mom["SchemeName_lang"],
+            "SchemeInformationURI": tsl_mom["Uri_lang"],
+            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+            #"SchemeTypeCommunityRules": tsl_mom["SchemeTypeCommunityRules_lang"],
+            "PolicyOrLegalNotice":  tsl_mom["PolicyOrLegalNotice_lang"],
+            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+            "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+            #"DistributionPoints" :  tsl_mom["DistributionPoints"],
+            "issue_date" :  tsl_mom["issue_date"],
+            "next_update":  tsl_mom["next_update"],
+            "status":   tsl_mom["status"]
+        }
+    
+        for each in tsl_info:
+            for key in lang_based_fields:
+                try:
+                    each[key] = json.loads(each[key]) if each[key] else []
+                except json.JSONDecodeError:
+                    extra = {'code': session["session_id"]} 
+                    logger.error(f"Error decoding : {key}: {each[key]}", extra=extra)
+                    print(f"Error decoding {key}: {each[key]}")
+                    each[key] = []
+
+            dictFromDB_trusted_lists = {
+                "id": each["tsl_id"],
+                "Version":  confxml.TLSVersionIdentifier,
+                "SequenceNumber":   each["SequenceNumber"],
+                #"TSLType":  confxml.TSLType.get("EU"),
+                "SchemeName":   each["SchemeName_lang"],
+                "SchemeInformationURI": each["Uri_lang"],
+                #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+                #"SchemeTypeCommunityRules": each["SchemeTypeCommunityRules_lang"],
+                "PolicyOrLegalNotice":  each["PolicyOrLegalNotice_lang"],
+                #"pointers_to_other_tsl" :   each["pointers_to_other_tsl"].encode('utf-8'),
+                "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+                "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+                #"DistributionPoints" :  each["DistributionPoints"],
+                "issue_date" :  each["issue_date"],
+                "next_update":  each["next_update"],
+                "status":   each["status"],
+                "schemeTerritory": each["schemeTerritory"]
+            }
+            tsl_list.append(dictFromDB_trusted_lists) 
+            
+        file, thumbprint, xml_hash_before_sign =json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, session["session_id"])
+        
+        if(cfgserv.two_operators):
+            role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
+            if(role == "tsl_op"):
+                menu= cfgserv.service_url + "menu_tsl"
+                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+            elif(role == "tsp_op"):
+                menu= cfgserv.service_url + "menu_tsp"
+                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+            else:
+                return ("error")
+        else:
+            if(role == "lotl_op"):
+                menu= cfgserv.service_url + "menu_lotl"
+                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+            
+            menu= cfgserv.service_url + "menu"
+
+        return render_template("download_lotl.html", menu = menu, json=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
 @rpr.route('/lotl/tsl_list')
 def list_tsl_lotl():

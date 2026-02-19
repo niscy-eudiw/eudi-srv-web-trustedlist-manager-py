@@ -36,7 +36,7 @@ import hashlib
 import xml.etree.ElementTree as ET
 from cryptography.hazmat.primitives.serialization import Encoding
 import app.EJBCA_and_DB_func as func
-from jadessigner import jadesigner
+from app.json_gen.jadessigner import jadesigner
 
 def parse_json_field(field):
     try:
@@ -48,7 +48,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
@@ -65,164 +65,137 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
             func.insert_old_cert(cert_cleaned, tsl_id, log_id)
     
     
-    root=JSON.LoTE
+    #root=JSON.LoTE()
 
-    root.set_TSLTag("http://uri.etsi.org/19612/TSLTag")
-    root.set_Id("TrustServiceStatusList")
+    # root.set_TSLTag("http://uri.etsi.org/19612/TSLTag")
+    # root.set_Id("TrustServiceStatusList")
 
-    schemeInfo = root.ListAndSchemeInformation
+    #schemeInfo = JSON.ListAndSchemeInformation()
 
-    schemeInfo.LoTEVersionIdentifier=confxml.TLSVersionIdentifier
-    schemeInfo.LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"] + 1
-    schemeInfo.LoTEType=confxml.TSLType["EU"]
+    # schemeInfo.LoTEVersionIdentifier=confxml.TLSVersionIdentifier
+    # schemeInfo.LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"] + 1
+    # schemeInfo.LoTEType=confxml.TSLType["EU"]
 
     #schemeOperatorName
 
-    schemeOName = list
+    schemeOName = list()
 
     #for cycle
     op_name = parse_json_field(user_info["operator_name"])
     for item in op_name:
         schemeOName.append(JSON.MultiLangString(item['lang'], item["text"]))
 
-    schemeInfo.SchemeOperatorName=schemeOName
+    #schemeInfo.SchemeOperatorName=schemeOName
 
     #Scheme Operator Address
-    schemeOAddress= JSON.SchemeOperatorAddress
+    
 
-    eletronic=JSON.ElectronicAddress
+    eletronic=JSON.ElectronicAddress()
 
     #for cycle
     EletronicAddress = parse_json_field(user_info["EletronicAddress"])
     for item in EletronicAddress:
         eletronic.append(JSON.NonEmptyMultiLangURI(item['lang'],item["URI"]))
     #----------------------------------------------------#
-    schemeOAddress.SchemeOperatorElectronicAddress(eletronic)
 
-    PostalAdresses=JSON.PostalAddresses
+    PostalAdresses_list=list()
 
     #for cycle for postal address
     postal = parse_json_field(user_info["postal_address"])
     for item in postal:
-        postal=JSON.PostalAddress
-        postal.lang=item['lang']
-        postal.Country=item["CountryName"]
-        postal.StreetAddress=item["StreetAddress"]
-        postal.Locality=item["Locality"]
-        postal.StateOrProvince=item["StateOrProvince"]
-        postal.PostalCode=item["PostalCode"]
-        PostalAdresses.append(postal)
+        postal=JSON.PostalAddress(
+            lang=item['lang'],
+            Country=item["CountryName"],
+            StreetAddress=item["StreetAddress"],
+            Locality=item["Locality"],
+            StateOrProvince=item["StateOrProvince"],
+            PostalCode=item["PostalCode"]
+        )
+        PostalAdresses_list.append(postal)
 
-    schemeOAddress.SchemeOperatorPostalAddress(PostalAdresses)
-    schemeInfo.SchemeOperatorAddress=schemeOAddress
+    PostalAdresses=JSON.PostalAddresses(PostalAdresses_list)
+    schemeOAddress= JSON.SchemeOperatorAddress(
+        SchemeOperatorElectronicAddress=eletronic,
+        SchemeOperatorPostalAddress=PostalAdresses
+    )
 
     #schemeName
-    schemeName=list
+    schemeName=list()
 
     #for cycle
     for scheme in dictFromDB_trusted_lists["SchemeName"]:
         schemeName.append(JSON.MultiLangString(scheme["lang"], scheme["text"]))
-    
-    schemeInfo.SchemeName=schemeName
 
     #SchemeInformationURI
-    schemeInformationURI=list
+    schemeInformationURI=list()
 
     #for cycle
     for scheme in dictFromDB_trusted_lists["SchemeInformationURI"]:
         schemeInformationURI.append(JSON.NonEmptyMultiLangURI(scheme["lang"], scheme["URI"]))
     
-    schemeInfo.SchemeInformationURI=schemeInformationURI
-
-    #StatusDeterminationApproach
-    schemeInfo.StatusDeterminationApproach=confxml.StatusDeterminationApproach["EU"]
-    
     #schemeTypeCommunityRules
-    schemeCRules= list
+    schemeCRules= list()
 
     #for cycle
     schemeCRules.append(JSON.MultiLangString("en", confxml.SchemeTypeCommunityRules["EU"]))
     schemeCRules.append(JSON.MultiLangString("en", confxml.SchemeTypeCommunityRules["Country"] + dictFromDB_trusted_lists["schemeTerritory"] ))
-    schemeInfo.SchemeTypeCommunityRules= schemeCRules
-
-    #SchemeTerritory
-    schemeInfo.SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"]
+    
 
     #PolicyOrLegalNotice
-    PolicyOrLegalNotice= list
+    PolicyOrLegalNotice= list()
 
     #for cycle
     for scheme in dictFromDB_trusted_lists["PolicyOrLegalNotice"]:
         PolicyOrLegalNotice.append(JSON.MultiLangString(scheme["lang"], scheme["text"]))
 
-    schemeInfo.PolicyOrLegalNotice=PolicyOrLegalNotice
-
-    #HistoricalInformationPeriod
-    schemeInfo.HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"]
-
     #PointerToOtherTSL
-    Pointers= JSON.PointersToOtherLoTE
+    Pointers= JSON.PointersToOtherLoTE()
 
     #OtherTSLPointerType-LoTL
 
-    ServiceDigitalIdentities= list
-    serviceDigitalIdentity=JSON.ServiceDigitalIdentity
-
-    serviceDigitalIdentity.X509Certificates.append(base64.b64decode(cert_cleaned))
+    ServiceDigitalIdentities= list()
+    serviceDigitalIdentity=JSON.ServiceDigitalIdentity(X509Certificates=list().append(cert_cleaned))
 
     ServiceDigitalIdentities.append(serviceDigitalIdentity)
 
-    Pointer= JSON.OtherLoTEPointer
-    Pointer.ServiceDigitalIdentities=ServiceDigitalIdentities
 
     #additional Info
-    
-    #TSLTypeAdditionalInformation
-
-    AdditionalInfo = JSON.LoTEQualifier
-
-    AdditionalInfo.LoTEType=confxml.TSLType["LoTL"]
-
 
     #SchemeNameOperatorAdditionalInformation
     #for cycle
 
-    AdditionalInfo_SchemeOperatorName=list
+    AdditionalInfo_SchemeOperatorName=list()
     AdditionalInfo_SchemeOperatorName.append(JSON.MultiLangString("en", "EU-LOTL"))
 
-    AdditionalInfo.SchemeOperatorName= AdditionalInfo_SchemeOperatorName
-
-    #SchemeTerritoryAdditionalInformation
-
-    AdditionalInfo.SchemeTerritory="EU"
 
     #SchemeTypeCommunityRules
-    schemetypeCommunityRules_add=list
+    schemetypeCommunityRules_add=list()
 
     #for cycle
     schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["LoTL"]))
 
-    AdditionalInfo.SchemeTypeCommunityRules= schemetypeCommunityRules_add
+    AdditionalInfo=JSON.LoTEQualifier(
+        LoTEType=confxml.TSLType["LoTL"],
+        SchemeOperatorName=AdditionalInfo_SchemeOperatorName,
+        SchemeTerritory="EU",
+        SchemeTypeCommunityRules=schemetypeCommunityRules_add,
+        MimeType= "application/json",
 
-    #MimeType
+    )
 
-    AdditionalInfo.MimeType= "application/vnd.etsi.tsl+xml"
+    Lote_qualifiers=list()
+    Lote_qualifiers.append(AdditionalInfo)
 
-    Pointer.LoTELocation=confxml.lotl_location
+    Pointer= JSON.OtherLoTEPointer(
+        LoTELocation=confxml.lotl_location,
+        ServiceDigitalIdentities=ServiceDigitalIdentities,
+        LoTEQualifiers=Lote_qualifiers
+    )
 
-    Pointer.LoTEQualifiers.append(AdditionalInfo)
     Pointers.append(Pointer)
 
-    schemeInfo.PointersToOtherLoTE=Pointers
-    
-    schemeInfo.ListIssueDateTime=dictFromDB_trusted_lists["issue_date"]
-    
-    #Next Update
-    
-    schemeInfo.NextUpdate= dictFromDB_trusted_lists["next_update"]
-
     #DistribuitionPoints
-    URIDP=list
+    URIDP=list()
 
     #for cycle
     
@@ -232,24 +205,40 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
     URIDP.append(last)
 
-    schemeInfo.DistributionPoints=URIDP
+    schemeInfo=JSON.ListAndSchemeInformation(
+        LoTEVersionIdentifier=confxml.TLSVersionIdentifier,
+        LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"],
+        SchemeOperatorName=schemeOName,
+        ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].isoformat(),
+        NextUpdate=dictFromDB_trusted_lists["next_update"].isoformat(),
+        LoTEType=confxml.TSLType["EU"],
+        SchemeOperatorAddress=schemeOAddress,
+        SchemeName=schemeName,
+        SchemeInformationURI=schemeInformationURI,
+        StatusDeterminationApproach=confxml.StatusDeterminationApproach["EU"],
+        SchemeTypeCommunityRules=schemeCRules,
+        SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
+        PolicyOrLegalNotice=PolicyOrLegalNotice,
+        HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"],
+        PointersToOtherLoTE=Pointers,
+        DistributionPoints=URIDP,
+
+
+    )
 
     #--------------------------------------------#
 
     #TrustServiceProviderList
 
-    TrustServiceProviderList=JSON.TrustedEntitiesList
+    TrustServiceProviderList=JSON.TrustedEntitiesList()
 
 
     for tsp in tsp_data:
-        TrustServiceProvider= JSON.TrustedEntity
-        TSPInformation=JSON.TrustedEntityInformation
-        TSPName=list
-        TSPTradeName= list
-        TSPAddress=JSON.TEAddress
-        TSPPostalAddress=JSON.PostalAddresses
-        TSPEletronicAddress=JSON.ElectronicAddress
-        TSPInformationURI= list
+        TSPName=list()
+        TSPTradeName= list()
+        TSPPostalAddress=JSON.PostalAddresses()
+        TSPEletronicAddress=JSON.ElectronicAddress()
+        TSPInformationURI= list()
 
         name = parse_json_field(tsp["name"])
         for item in name:
@@ -261,36 +250,42 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
         address = parse_json_field(tsp["postal_address"])
         for item in address:
-            postal1=JSON.PostalAddress
-            postal1.lang=item['lang']
-            postal1.Country=item["CountryName"]
-            postal1.StreetAddress=item["StreetAddress"]
-            postal1.Locality=item["Locality"]
-            postal1.StateOrProvince=item["StateOrProvince"]
-            postal1.PostalCode=item["PostalCode"]
+            postal1=JSON.PostalAddress(
+                lang=item['lang'],
+                Country=item["CountryName"],
+                StreetAddress=item["StreetAddress"],
+                Locality=item["Locality"],
+                StateOrProvince=item["StateOrProvince"],
+                PostalCode=item["PostalCode"]
+                    
+            )
+            
             TSPPostalAddress.append(postal1)
-        
-        
     
         ele_address = parse_json_field(tsp["EletronicAddress"])
         for item in ele_address:
             TSPEletronicAddress.append(JSON.NonEmptyMultiLangURI(item['lang'],item["URI"]))
+        
+        
+        TSPAddress=JSON.TEAddress(
+            TEPostalAddress=address,
+            TEElectronicAddress=ele_address
+        )
 
 
         uri = parse_json_field(tsp["TSPInformationURI"])
         for item in uri:
             TSPInformationURI.append(JSON.NonEmptyMultiLangURI(item['lang'],item["URI"]))
 
-        TSPAddress.TEPostalAddress=TSPPostalAddress
-        TSPAddress.TEElectronicAddress=TSPEletronicAddress
-        TSPInformation.TEName=TSPName
-        TSPInformation.TETradeName=TSPTradeName
-        TSPInformation.TEAddress=TSPAddress
-        TSPInformation.TEInformationURI=TSPInformationURI
-        TrustServiceProvider.TrustedEntityInformation=TSPInformation
+        TSPInformation=JSON.TrustedEntityInformation(
+            TEName=TSPName,
+            TETradeName=TSPTradeName,
+            TEAddress=TSPAddress,
+            TEInformationURI=TSPInformationURI
+        )
 
         #Services
-        TSPServices=list
+        TSPServices=list()
 
         #ServiceInformationExtensions=test.ExtensionsListType()
         # Extension =test.ExtensionType()
@@ -311,33 +306,23 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
             if each["tsp_id"] == tsp["tsp_id"]:
                 
-                TSPService=JSON.TrustedEntityService
-                ServiceInformation=JSON.ServiceInformation
-                ServiceName=list
-                SchemeServiceDefinitionURI=list
-
-                ServiceInformation.ServiceTypeIdentifier=each["service_type"]
+                ServiceName=list()
+                SchemeServiceDefinitionURI=list()
 
                 serv_name = parse_json_field(each["ServiceName"])
                 for item in serv_name:
                     ServiceName.append(JSON.MultiLangString(item["lang"], item["text"]))
 
-                ServiceInformation.ServiceName=ServiceName
-
-                ServiceDigitalIdentity=JSON.ServiceDigitalIdentity
-                X509Certificates= list
-                X509Certificates.append(base64.b64decode(each["digital_identity"]))
-                ServiceDigitalIdentity.X509Certificates= X509Certificates
-                ServiceInformation.ServiceDigitalIdentity=ServiceDigitalIdentity
-
-                ServiceInformation.ServiceStatus=each["status"]
-                ServiceInformation.StatusStartingTime=each["status_start_date"]
+                X509Certificates= list()
+                X509Certificates.append(each["digital_identity"])
+                ServiceDigitalIdentity=JSON.ServiceDigitalIdentity(
+                    X509Certificates=X509Certificates
+                )
 
                 uri = parse_json_field(each["SchemeServiceDefinitionURI"])
                 for item in uri:
                     SchemeServiceDefinitionURI.append(JSON.NonEmptyMultiLangURI(item["lang"],item["URI"]))
                 
-                ServiceInformation.ServiceDefinitionURI=SchemeServiceDefinitionURI
 
                 #Extensions
 
@@ -374,17 +359,38 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 # ServiceInformationExtensions.add_Extension(ExtensionAdditionalServiceInformation)
                 # ServiceInformation.set_ServiceInformationExtensions(ServiceInformationExtensions)
 
-                TSPService.ServiceInformation=ServiceInformation
+                ServiceInformation=JSON.ServiceInformation(
+                    ServiceName=ServiceName,
+                    ServiceDigitalIdentity=ServiceDigitalIdentity,
+                    ServiceTypeIdentifier=each["service_type"],
+                    ServiceStatus=each["status"],
+                    StatusStartingTime=each["status_start_date"].isoformat(),
+                    SchemeServiceDefinitionURI=SchemeServiceDefinitionURI,
+
+                )
+                TSPService= JSON.TrustedEntityService(
+                    ServiceInformation=ServiceInformation
+                )
                 TSPServices.append(TSPService)
 
         #AdditionalServiceInformation		
-        TrustServiceProvider.TrustedEntityServices=TSPServices
+
+        TrustServiceProvider= JSON.TrustedEntity(
+            TrustedEntityInformation=TSPInformation,
+            TrustedEntityServices=TSPServices
+        )
+
         TrustServiceProviderList.append(TrustServiceProvider)
 
-    root.TrustedEntitiesList=TrustServiceProviderList
+    root= JSON.LoTE(
+        TrustedEntitiesList=TrustServiceProviderList,
+        ListAndSchemeInformation=schemeInfo
+    )
+
+    print(root)
 
     json_str = json.dumps(asdict(root))
-    json_bytes= json_str.decode('utf-8')
+    json_bytes= json_str.encode('utf-8')
 
     cert_for_hash=x509.load_pem_x509_certificate(cert, default_backend())
     thumbprint= hashlib.sha256(cert_for_hash.tbs_certificate_bytes).hexdigest()
@@ -509,7 +515,7 @@ def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
 
     #OtherTSLPointerType-LoTL
 
-    ServiceDigitalIdentities=list
+    ServiceDigitalIdentities=list()
     serviceDigitalIdentity=JSON.ServiceDigitalIdentity
 
     serviceDigitalIdentity.X509Certificates.append(base64.b64decode(cert_cleaned))
@@ -560,7 +566,7 @@ def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
     for tsl_data in tsl_list:
         Pointer = JSON.OtherLoTEPointer
 
-        ServiceDigitalIdentities= list
+        ServiceDigitalIdentities= list()
         serviceDigitalIdentity=JSON.ServiceDigitalIdentity
 
         #for cycle novo
@@ -623,7 +629,7 @@ def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
     #DistribuitionPoints
 
     #for cycle
-    URIDP=list
+    URIDP=list()
     last= dict_tsl_mom["SchemeInformationURI"][-1].get("URI")
     URIDP.append(last)
 
