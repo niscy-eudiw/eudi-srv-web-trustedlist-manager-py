@@ -471,7 +471,7 @@ def getpidoid4vp():
                     return redirect(url_for('RPR.menu_lotl'))
                 return redirect(url_for('RPR.menu'))
     else:
-        return ("país invalido")
+        return ("Invalid Country")
 
 @rpr.route("/user_auth", methods=["GET", "POST"])
 def user_auth():
@@ -2185,16 +2185,16 @@ def lotl_json():
             role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
             if(role == "tsl_op"):
                 menu= cfgserv.service_url + "menu_tsl"
-                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+                return render_template("download_lotl.html",json=True, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
             elif(role == "tsp_op"):
                 menu= cfgserv.service_url + "menu_tsp"
-                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+                return render_template("download_lotl.html", json=True,menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
             else:
                 return ("error")
         else:
             if(role == "lotl_op"):
                 menu= cfgserv.service_url + "menu_lotl"
-                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+                return render_template("download_lotl.html", json=True,menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
             
             menu= cfgserv.service_url + "menu"
 

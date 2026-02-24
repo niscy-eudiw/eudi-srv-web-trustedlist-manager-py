@@ -42,7 +42,7 @@
     <script type="text/javascript" src="https://webgate.ec.europa.eu/cas/scripts/locval/locval_en_9.7.1.20.1679559965505.js" integrity="sha256-fGdBvjTPjOPZBmgDo8xMKgZUwmXXCzYZ+BbHErfhc/Q= sha384-Y9eAdYjT/TZ0VPUxw3Ex/TVSZZzPsV1mRoKD0BTkrQn0L615z24j26O2CZdT1Xl+ sha512-T9HoOOy1OkJ0l1GWqvT2RAR9frKd4zImDm1uyHxjmB/nxNBhmdjEhR9MckiWiNv2/UrFrMZJwSMB4Po/ExbFOw==" charset="UTF-8"></script>
 -->
 
-    <title>Form for your TSL Registration</title>
+    <title>Download</title>
 
 </head>
 
@@ -70,7 +70,9 @@
                             <form id="download-form" action="{{ '/download_json' if json else '/download' }}" method="post" target="_blank">
                                    <input type="hidden" name="file_data" value="{{ file_data }}">
                                 <a type="button" href="{{ menu }}" class="btn btn-danger"><span class="glyphicon glyphicon-arrow-left"></span> Back</a>
-                                <button type="submit" class="btn btn-primary mt-3" onclick="downloadAndRedirect()"><span class="glyphicon glyphicon-download-alt"></span> Download XML</button>
+                                <button type="submit" class="btn btn-primary mt-3" onclick="downloadAndRedirect()"><span class="glyphicon glyphicon-download-alt"></span>
+                                    {% if json %} Download JSON {% else %} Download XML {% endif %}
+                                </button>
                                 {%if json is not defined %}
                                     <a type="button" class="btn btn-primary mt-3" onclick="validateXML()"><span class="glyphicon glyphicon-ok"></span> Validate XML</a>
                                 {% endif %}
