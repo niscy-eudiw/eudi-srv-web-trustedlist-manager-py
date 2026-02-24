@@ -50,7 +50,7 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
@@ -66,12 +66,12 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
         if(aux != 1):
             func.insert_old_cert(cert_cleaned, tsl_id, log_id)
     
-    root=LOTE.ListOfTrustedEntitiesType
+    root=LOTE.ListOfTrustedEntitiesType()
 
     root.set_TSLTag("http://uri.etsi.org/19612/TSLTag")
     root.set_Id("TrustServiceStatusList")
 
-    schemeInfo = LOTE.LoTEListAndSchemeInformationType
+    schemeInfo = LOTE.LoTEListAndSchemeInformationType()
 
     schemeInfo.set_LoTEVersionIdentifier(confxml.TLSVersionIdentifier)
     schemeInfo.set_LoTESequenceNumber(dictFromDB_trusted_lists["SequenceNumber"] + 1)
@@ -164,7 +164,7 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     schemeInfo.set_HistoricalInformationPeriod(dictFromDB_trusted_lists["HistoricalInformationPeriod"])
 
     #PointerToOtherTSL
-    Pointers= LOTE.OtherLoTEPointersType
+    Pointers= LOTE.OtherLoTEPointersType()
 
     #OtherTSLPointerType-LoTL
 
@@ -197,17 +197,22 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     #SchemeNameOperatorAdditionalInformation
     #for cycle
     schemeNameLOTE=LOTE.InternationalNamesType()
-    schemeNameLOTE.add_Name(LOTE.MultiLangNormStringType("en", "EU-LOTL"))
+    schemeNameLOTE.add_Name(LOTE.MultiLangStringType("en", "EU-LOTL"))
+    schemeNameLOTE.original_tagname_="SchemeOperatorName"
 
-    LOTEes=LOTE.TakenOverByType()
-    LOTEes.SchemeOperatorName=schemeNameLOTE
+    AdditionalInfo.add_TextualInformation(schemeNameLOTE)
 
-    AdditionalInfo.add_OtherInformation(LOTEes)
+    # LOTEes=LOTE.TakenOverByType()
+    # LOTEes.SchemeOperatorName=schemeNameLOTE
+
+    # AdditionalInfo.add_OtherInformation(LOTEes)
 
     #SchemeTerritoryAdditionalInformation
 
-    scheme=LOTE.TakenOverByType()
-    scheme.SchemeTerritory="EU"
+    scheme=LOTE.AnyType()
+    
+    scheme.original_tagname_="SchemeTerritory"
+    scheme.valueOf_="EU"
 
     AdditionalInfo.add_OtherInformation(scheme)
 
@@ -237,12 +242,12 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
 
     AdditionalInfo.add_OtherInformation(objectMimeType)
 
-    Pointer.TSLLocation=LOTE.NonEmptyURIType(confxml.lotl_location)
+    Pointer.LoTELocation=LOTE.NonEmptyURIType(confxml.lotl_location)
 
     Pointer.AdditionalInformation=AdditionalInfo
-    Pointers.add_OtherTSLPointer(Pointer)
+    Pointers.add_OtherLoTEPointer(Pointer)
 
-    schemeInfo.PointersToOtherTSL=Pointers
+    schemeInfo.PointersToOtherLoTE=Pointers
     
     schemeInfo.ListIssueDateTime=dictFromDB_trusted_lists["issue_date"]
     
@@ -265,18 +270,18 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
 
     schemeInfo.DistributionPoints=URIDP
 
-    root.SchemeInformation=schemeInfo
+    root.ListAndSchemeInformation=schemeInfo
 
     #--------------------------------------------#
 
-    #TrustServiceProviderList
+    #TrustedEntitiesList
 
-    TrustServiceProviderList=LOTE.TrustServiceProviderListType()
+    TrustedEntitiesList=LOTE.TrustedEntitiesListType()
 
 
     for tsp in tsp_data:
-        TrustServiceProvider= LOTE.TSPType()
-        TSPInformation=LOTE.TSPInformationType()
+        TrustServiceProvider= LOTE.TEType()
+        TSPInformation=LOTE.TrustedEntityInformationType()
         TSPName=LOTE.InternationalNamesType()
         TSPTradeName= LOTE.InternationalNamesType()
         TSPAddress=LOTE.AddressType()
@@ -316,14 +321,14 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
 
         TSPAddress.set_PostalAddresses(TSPPostalAddress)
         TSPAddress.set_ElectronicAddress(TSPEletronicAddress)
-        TSPInformation.set_TSPName(TSPName)
-        TSPInformation.set_TSPTradeName(TSPTradeName)
-        TSPInformation.set_TSPAddress(TSPAddress)
-        TSPInformation.set_TSPInformationURI(TSPInformationURI)
-        TrustServiceProvider.set_TSPInformation(TSPInformation)
+        TSPInformation.set_TEName(TSPName)
+        TSPInformation.set_TETradeName(TSPTradeName)
+        TSPInformation.set_TEAddress(TSPAddress)
+        TSPInformation.set_TEInformationURI(TSPInformationURI)
+        TrustServiceProvider.set(TSPInformation)
 
         #Services
-        TSPServices=LOTE.TSPServicesListType()
+        TSPServices=LOTE.TrustedEntityServicesListType()
 
         #ServiceInformationExtensions=LOTE.ExtensionsListType()
         # Extension =LOTE.ExtensionType()
@@ -344,8 +349,8 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
 
             if each["tsp_id"] == tsp["tsp_id"]:
                 
-                TSPService=LOTE.TSPServiceType()
-                ServiceInformation=LOTE.TSPServiceInformationType()
+                TSPService=LOTE.TrustedEntityServiceType()
+                ServiceInformation=LOTE.TEServiceInformationType()
                 ServiceName=LOTE.InternationalNamesType()
                 SchemeServiceDefinitionURI=LOTE.NonEmptyMultiLangURIListType()
 
@@ -408,13 +413,13 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
                 # ServiceInformation.set_ServiceInformationExtensions(ServiceInformationExtensions)
 
                 TSPService.set_ServiceInformation(ServiceInformation)
-                TSPServices.add_TSPService(TSPService)
+                TSPServices.add_TrustedEntityService(TSPService)
 
         #AdditionalServiceInformation		
-        TrustServiceProvider.set_TSPServices(TSPServices)
-        TrustServiceProviderList.add_TrustServiceProvider(TrustServiceProvider)
+        TrustServiceProvider.set_TrustedEntityServices(TSPServices)
+        TrustedEntitiesList.add_TrustedEntity(TrustServiceProvider)
 
-    root.set_TrustServiceProviderList(TrustServiceProviderList)
+    root.set_TrustedEntitiesList(TrustedEntitiesList)
 
     xml_buffer=StringIO()
     root.export(xml_buffer,0,"")
@@ -486,7 +491,7 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
 def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der= x509.load_der_x509_certificate(der_data, backend=default_backend())
+    cert_der= x509.load_pem_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
