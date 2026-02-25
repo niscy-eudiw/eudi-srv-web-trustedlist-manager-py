@@ -46,7 +46,7 @@ def parse_json_field(field):
     except json.JSONDecodeError:
         return field
     
-def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_id, log_id):
+def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_id, log_id):
     service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
@@ -68,7 +68,7 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     
     root=LOTE.ListOfTrustedEntitiesType()
 
-    root.set_TSLTag("http://uri.etsi.org/19612/TSLTag")
+    root.set_LOTETag("http://uri.etsi.org/19612/TSLTag")
     root.set_Id("TrustServiceStatusList")
 
     schemeInfo = LOTE.LoTEListAndSchemeInformationType()
@@ -325,7 +325,7 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
         TSPInformation.set_TETradeName(TSPTradeName)
         TSPInformation.set_TEAddress(TSPAddress)
         TSPInformation.set_TEInformationURI(TSPInformationURI)
-        TrustServiceProvider.set(TSPInformation)
+        TrustServiceProvider.set_TrustedEntityInformation(TSPInformation)
 
         #Services
         TSPServices=LOTE.TrustedEntityServicesListType()
@@ -422,14 +422,10 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     root.set_TrustedEntitiesList(TrustedEntitiesList)
 
     xml_buffer=StringIO()
-    root.export(xml_buffer,0,"")
+    root.export(xml_buffer,0,'')
     xml_string=xml_buffer.getvalue()
     
     content=xml_string
-    content = re.sub(r'xmlns:ns0="([^"]+)"', r'xmlns="\1"', content)
-
-    content = re.sub(r'<ns0:', r'<', content)
-    content = re.sub(r'</ns0:', r'</', content)
 
     # with open ("cert_UT.pem", "rb") as file: 
     #     cert = file.read()
@@ -454,8 +450,9 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     new_root.attrib["xmlns:ns3"] = "http://uri.etsi.org/01903/v1.3.2#"
 
     for child in rootTemp:
-        new_root.append(child )
+        new_root.append(child)
 
+    ET.register_namespace('', "http://uri.etsi.org/02231/v2#")
     root_temp_str = ET.tostring(rootTemp, encoding="utf-8")
     root_lxml = etree.fromstring(root_temp_str)
     root_bytes = etree.tostring(root_lxml, method="c14n")

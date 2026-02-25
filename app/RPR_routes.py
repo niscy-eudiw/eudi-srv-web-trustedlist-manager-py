@@ -48,6 +48,7 @@ import requests
 
 import base64
 import urllib.parse
+from app.xml_gen_lote.xmlGen import xml_gen_xml_LoTE
 from app_config.config import ConfService as cfgserv
 import segno
 
@@ -177,23 +178,25 @@ def authentication():
         + response["request_uri"]
     )
 
-    payload_sameDevice=payload
+    # payload_sameDevice=payload
     session["session_id"]=str(uuid.uuid4())
     session["certificate_List"]=False
 
-    payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
-                                                       "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
+    # payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
+    #                            "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
 
-    response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
+    # response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
 
-    deeplink_url = (
-        "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
-        + response_same_device["client_id"]
-        + "&request_uri="
-        + response_same_device["request_uri"]
-    )
+    # print(response_same_device)
 
-    oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry)}})
+    # deeplink_url = (
+    #     "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
+    #     + response_same_device["client_id"]
+    #     + "&request_uri="
+    #     + response_same_device["request_uri"]
+    # )
+
+    # oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry)}})
 
 
     # Generate QR code
@@ -219,7 +222,7 @@ def authentication():
 
     return render_template(
         "pid_login_qr_code.html",
-        url_data=deeplink_url,
+        url_data="deeplink_url",
         qrcode=qr_img_base64,
         presentation_id=response["transaction_id"],
         redirect_url= cfgserv.service_url
@@ -816,8 +819,6 @@ def xml():
 
     file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
 
-    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
-    
     if(cfgserv.two_operators):
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
@@ -832,6 +833,107 @@ def xml():
         menu= cfgserv.service_url + "menu"
 
     return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
+
+@rpr.route('/tsl/xml_TE', methods=["GET", "POST"])
+def xml_TE():
+    
+    temp_user_id = session['temp_user_id']
+    user = session[temp_user_id]
+
+    tsl_id = request.args.get("id")
+
+    check = func.check_tsl(tsl_id, session["session_id"])
+
+    if check == "tsp":
+        flash("This TSL doesn't have at least one TSP associated.", "danger")
+        return redirect('/tsl/list')
+    elif check == "service":
+        flash("This TSL doesn't have at least one Service associated to an TSP.", "warning")
+        return redirect('/tsl/list')
+    
+    user_info = func.get_user_info(user["id"], session["session_id"])
+
+    tsl_info = func.tsl_info(tsl_id, session["session_id"])
+
+    lang_based_fields = [
+        "SchemeName_lang",
+        "Uri_lang",
+        "SchemeTypeCommunityRules_lang",
+        "PolicyOrLegalNotice_lang"
+    ]
+
+    for key in lang_based_fields:
+        try:
+            tsl_info[key] = json.loads(tsl_info[key]) if tsl_info[key] else []
+        except json.JSONDecodeError:
+            extra = {'code': session["session_id"]} 
+            logger.error(f"Error decoding : {key}: {tsl_info[key]}", extra=extra)
+            print(f"Error decoding {key}: {tsl_info[key]}")
+            tsl_info[key] = []
+
+    try:
+        tsl_info["DistributionPoints"] = json.loads(tsl_info["DistributionPoints"]) if tsl_info["DistributionPoints"] else []
+        if not isinstance(tsl_info["DistributionPoints"], list):
+            raise ValueError("DistributionPoints não é uma lista válida!")
+    except (json.JSONDecodeError, ValueError):
+        extra = {'code': session["session_id"]} 
+        logger.error(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}", extra=extra)
+        print(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}")
+        tsl_info["DistributionPoints"] = []
+
+    
+    dictFromDB_trusted_lists={
+        "Version":  confxml.TLSVersionIdentifier,
+        "SequenceNumber":   tsl_info["SequenceNumber"],
+        #"TSLType":  confxml.TSLType.get("EU"),
+        "SchemeName":   tsl_info["SchemeName_lang"],
+        "SchemeInformationURI": tsl_info["Uri_lang"],
+        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
+        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
+        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
+        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+        "schemeTerritory": tsl_info["schemeTerritory"],
+        #AdditionalInformation,ver
+
+        #"DistributionPoints" :  tsl_info["DistributionPoints"],
+        "issue_date" :  tsl_info["issue_date"],
+        "next_update":  tsl_info["next_update"],
+        "status":   tsl_info["status"]
+    }
+    
+    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
+
+    service_data = []
+
+    for item in tsp_data:
+        tsp_id = item["tsp_id"]
+        
+        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
+    
+        service_data.append(service_info)
+
+    # for service_list in service_data:
+    #     for service in service_list:
+    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
+
+    file, thumbprint, xml_hash_before_sign = xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+     
+    if(cfgserv.two_operators):
+        role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
+        if(role == "tsl_op"):
+            menu= cfgserv.service_url + "menu_tsl"
+            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+        elif(role == "tsp_op"):
+            menu= cfgserv.service_url + "menu_tsp"
+            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+        else:
+            return ("error")
+    else:
+        menu= cfgserv.service_url + "menu"
+
+    return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
+
 
     
 @rpr.route('/download', methods=["GET", "POST"])
