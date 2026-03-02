@@ -422,10 +422,14 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     root.set_TrustedEntitiesList(TrustedEntitiesList)
 
     xml_buffer=StringIO()
-    root.export(xml_buffer,0,'')
+    root.export(xml_buffer,0,"")
     xml_string=xml_buffer.getvalue()
     
     content=xml_string
+    content = re.sub(r'xmlns:ns0="([^"]+)"', r'xmlns="\1"', content)
+
+    content = re.sub(r'<ns0:', r'<', content)
+    content = re.sub(r'</ns0:', r'</', content)
 
     # with open ("cert_UT.pem", "rb") as file: 
     #     cert = file.read()
@@ -439,7 +443,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
         
     key=open(cfgserv.priv_key_UT, "rb").read()
     
-    ET.register_namespace("", "http://uri.etsi.org/02231/v2#")
+    ET.register_namespace("", "http://uri.etsi.org/019602/v1#")
 
     rootTemp=ET.fromstring(content)
 
@@ -450,9 +454,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     new_root.attrib["xmlns:ns3"] = "http://uri.etsi.org/01903/v1.3.2#"
 
     for child in rootTemp:
-        new_root.append(child)
+        new_root.append(child )
 
-    ET.register_namespace('', "http://uri.etsi.org/02231/v2#")
     root_temp_str = ET.tostring(rootTemp, encoding="utf-8")
     root_lxml = etree.fromstring(root_temp_str)
     root_bytes = etree.tostring(root_lxml, method="c14n")
@@ -477,7 +480,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
 
     signed_root_bytes=etree.tostring(tree, encoding="utf-8", xml_declaration=True) 
 
-    # with open ("LOTEe.xml", "w") as file: 
+    # with open ("teste.xml", "w") as file: 
     #     signed_root.write(file, level=0) 
 
     encoded_file = base64.b64encode(signed_root_bytes).decode('utf-8')
@@ -485,7 +488,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     return encoded_file, thumbprint, xml_hash_before_sign
 
 
-def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
+def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()
     cert_der= x509.load_pem_x509_certificate(der_data, backend=default_backend())
@@ -494,19 +497,19 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     pem_str = cert.decode('utf-8')
     cert_cleaned = ''.join(line for line in pem_str.splitlines() if "CERTIFICATE" not in line)
 
-    root=LOTE.TrustStatusListType()
+    root=LOTE.ListOfTrustedEntitiesType()
 
-    root.set_TSLTag("http://uri.etsi.org/19612/TSLTag")
+    root.set_LOTETag("http://uri.etsi.org/19612/TSLTag")
     root.set_Id("TrustServiceStatusList")
 
-    schemeInfo = LOTE.TSLSchemeInformationType()
+    schemeInfo = LOTE.LoTEListAndSchemeInformationType()
     TSLType=LOTE.NonEmptyURIType()
 
-    schemeInfo.TSLVersionIdentifier=confxml.TLSVersionIdentifier
-    schemeInfo.TSLSequenceNumber=dict_tsl_mom["SequenceNumber"] + 1
+    schemeInfo.LoTEVersionIdentifier=confxml.TLSVersionIdentifier
+    schemeInfo.set_LoTESequenceNumber=dict_tsl_mom["SequenceNumber"] + 1
     
     TSLType.set_valueOf_(confxml.TSLType["LoTL"])
-    schemeInfo.TSLType=TSLType
+    schemeInfo.LoTEType=TSLType
 
     #schemeOperatorName
 
@@ -552,7 +555,7 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     PolicyOrLegalNotice= LOTE.PolicyOrLegalnoticeType()
     schemeInformationURI=LOTE.NonEmptyMultiLangURIListType()
     schemeCRules= LOTE.NonEmptyMultiLangURIListType()
-    Pointers=LOTE.OtherTSLPointersType()
+    Pointers=LOTE.OtherLoTEPointersType()
     
 
     #schemeName
@@ -586,7 +589,7 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     #for cycle
     for scheme in dict_tsl_mom["PolicyOrLegalNotice"]:
-        PolicyOrLegalNotice.add_TSLLegalNotice(LOTE.MultiLangStringType(scheme["lang"], scheme["text"]))
+        PolicyOrLegalNotice.add_LoTELegalNotice(LOTE.MultiLangStringType(scheme["lang"], scheme["text"]))
     
     schemeInfo.set_PolicyOrLegalNotice(PolicyOrLegalNotice)
 
@@ -605,7 +608,7 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     serviceDigitalIdentity.add_DigitalId(digitalID)
     ServiceDigitalIdentities.add_ServiceDigitalIdentity(serviceDigitalIdentity)
-    Pointer= LOTE.OtherTSLPointerType()
+    Pointer= LOTE.OtherLoTEPointerType()
     Pointer.set_ServiceDigitalIdentities(ServiceDigitalIdentities)
 
     #additional Info
@@ -625,18 +628,17 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     #SchemeNameOperatorAdditionalInformation
     #for cycle
     schemeNameLOTE=LOTE.InternationalNamesType()
+    schemeNameLOTE.original_tagname_="SchemeOperatorName"
     for item in op_name:
         schemeNameLOTE.add_Name(LOTE.MultiLangNormStringType(item['lang'], item["text"]))
     
-    LOTEes=LOTE.TakenOverByType()
-    LOTEes.SchemeOperatorName=schemeNameLOTE
-
-    AdditionalInfo.add_OtherInformation(LOTEes)
+    AdditionalInfo.add_TextualInformation(schemeNameLOTE)
 
     #SchemeTerritoryAdditionalInformation
 
-    scheme=LOTE.TakenOverByType()
-    scheme.SchemeTerritory="EU"
+    scheme=LOTE.AnyType()
+    scheme.original_tagname_="SchemeTerritory"
+    scheme.valueOf_="EU"
 
     AdditionalInfo.add_OtherInformation(scheme)
 
@@ -667,10 +669,10 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     AdditionalInfo.add_OtherInformation(objectMimeType)
 
     last = dict_tsl_mom["SchemeInformationURI"][-1].get("URI")
-    Pointer.TSLLocation=LOTE.NonEmptyURIType(last)
+    Pointer.LoTELocation=LOTE.NonEmptyURIType(last)
 
     Pointer.AdditionalInformation=AdditionalInfo
-    Pointers.add_OtherTSLPointer(Pointer)
+    Pointers.add_OtherLoTEPointer(Pointer)
 
     #for cycle
     for tsl_data in tsl_list:
@@ -687,7 +689,7 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         #end
 
         ServiceDigitalIdentities.add_ServiceDigitalIdentity(serviceDigitalIdentity)
-        Pointer= LOTE.OtherTSLPointerType()
+        Pointer= LOTE.OtherLoTEPointerType()
         Pointer.set_ServiceDigitalIdentities(ServiceDigitalIdentities)
 
         #additional Info
@@ -706,18 +708,17 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         #SchemeNameOperatorAdditionalInformation
         #for cycle
         schemeNameLOTE=LOTE.InternationalNamesType()
+        schemeNameLOTE.original_tagname_="SchemeOperatorName"
         for item in tsl_data["SchemeName"]:
             schemeNameLOTE.add_Name(LOTE.MultiLangNormStringType(item['lang'], item["text"]))
-
-        LOTEes=LOTE.TakenOverByType()
-        LOTEes.SchemeOperatorName=schemeNameLOTE
-
-        AdditionalInfo.add_OtherInformation(LOTEes)
+        
+        AdditionalInfo.add_TextualInformation(schemeNameLOTE)
 
         #SchemeTerritoryAdditionalInformatio
 
-        scheme=LOTE.TakenOverByType()
-        scheme.SchemeTerritory=tsl_data["schemeTerritory"]
+        scheme=LOTE.AnyType()
+        scheme.original_tagname_="SchemeTerritory"
+        scheme.valueOf_=tsl_data["schemeTerritory"]
 
         AdditionalInfo.add_OtherInformation(scheme)
 
@@ -748,12 +749,12 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         AdditionalInfo.add_OtherInformation(objectMimeType)
 
         last= tsl_data["SchemeInformationURI"][-1].get("URI")
-        Pointer.TSLLocation=LOTE.NonEmptyURIType(last)
+        Pointer.LoTELocation=LOTE.NonEmptyURIType(last)
 
         Pointer.AdditionalInformation=AdditionalInfo
-        Pointers.add_OtherTSLPointer(Pointer)
+        Pointers.add_OtherLoTEPointer(Pointer)
     
-    schemeInfo.PointersToOtherTSL=Pointers
+    schemeInfo.PointersToOtherLoTE=Pointers
     
     schemeInfo.ListIssueDateTime=dict_tsl_mom["issue_date"]
     #Next Update
@@ -770,7 +771,7 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     schemeInfo.DistributionPoints=URIDP
 
-    root.SchemeInformation=schemeInfo
+    root.ListAndSchemeInformation=schemeInfo
 
     xml_buffer=StringIO()
     root.export(xml_buffer,0,"")
@@ -804,6 +805,8 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     for child in rootTemp:
         new_root.append(child )
+    
+    ET.register_namespace("", "http://uri.etsi.org/019602/v1#")
 
     root_temp_str = ET.tostring(rootTemp, encoding="utf-8")
     root_lxml = etree.fromstring(root_temp_str)

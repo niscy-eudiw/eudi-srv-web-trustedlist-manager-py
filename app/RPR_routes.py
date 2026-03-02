@@ -178,25 +178,24 @@ def authentication():
         + response["request_uri"]
     )
 
-    # payload_sameDevice=payload
+    payload_sameDevice=payload
     session["session_id"]=str(uuid.uuid4())
     session["certificate_List"]=False
 
-    # payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
-    #                            "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
+    payload_sameDevice.update({"wallet_response_redirect_uri_template":"https://dev.verifier.eudiw.dev/get-wallet-code?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
 
-    # response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
+    response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
 
-    # print(response_same_device)
+    print(response_same_device)
 
-    # deeplink_url = (
-    #     "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
-    #     + response_same_device["client_id"]
-    #     + "&request_uri="
-    #     + response_same_device["request_uri"]
-    # )
+    deeplink_url = (
+        "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
+        + response_same_device["client_id"]
+        + "&request_uri="
+        + response_same_device["request_uri"]
+    )
 
-    # oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry)}})
+    oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry)}})
 
 
     # Generate QR code
@@ -222,7 +221,7 @@ def authentication():
 
     return render_template(
         "pid_login_qr_code.html",
-        url_data="deeplink_url",
+        url_data=deeplink_url,
         qrcode=qr_img_base64,
         presentation_id=response["transaction_id"],
         redirect_url= cfgserv.service_url

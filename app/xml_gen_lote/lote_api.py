@@ -2449,37 +2449,37 @@ class ListOfTrustedEntitiesType(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespaceprefix_='', namespacedef_='xmlns:lote="http://uri.etsi.org/019602/v1#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" ', name_='ListOfTrustedEntitiesType', pretty_print=True):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get('ListOfTrustedEntitiesType')
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='xmlns:lote="http://uri.etsi.org/019602/v1#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" ', name_='ListOfTrustedEntities', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('ListOfTrustedEntities')
         if imported_ns_def_ is not None:
             namespacedef_ = imported_ns_def_
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.original_tagname_ is not None and name_ == 'ListOfTrustedEntitiesType':
+        if self.original_tagname_ is not None and name_ == 'ListOfTrustedEntities':
             name_ = self.original_tagname_
         if UseCapturedNS_ and self.ns_prefix_:
             namespaceprefix_ = self.ns_prefix_ + ':'
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self._exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='ListOfTrustedEntitiesType')
+        self._exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='ListOfTrustedEntities')
         if self.has__content():
             outfile.write('>%s' % (eol_, ))
-            self._exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='ListOfTrustedEntitiesType', pretty_print=pretty_print)
+            self._exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='ListOfTrustedEntities', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def _exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='ListOfTrustedEntitiesType'):
+    def _exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='ListOfTrustedEntities'):
         if self.LOTETag is not None and 'LOTETag' not in already_processed:
             already_processed.add('LOTETag')
             outfile.write(' LOTETag=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.LOTETag), input_name='LOTETag')), ))
         if self.Id is not None and 'Id' not in already_processed:
             already_processed.add('Id')
             outfile.write(' Id=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.Id), input_name='Id')), ))
-    def _exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='xmlns:lote="http://uri.etsi.org/019602/v1#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" ', name_='ListOfTrustedEntitiesType', fromsubclass_=False, pretty_print=True):
+    def _exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='xmlns:lote="http://uri.etsi.org/019602/v1#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" ', name_='ListOfTrustedEntities', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
