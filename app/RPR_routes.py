@@ -48,7 +48,7 @@ import requests
 
 import base64
 import urllib.parse
-from app.xml_gen_lote.xmlGen import xml_gen_xml_LoTE
+from app.xml_gen_lote.xmlGen import xml_gen_xml_LoTE, xml_lote_validator
 from app.json_gen.jsonGen import json_gen_json, json_gen_lote_json
 from app_config.config import ConfService as cfgserv
 import segno
@@ -925,16 +925,16 @@ def xml_TE():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+            return render_template("download_tsl.html", menu = menu, lote=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+            return render_template("download_tsl.html", menu = menu, lote=True,  xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
 
-    return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
+    return render_template("download_tsl.html", menu = menu, lote=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
 @rpr.route('/tsl/json', methods=["GET", "POST"])
 def json_file():
@@ -1025,10 +1025,10 @@ def json_file():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
+            return render_template("download_tsl.html", menu = menu, json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
+            return render_template("download_tsl.html", menu = menu,json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
         else:
             return ("error")
     else:
@@ -1067,10 +1067,16 @@ def download_json():
 @rpr.route('/validate_xml', methods=["GET", "POST"])
 def validate_xml():
 
+    print(request.args)
     encoded_file = request.args.get("file")
+    lote=request.args.get("lote")
     file_data = base64.b64decode(encoded_file)
 
-    code,msg= xml_validator(file_data)
+    if lote :
+        code,msg= xml_lote_validator(file_data)
+    else:
+        code,msg= xml_validator(file_data)
+        
     if code == 200:
         
         return jsonify({"message": msg}),code
@@ -2194,6 +2200,111 @@ def lotl_xml():
             menu= cfgserv.service_url + "menu"
 
         return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+
+@rpr.route('/lotl/xml_TE', methods=["GET", "POST"])
+def lote_xml():
+    temp_user_id = session['temp_user_id']
+    user = session[temp_user_id]
+
+    role = func.check_role_user(user["id"], session["session_id"])
+    if(role != "lotl_op"):
+        return redirect('/menu')
+    
+    user_info = func.get_user_info(user["id"], session["session_id"])
+    tsl_list = []
+
+    tsl_info = func.get_tsl_loft(session["session_id"])
+
+    tsl_data = func.get_lotltsl_info(user["id"], session["session_id"])
+
+    if(tsl_data == "err"):
+        flash("You don't have a Lotl Trusted List created, so it's not possible to generate the XML. Please create a new Lotl TSL.", "danger")
+        return redirect('/lotl/list')
+    lang_based_fields = [
+        "SchemeName_lang",
+        "Uri_lang",
+        "SchemeTypeCommunityRules_lang",
+        "PolicyOrLegalNotice_lang"
+    ]
+
+    for key in lang_based_fields:
+        try:
+            tsl_data[key] = json.loads(tsl_data[key]) if tsl_data[key] else []
+        except json.JSONDecodeError:
+            extra = {'code': session["session_id"]} 
+            logger.error(f"Error decoding : {key}: {tsl_data[key]}", extra=extra)
+            print(f"Error decoding {key}: {tsl_data[key]}")
+            tsl_data[key] = []
+    
+    else:
+        tsl_mom = tsl_data
+        dict_tsl_mom = {
+            "Version":  confxml.TLSVersionIdentifier,
+            "SequenceNumber":   tsl_mom["SequenceNumber"],
+            "SchemeName":   tsl_mom["SchemeName_lang"],
+            "SchemeInformationURI": tsl_mom["Uri_lang"],
+            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+            #"SchemeTypeCommunityRules": tsl_mom["SchemeTypeCommunityRules_lang"],
+            "PolicyOrLegalNotice":  tsl_mom["PolicyOrLegalNotice_lang"],
+            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+            "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+            #"DistributionPoints" :  tsl_mom["DistributionPoints"],
+            "issue_date" :  tsl_mom["issue_date"],
+            "next_update":  tsl_mom["next_update"],
+            "status":   tsl_mom["status"]
+        }
+    
+        for each in tsl_info:
+            for key in lang_based_fields:
+                try:
+                    each[key] = json.loads(each[key]) if each[key] else []
+                except json.JSONDecodeError:
+                    extra = {'code': session["session_id"]} 
+                    logger.error(f"Error decoding : {key}: {each[key]}", extra=extra)
+                    print(f"Error decoding {key}: {each[key]}")
+                    each[key] = []
+
+            dictFromDB_trusted_lists = {
+                "id": each["tsl_id"],
+                "Version":  confxml.TLSVersionIdentifier,
+                "SequenceNumber":   each["SequenceNumber"],
+                #"TSLType":  confxml.TSLType.get("EU"),
+                "SchemeName":   each["SchemeName_lang"],
+                "SchemeInformationURI": each["Uri_lang"],
+                #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+                #"SchemeTypeCommunityRules": each["SchemeTypeCommunityRules_lang"],
+                "PolicyOrLegalNotice":  each["PolicyOrLegalNotice_lang"],
+                #"pointers_to_other_tsl" :   each["pointers_to_other_tsl"].encode('utf-8'),
+                "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+                "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+                #"DistributionPoints" :  each["DistributionPoints"],
+                "issue_date" :  each["issue_date"],
+                "next_update":  each["next_update"],
+                "status":   each["status"],
+                "schemeTerritory": each["schemeTerritory"]
+            }
+            tsl_list.append(dictFromDB_trusted_lists) 
+            
+        file, thumbprint, xml_hash_before_sign = xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, session["session_id"])
+        
+        if(cfgserv.two_operators):
+            role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
+            if(role == "tsl_op"):
+                menu= cfgserv.service_url + "menu_tsl"
+                return render_template("download_lotl.html",lote=True, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+            elif(role == "tsp_op"):
+                menu= cfgserv.service_url + "menu_tsp"
+                return render_template("download_lotl.html", lote=True, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+            else:
+                return ("error")
+        else:
+            if(role == "lotl_op"):
+                menu= cfgserv.service_url + "menu_lotl"
+                return render_template("download_lotl.html", lote=True, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+            
+            menu= cfgserv.service_url + "menu"
+
+        return render_template("download_lotl.html", lote=True, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
 @rpr.route('/lotl/json', methods=["GET", "POST"])
 def lotl_json():

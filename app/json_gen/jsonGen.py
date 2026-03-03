@@ -389,8 +389,6 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         ListAndSchemeInformation=schemeInfo
     )
 
-    print(root)
-
     clean_dict = remove_none(root)
 
     json_str = json.dumps(clean_dict)
@@ -638,7 +636,7 @@ def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
     thumbprint= hashlib.sha256(cert_for_hash.tbs_certificate_bytes).hexdigest()
 
     encoded_file, json_hash_before_sign= jadesigner(base64.b64encode(json_bytes).decode("utf-8"),base64.b64encode(cert).decode("utf-8"), cfgserv.priv_key_UT )
-
+    
     # with open ("teste.xml", "w") as file: 
     #     signed_root.write(file, level=0) 
 

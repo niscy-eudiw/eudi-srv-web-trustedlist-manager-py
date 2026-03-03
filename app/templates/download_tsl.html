@@ -153,11 +153,17 @@
         }, 1);
     }
     function validateXML(){
+        lote=false
+
+        if("{{lote}}"){
+
+           lote=true     
+        }
 
         $.ajax({
             url: '{{url}}/validate_xml',
             method: 'GET',
-            data:{"file": '{{file_data }}' },
+            data:{"file": '{{file_data }}', "lote":lote },
             success: function(response) {
                 document.getElementById("panel_msg").style.color="green"
                 document.getElementById("panel_msg").innerHTML=response["message"]

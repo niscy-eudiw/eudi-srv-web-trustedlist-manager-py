@@ -836,7 +836,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     return encoded_file, thumbprint, xml_hash_before_sign
 
 
-def xml_validator(file):
+def xml_lote_validator(file):
 
     # Load Schema
     with open(confxml.LoTEschema, 'rb') as f:
