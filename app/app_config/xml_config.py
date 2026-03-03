@@ -24,6 +24,7 @@ NOTE: You should only change it if you understand what you're doing.
 class ConfXML:
 
     TLSVersionIdentifier=6
+
     TSLType={
         "EU":"http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric",
         "LoTL":"http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUlistofthelists"
@@ -48,8 +49,39 @@ class ConfXML:
 
     HistoricalInformationPeriod=65535
 
-    #schema = r"app\xml_gen\ts_119612v020101_xsd_modified.xsd"
-    schema = "/app/xml_gen/ts_119612v020101_xsd_modified.xsd"
+    schema = r"app\xml_gen\ts_119612v020101_xsd_modified.xsd"
+    #schema = "/app/xml_gen/ts_119612v020101_xsd_modified.xsd"
 
     #months
     validity=6
+
+    #LoTE
+
+    
+    LoTEVersionIdentifier=1
+    
+    LoTEType={
+        "EU":"http://uri.etsi.org/19602/LoTEType/EUPIDProvidersList",
+        "LoTL":"http://uri.etsi.org/19602/LoTEType/EURegistrarsAndRegistersList"
+    }
+
+    
+    LoTEStatusDeterminationApproach={
+        "EU":"http://uri.etsi.org/19602/PIDProvidersList/StatusDetn/EU",
+        "LoTL":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/StatusDetn/EU"
+    }
+
+    LoTESchemeTypeCommunityRules={
+        "EU":"http://uri.etsi.org/19602/PIDProviders/schemerules/EU",
+        "LoTL":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/schemerules/EU",
+    }
+
+    LoTElotl_location="https://trustedlist.serviceproviders.eudiw.dev/LOTE/01.xml"
+
+    LoTEHistoricalInformationPeriod=65535
+
+    LoTEschema = r"app\xml_gen_lote\1960201_xsd_schema.xsd"
+    #LoTEschema = "/app/xml_gen_lote/1960201_xsd_schema.xsd"
+
+    #months
+    LoTEvalidity=6

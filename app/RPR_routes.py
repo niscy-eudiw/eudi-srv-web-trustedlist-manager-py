@@ -964,7 +964,6 @@ def validate_xml():
         return jsonify({"error":msg}),code
     
 
-    return msg
 
 @rpr.route('/operator_menu_tsl', methods=["GET"])
 def operator_menu_tsl():

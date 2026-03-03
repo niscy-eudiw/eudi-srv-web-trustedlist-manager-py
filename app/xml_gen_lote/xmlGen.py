@@ -73,10 +73,10 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
 
     schemeInfo = LOTE.LoTEListAndSchemeInformationType()
 
-    schemeInfo.set_LoTEVersionIdentifier(confxml.TLSVersionIdentifier)
+    schemeInfo.set_LoTEVersionIdentifier(confxml.LoTEVersionIdentifier)
     schemeInfo.set_LoTESequenceNumber(dictFromDB_trusted_lists["SequenceNumber"] + 1)
     TSLType=LOTE.NonEmptyURIType()
-    TSLType.set_valueOf_(confxml.TSLType["EU"])
+    TSLType.set_valueOf_(confxml.LoTEType["EU"])
     schemeInfo.set_LoTEType=TSLType
 
     #schemeOperatorName
@@ -138,14 +138,13 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     schemeInfo.set_SchemeInformationURI(schemeInformationURI)
 
     #StatusDeterminationApproach
-    schemeInfo.StatusDeterminationApproach=LOTE.NonEmptyURIType(confxml.StatusDeterminationApproach["EU"])
+    schemeInfo.StatusDeterminationApproach=LOTE.NonEmptyURIType(confxml.LoTEStatusDeterminationApproach["EU"])
     
     #schemeTypeCommunityRules
     schemeCRules= LOTE.NonEmptyMultiLangURIListType()
 
     #for cycle
-    schemeCRules.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["EU"]))
-    schemeCRules.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["Country"] + dictFromDB_trusted_lists["schemeTerritory"] ))
+    schemeCRules.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules["EU"]))
     schemeInfo.set_SchemeTypeCommunityRules(schemeCRules)
 
     #SchemeTerritory
@@ -186,7 +185,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
 
     TSLTypeAdditionalInformation=LOTE.NonEmptyURIType()
     TSLTypeAdditionalInformation.original_tagname_="TSLType"
-    TSLTypeAdditionalInformation.valueOf_=confxml.TSLType["LoTL"]
+    TSLTypeAdditionalInformation.valueOf_=confxml.LoTEType["LoTL"]
 
     objectLOTE=LOTE.AnyType()
     objectLOTE.valueOf_=TSLTypeAdditionalInformation
@@ -226,7 +225,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     objectLOTE_stcr.original_tagname_="SchemeTypeCommunityRules"
 
     #for cycle
-    schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules["LoTL"]))
 
     objectLOTE_stcr.valueOf_=schemetypeCommunityRules_add
 
@@ -508,7 +507,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     schemeInfo.LoTEVersionIdentifier=confxml.TLSVersionIdentifier
     schemeInfo.set_LoTESequenceNumber=dict_tsl_mom["SequenceNumber"] + 1
     
-    TSLType.set_valueOf_(confxml.TSLType["LoTL"])
+    TSLType.set_valueOf_(confxml.LoTEType["LoTL"])
     schemeInfo.LoTEType=TSLType
 
     #schemeOperatorName
@@ -574,12 +573,12 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     schemeInfo.set_SchemeInformationURI(schemeInformationURI)
 
     #StatusDeterminationApproach
-    schemeInfo.StatusDeterminationApproach=LOTE.NonEmptyURIType(confxml.StatusDeterminationApproach["LoTL"])
+    schemeInfo.StatusDeterminationApproach=LOTE.NonEmptyURIType(confxml.LoTEStatusDeterminationApproach["LoTL"])
     
     #schemeTypeCommunityRules
 
 #for cycle
-    schemeCRules.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemeCRules.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules["LoTL"]))
     schemeInfo.set_SchemeTypeCommunityRules(schemeCRules)
 
     #SchemeTerritory
@@ -617,7 +616,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     TSLTypeAdditionalInformation=LOTE.NonEmptyURIType()
     TSLTypeAdditionalInformation.original_tagname_="TSLType"
-    TSLTypeAdditionalInformation.valueOf_=confxml.TSLType["LoTL"]
+    TSLTypeAdditionalInformation.valueOf_=confxml.LoTEType["LoTL"]
 
     objectLOTE=LOTE.AnyType()
     objectLOTE.valueOf_=TSLTypeAdditionalInformation
@@ -652,7 +651,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     objectLOTE_stcr.original_tagname_="SchemeTypeCommunityRules"
 
     #for cycle
-    schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules["LoTL"]))
 
     objectLOTE_stcr.valueOf_=schemetypeCommunityRules_add
 
@@ -697,7 +696,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         #TSLTypeAdditionalInformation
         TSLTypeAdditionalInformation=LOTE.NonEmptyURIType()
         TSLTypeAdditionalInformation.original_tagname_="TSLType"
-        TSLTypeAdditionalInformation.valueOf_=(confxml.TSLType["EU"])
+        TSLTypeAdditionalInformation.valueOf_=(confxml.LoTEType["EU"])
 
         objectLOTE=LOTE.AnyType()
         objectLOTE.valueOf_=TSLTypeAdditionalInformation
@@ -732,8 +731,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         objectLOTE_stcr.original_tagname_="SchemeTypeCommunityRules"
 
         #for cycle
-        schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["EU"]))
-        schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["Country"] + tsl_data["schemeTerritory"]))
+        schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules["EU"]))
         objectLOTE_stcr.valueOf_=schemetypeCommunityRules_add
 
         AdditionalInfo.add_OtherInformation(objectLOTE_stcr)
@@ -841,7 +839,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 def xml_validator(file):
 
     # Load Schema
-    with open(confxml.schema, 'rb') as f:
+    with open(confxml.LoTEschema, 'rb') as f:
         schema_root = etree.parse(f)
         schema = etree.XMLSchema(schema_root)
 
