@@ -83,15 +83,9 @@ def jadesigner(base64_payload, base64_cert, privkey_location):
 
     hashes1 = calculate_hash.json()["hashes"]
 
-    #print(hashes1[0])
-
     base64_string = urllib.parse.unquote(hashes1[0])
 
     data_to_be_signed = base64.b64decode(base64_string)
-
-    #print(data_to_be_signed)
-    # hash = base64.urlsafe_b64decode(hashes[0]).
-    # base64.b64decode
 
     signature_date = calculate_hash.json()["signature_date"]
 
@@ -102,16 +96,12 @@ def jadesigner(base64_payload, base64_cert, privkey_location):
         backend=default_backend()
     )
 
-    # key=ECC.import_key(private_key)
-
-    # signature = DSS.new(key).sign(data_to_be_signed)
     signature = private_key.sign(
         data_to_be_signed,
         ec.ECDSA(utils.Prehashed(hashes.SHA256()))
     )
 
     base64_signature= base64.b64encode(signature).decode()
-    #print(base64_signature)
 
     payload = json.dumps({
         "documents": [

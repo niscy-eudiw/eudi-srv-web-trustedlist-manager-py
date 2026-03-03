@@ -180,6 +180,7 @@
                                                     {% if title == "Trusted Lists" %}
                                                         <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml?id={{id}}"><span class="glyphicon glyphicon-file"></span></a>
                                                         <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml_TE?id={{id}}"><span class="glyphicon glyphicon-download"></span></a>
+                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/json?id={{id}}"><span class="glyphicon glyphicon-download-alt"></span></a>
                                                     {% endif %}
                                                 </td>
                                             </tr>
@@ -210,6 +211,7 @@
                 <p><span class="glyphicon glyphicon-cog"></span> = Add Trust Service Providers</p>
                 <p><span class="glyphicon glyphicon-file"></span> = Generate and Sign Trusted Service List</p>
                 <p><span class="glyphicon glyphicon-download"></span> = Generate and Sign List of Trusted Entities</p>
+                <p><span class="glyphicon glyphicon-download-alt"></span> = Generate and Sign Lists of Trusted Entities</p>
             {% endif %}
         </div>
     </div>
