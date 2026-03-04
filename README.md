@@ -28,7 +28,7 @@ The **EU LOTL** combines all national Trusted Lists into a single, easily access
 The source of trust of the TLs is the EU List of the Trusted Lists (LOTL). And the source of trust for the LOTL is the Official Journal of the European Union (OJEU)
 + LOTL signing certificates and the location of the LOTL XML file are contained in the LOTL itself, as detailed in the OJEU publication.
 
-###List of Trusted Entities (LoTE) - ETSI TS 119 602 V1.1.1 (2025-11)
+### List of Trusted Entities (LoTE) - ETSI TS 119 602 V1.1.1 (2025-11)
 
 List of Trusted Entities are intended to convey trust in a set of entities that are providing services within a given approval scheme. They take the form of a list of entities that have been granted a particular status under the given approval scheme.
 They represent the outcome of a process of approval, whereby the listed entities are assessed as being trustworthy for the services they provide and granted a particular status corresponding to this level of trustworthiness.
