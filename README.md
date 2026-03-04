@@ -28,6 +28,11 @@ The **EU LOTL** combines all national Trusted Lists into a single, easily access
 The source of trust of the TLs is the EU List of the Trusted Lists (LOTL). And the source of trust for the LOTL is the Official Journal of the European Union (OJEU)
 + LOTL signing certificates and the location of the LOTL XML file are contained in the LOTL itself, as detailed in the OJEU publication.
 
+###List of Trusted Entities (LoTE) - ETSI TS 119 602 V1.1.1 (2025-11)
+
+List of Trusted Entities are intended to convey trust in a set of entities that are providing services within a given approval scheme. They take the form of a list of entities that have been granted a particular status under the given approval scheme.
+They represent the outcome of a process of approval, whereby the listed entities are assessed as being trustworthy for the services they provide and granted a particular status corresponding to this level of trustworthiness.
+
 ### Reference Implementation Trusted List Provider
 
 The Reference Implementation Trusted List Provider has the following features:
@@ -37,9 +42,9 @@ The Reference Implementation Trusted List Provider has the following features:
   + LoTL Operator - EC
 + Functionalities for TSL Operators:
   + Manage TSPs and their trust services
-  + Create and sign TLs
+  + Create and sign TLs and LoTE
 + Functionalities for LoTL Operators:
-  + Create and sign LoTL (combining the TL created by the Member States)
+  + Create and sign LoTL and LoTE (combining the TL/LoTE created by the Member States)
 
 Available at: https://trustedlist.serviceproviders.eudiw.dev/ 
 
@@ -151,6 +156,8 @@ INSERT INTO countries (country_id, country_code, country_name) VALUES (1, 'FC', 
      + Add new language Info: To add new information to the data in different languages;
      + Add Trust Service Providers: Select Trust Service Providers to be associated with the TSL.
      + Generate and sign Trusted Service List: Generate the XML of the selected TSL (To be able to generate the xml and sign it, the user must associate at least one existing TSP in the system);
+     + Generate and Sign List of Trusted Entities XML: Generate the XML of the selected LoTE (To be able to generate the xml and sign it, the user must associate at least one existing TSP/TE in the system);
+     + Generate and Sign Lists of Trusted Entities JSON: Generate the JSON of the selected LoTE (To be able to generate the json and sign it, the user must associate at least one existing TSP/TE in the system);
        
        
   ### 4. Menu - Trust Service Provider user
@@ -191,6 +198,8 @@ INSERT INTO countries (country_id, country_code, country_name) VALUES (1, 'FC', 
   2. When the user accesses the option Create LoTL, they will be presented with a list of all the TSLs in the system. It contains the following options:
      + Update selected Trusted Service Lists: Add Trusted Lists with the checkbox checked in the Actions column ;
      + Generate and sign LoTL;
+     + Generate and Sign List of Trusted Entities XML: Generate the XML of the selected LoTE (To be able to generate the xml and sign it, the user must associate at least one existing TSP/TE in the system);
+     + Generate and Sign Lists of Trusted Entities JSON: Generate the JSON of the selected LoTE (To be able to generate the json and sign it, the user must associate at least one existing TSP/TE in the system);
        
   3. When the user accesses the option LoTL Information, they will be presented with the following options:
      +  Add new language Info: To add new information to the data in different language;
@@ -228,6 +237,9 @@ Description: Container path where CA certificates are located for validate vp_to
 
 Variable: `VERIFIER`<br>
 Description: Verifier URL
+
+Variable: `SCA_SIGNER_URL`<br>
+Description: SCA Signer URL for signing LoTE JSON
 
 Variable: `LOG_PATH`<br>
 Description: Path where log files are saved
