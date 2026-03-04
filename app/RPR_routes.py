@@ -1067,7 +1067,6 @@ def download_json():
 @rpr.route('/validate_xml', methods=["GET", "POST"])
 def validate_xml():
 
-    print(request.args)
     encoded_file = request.args.get("file")
     lote=request.args.get("lote")
     file_data = base64.b64decode(encoded_file)

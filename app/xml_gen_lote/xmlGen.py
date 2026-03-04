@@ -76,8 +76,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     schemeInfo.set_LoTEVersionIdentifier(confxml.LoTEVersionIdentifier)
     schemeInfo.set_LoTESequenceNumber(dictFromDB_trusted_lists["SequenceNumber"] + 1)
     TSLType=LOTE.NonEmptyURIType()
-    TSLType.set_valueOf_(confxml.LoTEType["EU"])
-    schemeInfo.set_LoTEType=TSLType
+    TSLType.valueOf_=confxml.LoTEType["EU"]
+    schemeInfo.LoTEType=TSLType
 
     #schemeOperatorName
 
@@ -199,7 +199,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     schemeNameLOTE.add_Name(LOTE.MultiLangStringType("en", "EU-LOTL"))
     schemeNameLOTE.original_tagname_="SchemeOperatorName"
 
-    AdditionalInfo.add_TextualInformation(schemeNameLOTE)
+    AdditionalInfo.add_OtherInformation(schemeNameLOTE)
 
     # LOTEes=LOTE.TakenOverByType()
     # LOTEes.SchemeOperatorName=schemeNameLOTE
@@ -631,7 +631,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     for item in op_name:
         schemeNameLOTE.add_Name(LOTE.MultiLangNormStringType(item['lang'], item["text"]))
     
-    AdditionalInfo.add_TextualInformation(schemeNameLOTE)
+    AdditionalInfo.add_OtherInformation(schemeNameLOTE)
 
     #SchemeTerritoryAdditionalInformation
 
@@ -711,7 +711,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         for item in tsl_data["SchemeName"]:
             schemeNameLOTE.add_Name(LOTE.MultiLangNormStringType(item['lang'], item["text"]))
         
-        AdditionalInfo.add_TextualInformation(schemeNameLOTE)
+        AdditionalInfo.add_OtherInformation(schemeNameLOTE)
 
         #SchemeTerritoryAdditionalInformatio
 
