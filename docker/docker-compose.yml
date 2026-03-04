@@ -10,6 +10,7 @@ services:
       #Container path, validate vp token
       TRUSTED_CAS_PATH: "/app/certs/CAs"
       VERIFIER: "verifier-backend.eudiw.dev"
+      SCA_SIGNER_URL: "http://localhost:8086"
       LOG_PATH: "/app/logs"
       #For signing TSL/LoTL XML 
       CERT: "/app/xml_gen/cert.der"
