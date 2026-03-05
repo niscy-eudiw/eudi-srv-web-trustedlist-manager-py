@@ -502,12 +502,11 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     root.set_Id("TrustServiceStatusList")
 
     schemeInfo = LOTE.LoTEListAndSchemeInformationType()
-    TSLType=LOTE.NonEmptyURIType()
 
-    schemeInfo.LoTEVersionIdentifier=confxml.TLSVersionIdentifier
-    schemeInfo.set_LoTESequenceNumber=dict_tsl_mom["SequenceNumber"] + 1
-    
-    TSLType.set_valueOf_(confxml.LoTEType["LoTL"])
+    schemeInfo.set_LoTEVersionIdentifier(confxml.LoTEVersionIdentifier)
+    schemeInfo.set_LoTESequenceNumber(dict_tsl_mom["SequenceNumber"] + 1)
+    TSLType=LOTE.NonEmptyURIType()
+    TSLType.valueOf_=confxml.LoTEType["LoTL"]
     schemeInfo.LoTEType=TSLType
 
     #schemeOperatorName
@@ -615,7 +614,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     #TSLTypeAdditionalInformation
 
     TSLTypeAdditionalInformation=LOTE.NonEmptyURIType()
-    TSLTypeAdditionalInformation.original_tagname_="TSLType"
+    TSLTypeAdditionalInformation.original_tagname_="LoTEType"
     TSLTypeAdditionalInformation.valueOf_=confxml.LoTEType["LoTL"]
 
     objectLOTE=LOTE.AnyType()
@@ -695,7 +694,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         
         #TSLTypeAdditionalInformation
         TSLTypeAdditionalInformation=LOTE.NonEmptyURIType()
-        TSLTypeAdditionalInformation.original_tagname_="TSLType"
+        TSLTypeAdditionalInformation.original_tagname_="LoTEType"
         TSLTypeAdditionalInformation.valueOf_=(confxml.LoTEType["EU"])
 
         objectLOTE=LOTE.AnyType()

@@ -48,7 +48,7 @@ import requests
 
 import base64
 import urllib.parse
-from app.xml_gen_lote.xmlGen import xml_gen_xml_LoTE, xml_lote_validator
+from app.xml_gen_lote.xmlGen import xml_gen_lote_xml, xml_gen_xml_LoTE, xml_lote_validator
 from app.json_gen.jsonGen import json_gen_json, json_gen_lote_json
 from app_config.config import ConfService as cfgserv
 import segno
@@ -181,6 +181,7 @@ def authentication():
     )
 
     
+    payload_sameDevice=payload
     session["session_id"]=str(uuid.uuid4())
     session["certificate_List"]=False
 
@@ -189,6 +190,8 @@ def authentication():
     # payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
     #                                                    "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
 
+
+    response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
     print(response_same_device)
 
     deeplink_url = (
@@ -224,7 +227,7 @@ def authentication():
 
     return render_template(
         "pid_login_qr_code.html",
-        url_data="deeplink_url",
+        url_data=deeplink_url,
         qrcode=qr_img_base64,
         presentation_id=response["transaction_id"],
         redirect_url= cfgserv.service_url
@@ -1067,6 +1070,7 @@ def download_json():
 @rpr.route('/validate_xml', methods=["GET", "POST"])
 def validate_xml():
 
+    print(request.args)
     encoded_file = request.args.get("file")
     lote=request.args.get("lote")
     file_data = base64.b64decode(encoded_file)
@@ -2284,7 +2288,7 @@ def lote_xml():
             }
             tsl_list.append(dictFromDB_trusted_lists) 
             
-        file, thumbprint, xml_hash_before_sign = xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, session["session_id"])
+        file, thumbprint, xml_hash_before_sign = xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, session["session_id"])
         
         if(cfgserv.two_operators):
             role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
