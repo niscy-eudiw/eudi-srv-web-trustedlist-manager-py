@@ -49,8 +49,8 @@ class ConfXML:
 
     HistoricalInformationPeriod=65535
 
-    schema = r"app\xml_gen\ts_119612v020101_xsd_modified.xsd"
-    #schema = "/app/xml_gen/ts_119612v020101_xsd_modified.xsd"
+    #schema = r"app\xml_gen\ts_119612v020101_xsd_modified.xsd"
+    schema = "/app/xml_gen/ts_119612v020101_xsd_modified.xsd"
 
     #months
     validity=6
@@ -80,8 +80,8 @@ class ConfXML:
 
     LoTEHistoricalInformationPeriod=65535
 
-    LoTEschema = r"app\xml_gen_lote\1960201_xsd_schema.xsd"
-    #LoTEschema = "/app/xml_gen_lote/1960201_xsd_schema.xsd"
+    #LoTEschema = r"app\xml_gen_lote\1960201_xsd_schema.xsd"
+    LoTEschema = "/app/xml_gen_lote/1960201_xsd_schema.xsd"
 
     #months
     LoTEvalidity=6
