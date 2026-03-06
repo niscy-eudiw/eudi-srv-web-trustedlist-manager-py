@@ -49,6 +49,10 @@ class ConfService:
     #priv_key_UT = "app/xml_gen/privkey_UT.pem"
     priv_key_UT = os.getenv("PRIV_KEY", "/etc/eudiw/pid-issuer/privKey/PID-DS-0001_UT.pem")
 
+    url_verifier= os.getenv("VERIFIER", "verifier-backend.eudiw.dev")
+    
+    sca_signer_url=os.getenv("SCA_SIGNER_URL","http://localhost:8086")
+
 
     roles = {
       "tsp_op":"TSP Operator",
@@ -56,14 +60,13 @@ class ConfService:
       "lotl_op": "LoTL Operator"
     }
 
+    #Form data- TSL
+
     qualifiers = {
       "QCForESig": "http://uri.etsi.org/TrstSvc/TrustedList/SvcInfoExt/QCForESig",
       "QCStatement": "http://uri.etsi.org/TrstSvc/TrustedList/SvcInfoExt/QCStatement",
       "QCQSCDStatusAsInCert": "http://uri.etsi.org/TrstSvc/TrustedList/SvcInfoExt/QCQSCDStatusAsInCert"
     }
-
-    url_verifier= os.getenv("VERIFIER", "verifier-backend.eudiw.dev")
-
 
     lang = {
       "Portugues": "pt", 
@@ -143,5 +146,3 @@ class ConfService:
     "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
     "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
     "PL", "PT", "RO", "SK", "SI", "ES", "SE","UT","NO","EU"]
-
-    sca_signer_url="http://localhost:8086"

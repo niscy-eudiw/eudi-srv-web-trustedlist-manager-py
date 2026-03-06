@@ -24,6 +24,7 @@ import sys
 
 import pymysql
 from requests import Session
+import requests
 
 from app.app_config.config import ConfService
 
@@ -157,6 +158,19 @@ def handle_exception(e):
         500,
     )
 
+def handle_request_exception(e):
+
+    logger.exception("- WARN - Error 500")
+
+    return (
+        render_template(
+            "500.html",
+            error="Sorry, an internal server error has occurred. Our team has been notified and is working to resolve the issue. Please try again later.",
+            error_code="Internal Server Error",
+        ),
+        500,
+    )
+
 def page_not_found(e):
 
     logger.exception("- WARN - Error 404")
@@ -171,7 +185,7 @@ def page_not_found(e):
     )
 
 def initialize_db():
-    with open('./script_db.sql', 'r') as f:
+    with open('/app/script_db.sql', 'r') as f:
         sql = f.read()
 
     connection = pymysql.connect(
@@ -198,6 +212,7 @@ def create_app():
     app.config['SECRET_KEY'] = ConfService.secret_key
 
     app.register_error_handler(Exception, handle_exception)
+    app.register_error_handler(requests.exceptions.RequestException, handle_request_exception)
     app.register_error_handler(404, page_not_found)
 
     from . import (RPR_routes)
