@@ -48,7 +48,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
