@@ -410,7 +410,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der= x509.load_pem_x509_certificate(der_data, backend=default_backend())
+    cert_der= x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
