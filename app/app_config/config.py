@@ -78,9 +78,6 @@ class ConfService:
       "Scheme Territory": "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/"
     }
 
-    TSLType = ["http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric","http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist"]
-
-    statusDetermination=["http://uri.etsi.org/TrstSvc/TrustedList/StatusDetn/EUappropriate", "http://uri.etsi.org/TrstSvc/TrustedList/StatusDetn/CCdetermination"]
     TSLType = ["http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric","http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist" ,
                "http://uri.etsi.org/19602/LoTEType/EUPIDProvidersList",
                "http://uri.etsi.org/19602/LoTEType/EUWalletProvidersList",
