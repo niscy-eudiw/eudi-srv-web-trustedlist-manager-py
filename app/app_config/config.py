@@ -86,6 +86,15 @@ class ConfService:
                "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList",
                "http://uri.etsi.org/19602/LoTEType/EURegistrarsAndRegistersList"
     ]
+    statusDetermination=["http://uri.etsi.org/TrstSvc/TrustedList/StatusDetn/EUappropriate",
+                          "http://uri.etsi.org/TrstSvc/TrustedList/StatusDetn/CCdetermination",
+                          "http://uri.etsi.org/19602/PIDProvidersList/StatusDetn/EU",
+                          "http://uri.etsi.org/19602/WalletProvidersList/StatusDetn/EU",
+                          "http://uri.etsi.org/19602/WRPACProvidersList/StatusDetn/EU",
+                          "http://uri.etsi.org/19602/WRPRCrovidersList/StatusDetn/EU",
+                          "http://uri.etsi.org/19602/PubEAAProvidersList/StatusDetn/EU",
+                          "http://uri.etsi.org/19602/RegistrarsAndRegistersList/StatusDetn/EU"
+    ]
 
     ServiceStatus= { "Qualified":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted", "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn"],
                      "Others":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel","http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/deprecatedatnationallevel"]}
