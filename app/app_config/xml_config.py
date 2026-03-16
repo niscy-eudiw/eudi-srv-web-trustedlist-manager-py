@@ -83,7 +83,7 @@ class ConfXML:
         "http://uri.etsi.org/19602/LoTEType/EUPIDProvidersList":"http://uri.etsi.org/19602/PIDProviders/schemerules/EU",
         "http://uri.etsi.org/19602/LoTEType/EUWalletProvidersList":"http://uri.etsi.org/19602/WalletProvidersList/schemerules/EU",
         "http://uri.etsi.org/19602/LoTEType/EUWRPACProvidersList":"http://uri.etsi.org/19602/WRPACProvidersList/schemerules/EU",
-        "http://uri.etsi.org/19602/LoTEType/EUWRPACProvidersList":"http://uri.etsi.org/19602/WRPRCProvidersList/schemerules/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUWRPRCProvidersList":"http://uri.etsi.org/19602/WRPRCProvidersList/schemerules/EU",
         "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":"http://uri.etsi.org/19602/PubEAAProvidersList/schemerules/EU",
         "http://uri.etsi.org/19602/LoTEType/EURegistrarsAndRegistersList":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/schemerules/EU"
     }
