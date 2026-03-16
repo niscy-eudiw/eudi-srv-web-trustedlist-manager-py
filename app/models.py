@@ -209,7 +209,7 @@ def check_country(user_country, log_id):
 
 
 
-def insert_tsl_info(user_id, Version, Sequence_number, SchemeName_lang, Uri_lang,
+def insert_tsl_info(user_id, Version, Sequence_number,TSLType, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
                              AdditionalInformation, schemeTerritory, lotl, country, log_id):
     try:
@@ -219,13 +219,13 @@ def insert_tsl_info(user_id, Version, Sequence_number, SchemeName_lang, Uri_lang
 
             insert_query = """
                             INSERT INTO trusted_lists 
-                            (Version, SequenceNumber, SchemeName_lang, Uri_lang, schemeTerritory,
+                            (Version, SequenceNumber, TSLType, SchemeName_lang, Uri_lang, schemeTerritory,
                             PolicyOrLegalNotice_lang, 
                             issue_date, next_update, Additional_Information, country_id, operator_id, lotl) 
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                             """
             
-            cursor.execute(insert_query, (Version, Sequence_number, SchemeName_lang, Uri_lang, 
+            cursor.execute(insert_query, (Version, Sequence_number,TSLType, SchemeName_lang, Uri_lang, 
                     schemeTerritory, PolicyOrLegalNotice_lang, 
                     Issue_date, NextUpdate, AdditionalInformation, country, user_id, lotl,))
             

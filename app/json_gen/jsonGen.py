@@ -48,7 +48,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
@@ -64,6 +64,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         if(aux != 1):
             func.insert_old_cert(cert_cleaned, tsl_id, log_id)
     
+    LoTEType=dictFromDB_trusted_lists["TSLType"]
     
     #root=JSON.LoTE()
 
@@ -137,9 +138,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     schemeCRules= list()
 
     #for cycle
-    schemeCRules.append(JSON.MultiLangString("en", confxml.SchemeTypeCommunityRules["EU"]))
-    schemeCRules.append(JSON.MultiLangString("en", confxml.SchemeTypeCommunityRules["Country"] + dictFromDB_trusted_lists["schemeTerritory"] ))
-    
+    schemeCRules.append(JSON.MultiLangString("en", confxml.LoTESchemeTypeCommunityRules[LoTEType]))
 
     #PolicyOrLegalNotice
     PolicyOrLegalNotice= list()
@@ -166,18 +165,18 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     #SchemeNameOperatorAdditionalInformation
     #for cycle
 
-    AdditionalInfo_SchemeOperatorName=list()
-    AdditionalInfo_SchemeOperatorName.append(JSON.MultiLangString("en", "EU-LOTL"))
+    AdditionalInfo_SchemeOperatorName=schemeOName
+    #AdditionalInfo_SchemeOperatorName.append(JSON.MultiLangString("en", "E))
 
 
     #SchemeTypeCommunityRules
     schemetypeCommunityRules_add=list()
 
     #for cycle
-    schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.LoTESchemeTypeCommunityRules["LoTL"]))
 
     AdditionalInfo=JSON.LoTEQualifier(
-        LoTEType=confxml.TSLType["LoTL"],
+        LoTEType=LoTEType,
         SchemeOperatorName=AdditionalInfo_SchemeOperatorName,
         SchemeTerritory="EU",
         SchemeTypeCommunityRules=schemetypeCommunityRules_add,
@@ -189,7 +188,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     Lote_qualifiers.append(AdditionalInfo)
 
     Pointer= JSON.OtherLoTEPointer(
-        LoTELocation=confxml.lotl_location,
+        LoTELocation=confxml.LoTElotl_location,
         ServiceDigitalIdentities=ServiceDigitalIdentities,
         LoTEQualifiers=Lote_qualifiers
     )
@@ -208,16 +207,16 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     URIDP.append(last)
 
     schemeInfo=JSON.ListAndSchemeInformation(
-        LoTEVersionIdentifier=confxml.TLSVersionIdentifier,
+        LoTEVersionIdentifier=confxml.LoTEVersionIdentifier,
         LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"],
         SchemeOperatorName=schemeOName,
         ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].isoformat(),
         NextUpdate=dictFromDB_trusted_lists["next_update"].isoformat(),
-        LoTEType=confxml.TSLType["EU"],
+        LoTEType=LoTEType,
         SchemeOperatorAddress=schemeOAddress,
         SchemeName=schemeName,
         SchemeInformationURI=schemeInformationURI,
-        StatusDeterminationApproach=confxml.StatusDeterminationApproach["EU"],
+        StatusDeterminationApproach=confxml.LoTEStatusDeterminationApproach[LoTEType],
         SchemeTypeCommunityRules=schemeCRules,
         SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
         PolicyOrLegalNotice=PolicyOrLegalNotice,
@@ -364,9 +363,9 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 ServiceInformation=JSON.ServiceInformation(
                     ServiceName=ServiceName,
                     ServiceDigitalIdentity=ServiceDigitalIdentity,
-                    ServiceTypeIdentifier=each["service_type"],
-                    ServiceStatus=each["status"],
-                    StatusStartingTime=each["status_start_date"].isoformat(),
+                    #ServiceTypeIdentifier=each["service_type"],
+                    #ServiceStatus=each["status"],
+                    #StatusStartingTime=each["status_start_date"].isoformat(),
                     SchemeServiceDefinitionURI=SchemeServiceDefinitionURI,
 
                 )
@@ -397,7 +396,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     cert_for_hash=x509.load_pem_x509_certificate(cert, default_backend())
     thumbprint= hashlib.sha256(cert_for_hash.tbs_certificate_bytes).hexdigest()
  
-    key=open(cfgserv.priv_key_UT, "rb").read()
+    #key=open(cfgserv.priv_key_UT, "rb").read()
 
     encoded_file, json_hash_before_sign= jadesigner(base64.b64encode(json_bytes).decode("utf-8"),base64.b64encode(cert).decode("utf-8"), cfgserv.priv_key_UT )
 

@@ -68,12 +68,24 @@ class ConfXML:
     
     LoTEStatusDeterminationApproach={
         "EU":"http://uri.etsi.org/19602/PIDProvidersList/StatusDetn/EU",
-        "LoTL":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/StatusDetn/EU"
+        "LoTL":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/StatusDetn/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUPIDProvidersList":"http://uri.etsi.org/19602/PIDProvidersList/StatusDetn/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUWalletProvidersList":"http://uri.etsi.org/19602/WalletProvidersList/StatusDetn/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUWRPACProvidersList":"http://uri.etsi.org/19602/WRPACProvidersList/StatusDetn/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUWRPRCProvidersList":"http://uri.etsi.org/19602/WRPRCrovidersList/StatusDetn/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":"http://uri.etsi.org/19602/PubEAAProvidersList/StatusDetn/EU",
+        "http://uri.etsi.org/19602/LoTEType/EURegistrarsAndRegistersList":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/StatusDetn/EU"
     }
 
     LoTESchemeTypeCommunityRules={
         "EU":"http://uri.etsi.org/19602/PIDProviders/schemerules/EU",
         "LoTL":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/schemerules/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUPIDProvidersList":"http://uri.etsi.org/19602/PIDProviders/schemerules/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUWalletProvidersList":"http://uri.etsi.org/19602/WalletProvidersList/schemerules/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUWRPACProvidersList":"http://uri.etsi.org/19602/WRPACProvidersList/schemerules/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUWRPACProvidersList":"http://uri.etsi.org/19602/WRPRCProvidersList/schemerules/EU",
+        "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":"http://uri.etsi.org/19602/PubEAAProvidersList/schemerules/EU",
+        "http://uri.etsi.org/19602/LoTEType/EURegistrarsAndRegistersList":"http://uri.etsi.org/19602/RegistrarsAndRegistersList/schemerules/EU"
     }
 
     LoTElotl_location="https://trustedlist.serviceproviders.eudiw.dev/LOTE/01.xml"

@@ -214,11 +214,11 @@ def check_country(user_country, log_id):
         print(f"Error processing the form, check_country: {e}")
         return "Error processing the form.", 500
     
-def tsl_db_info(user_id, Version, Sequence_number, SchemeName_lang, Uri_lang,
+def tsl_db_info(user_id, Version, Sequence_number,TSLType, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
                              AdditionalInformation, schemeTerritory, lotl, country, log_id):
     try:
-        check = db.insert_tsl_info(user_id, Version, Sequence_number, SchemeName_lang, Uri_lang, PolicyOrLegalNotice_lang, Issue_date, 
+        check = db.insert_tsl_info(user_id, Version, Sequence_number, TSLType, SchemeName_lang, Uri_lang, PolicyOrLegalNotice_lang, Issue_date, 
                                    NextUpdate, AdditionalInformation, schemeTerritory, lotl, country, log_id) 
 
         return check

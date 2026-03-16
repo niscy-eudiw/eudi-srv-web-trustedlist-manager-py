@@ -81,6 +81,14 @@ class ConfService:
     TSLType = ["http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric","http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist"]
 
     statusDetermination=["http://uri.etsi.org/TrstSvc/TrustedList/StatusDetn/EUappropriate", "http://uri.etsi.org/TrstSvc/TrustedList/StatusDetn/CCdetermination"]
+    TSLType = ["http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric","http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist" ,
+               "http://uri.etsi.org/19602/LoTEType/EUPIDProvidersList",
+               "http://uri.etsi.org/19602/LoTEType/EUWalletProvidersList",
+               "http://uri.etsi.org/19602/LoTEType/EUWRPACProvidersList",
+               "http://uri.etsi.org/19602/LoTEType/EUWRPRCProvidersList",
+               "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList",
+               "http://uri.etsi.org/19602/LoTEType/EURegistrarsAndRegistersList"
+    ]
 
     ServiceStatus= { "Qualified":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted", "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn"],
                      "Others":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel","http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/deprecatedatnationallevel"]}

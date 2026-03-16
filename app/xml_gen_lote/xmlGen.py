@@ -76,7 +76,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     schemeInfo.set_LoTEVersionIdentifier(confxml.LoTEVersionIdentifier)
     schemeInfo.set_LoTESequenceNumber(dictFromDB_trusted_lists["SequenceNumber"] + 1)
     TSLType=LOTE.NonEmptyURIType()
-    TSLType.valueOf_=confxml.LoTEType["EU"]
+    LoTEType=dictFromDB_trusted_lists["TSLType"]
+    TSLType.valueOf_=LoTEType
     schemeInfo.LoTEType=TSLType
 
     #schemeOperatorName
@@ -138,13 +139,13 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     schemeInfo.set_SchemeInformationURI(schemeInformationURI)
 
     #StatusDeterminationApproach
-    schemeInfo.StatusDeterminationApproach=LOTE.NonEmptyURIType(confxml.LoTEStatusDeterminationApproach["EU"])
+    schemeInfo.StatusDeterminationApproach=LOTE.NonEmptyURIType(confxml.LoTEStatusDeterminationApproach[LoTEType])
     
     #schemeTypeCommunityRules
     schemeCRules= LOTE.NonEmptyMultiLangURIListType()
 
     #for cycle
-    schemeCRules.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules["EU"]))
+    schemeCRules.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules[dictFromDB_trusted_lists["TSLType"]]))
     schemeInfo.set_SchemeTypeCommunityRules(schemeCRules)
 
     #SchemeTerritory
@@ -184,8 +185,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     #TSLTypeAdditionalInformation
 
     TSLTypeAdditionalInformation=LOTE.NonEmptyURIType()
-    TSLTypeAdditionalInformation.original_tagname_="TSLType"
-    TSLTypeAdditionalInformation.valueOf_=confxml.LoTEType["LoTL"]
+    TSLTypeAdditionalInformation.original_tagname_="LoTEType"
+    TSLTypeAdditionalInformation.valueOf_=dictFromDB_trusted_lists["TSLType"]
 
     objectLOTE=LOTE.AnyType()
     objectLOTE.valueOf_=TSLTypeAdditionalInformation
@@ -196,7 +197,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     #SchemeNameOperatorAdditionalInformation
     #for cycle
     schemeNameLOTE=LOTE.InternationalNamesType()
-    schemeNameLOTE.add_Name(LOTE.MultiLangStringType("en", "EU-LOTL"))
+    schemeNameLOTE.add_Name(LOTE.MultiLangStringType("en", "EU-LOTE"))
     schemeNameLOTE.original_tagname_="SchemeOperatorName"
 
     AdditionalInfo.add_OtherInformation(schemeNameLOTE)
@@ -225,7 +226,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     objectLOTE_stcr.original_tagname_="SchemeTypeCommunityRules"
 
     #for cycle
-    schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules["LoTL"]))
+    schemetypeCommunityRules_add.add_URI(LOTE.NonEmptyMultiLangURIType("en", confxml.LoTESchemeTypeCommunityRules[dictFromDB_trusted_lists["TSLType"]]))
 
     objectLOTE_stcr.valueOf_=schemetypeCommunityRules_add
 
@@ -353,7 +354,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
                 ServiceName=LOTE.InternationalNamesType()
                 SchemeServiceDefinitionURI=LOTE.NonEmptyMultiLangURIListType()
 
-                ServiceInformation.set_ServiceTypeIdentifier(LOTE.NonEmptyURIType(each["service_type"]))
+                #ServiceInformation.set_ServiceTypeIdentifier(LOTE.NonEmptyURIType(each["service_type"]))
 
                 serv_name = parse_json_field(each["ServiceName"])
                 for item in serv_name:
@@ -367,8 +368,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
                 ServiceDigitalIdentity.add_DigitalId(digitalID)
                 ServiceInformation.set_ServiceDigitalIdentity(ServiceDigitalIdentity)
 
-                ServiceInformation.set_ServiceStatus(LOTE.NonEmptyURIType(each["status"]))
-                ServiceInformation.set_StatusStartingTime(each["status_start_date"])
+                #ServiceInformation.set_ServiceStatus(LOTE.NonEmptyURIType(each["status"]))
+                #ServiceInformation.set_StatusStartingTime(each["status_start_date"])
 
                 uri = parse_json_field(each["SchemeServiceDefinitionURI"])
                 for item in uri:

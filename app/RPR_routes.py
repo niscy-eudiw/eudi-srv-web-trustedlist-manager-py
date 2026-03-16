@@ -890,7 +890,7 @@ def xml_TE():
     dictFromDB_trusted_lists={
         "Version":  confxml.TLSVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"],
-        #"TSLType":  confxml.TSLType.get("EU"),
+        "TSLType": tsl_info["TSLType"],
         "SchemeName":   tsl_info["SchemeName_lang"],
         "SchemeInformationURI": tsl_info["Uri_lang"],
         #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
@@ -990,7 +990,7 @@ def json_file():
     dictFromDB_trusted_lists={
         "Version":  confxml.TLSVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"],
-        #"TSLType":  confxml.TSLType.get("EU"),
+        "TSLType": tsl_info["TSLType"],
         "SchemeName":   tsl_info["SchemeName_lang"],
         "SchemeInformationURI": tsl_info["Uri_lang"],
         #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
@@ -1197,7 +1197,7 @@ def create_tsl():
 
     form_items={
         "Lang": "lang",
-        #"TSL Type" : "TSLType",
+        "TSL Type" : "TSLType",
         "Scheme Name": "string", 
         "Scheme Information URI": "string",
         "Scheme Territory": "country",
@@ -1224,7 +1224,6 @@ def create_tsl():
 
     attributesForm.update(form_items)
     rules = cfgserv.SchemeTypeCommunityRules
-
     # for items in rules:
     #     if 'Scheme Territory' in items:
     #         rules[items] = rules[items] + user['issuing_country']
@@ -1240,7 +1239,7 @@ def create_tsl_db():
     lang = request.form.get('Lang') 
     Version = confxml.TLSVersionIdentifier
     Sequence_number = 1
-    #TSLType = request.form.get('TSL Type')
+    TSLType = request.form.get('TSL Type')
     SchemeName_lang = request.form.get('Scheme Name')
     Uri_lang = request.form.get('Scheme Information URI')
     
@@ -1273,7 +1272,7 @@ def create_tsl_db():
     lotl = 0
 
     check = func.check_country(user['issuing_country'], session["session_id"])
-    check = func.tsl_db_info(user['id'], Version, Sequence_number, SchemeName_lang, Uri_lang,
+    check = func.tsl_db_info(user['id'], Version, Sequence_number,TSLType, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
                              AdditionalInformation, schemeTerritory, lotl, check, session["session_id"])
     
