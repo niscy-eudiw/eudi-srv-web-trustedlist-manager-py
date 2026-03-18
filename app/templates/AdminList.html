@@ -71,8 +71,10 @@
                                 <a type="button" href="{{ menu }}" class="btn btn-danger"><span class="glyphicon glyphicon-arrow-left"></span> Back</a>
                                 <a type="button" id="commit_id" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Update selected Trusted Service Lists (TSL)</a>
                                 <a type="button" href="{{ servi }}" class="btn btn-success"><span class="glyphicon glyphicon-file"></span>Generate and Sign LoTL</a>
+                                <!--
                                 <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml_TE?id={{id}}"><span class="glyphicon glyphicon-download"></span>Generate and Sign LoTE XML</a>
                                 <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/json?id={{id}}"><span class="glyphicon glyphicon-download-alt"></span>Generate and Sign LoTE JSON</a>
+                                -->
                             </div>
                             <h3 class="panel-title">{{h3}}</h3>
                             
@@ -155,7 +157,8 @@
             {% if title == "Trusted Lists" %}
                 <p><span class="glyphicon glyphicon-cog"></span> = Add Trust Service Providers</p>
                 <p><span class="glyphicon glyphicon-file"></span> = Generate XML</p>
-                <p><span class="glyphicon glyphicon-download-alt"></span> = Generate and Sign Lists of Trusted Entities</p>
+                <!--
+                <p><span class="glyphicon glyphicon-download-alt"></span> = Generate and Sign Lists of Trusted Entities</p> -->
             {% endif %}
         </div>
     </div>

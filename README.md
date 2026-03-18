@@ -44,7 +44,7 @@ The Reference Implementation Trusted List Provider has the following features:
   + Manage TSPs and their trust services
   + Create and sign TLs and LoTE
 + Functionalities for LoTL Operators:
-  + Create and sign LoTL and LoTE (combining the TL/LoTE created by the Member States)
+  + Create and sign LoTL (combining the TL created by the Member States)
 
 Available at: https://trustedlist.serviceproviders.eudiw.dev/ 
 
@@ -70,12 +70,18 @@ The released software is a initial development release version:
 -   We strongly recommend not putting this version of the software into production use.
 -   Only the latest version of the software will be supported
 
+##  JAdES Signature 
+
+In this project, to sign the LoTE in JSON format, it must be signed using a compact JAdES Baseline B signature. The Wallet-driven external SCA component (https://github.com/eu-digital-identity-wallet/eudi-srv-web-walletdriven-signer-external-sca-java) is used for this purpose.
+The URL where the Wallet-driven external SCA is defined:
++ in app/app_config/config.py as sca_signer_url
++ in docker/docker-compose.yml as SCA_SIGNER_URL
 
 ## Installation
 1. Enter the folder
 
   ```shell
-  cd udi-srv-web-trustedlist-manager-py
+  cd eudi-srv-web-trustedlist-manager-py
   ```
 
 2. Create .venv to install flask and other libraries
@@ -125,8 +131,8 @@ The released software is a initial development release version:
   2. Populate "countries" Table with at least one country. Recommended: 
   
   ```shell     
-INSERT INTO countries (country_id, country_code, country_name) VALUES (1, 'FC', 'Fake Country');
-```
+  INSERT INTO countries (country_id, country_code, country_name) VALUES (1, 'FC', 'Fake Country');
+  ```
   ### 2. Initial Page
 
   Initial Page of the Trusted Lists Registration Service (<http://127.0.0.1:5000/> or <http://localhost:5000/>) :
@@ -198,8 +204,6 @@ INSERT INTO countries (country_id, country_code, country_name) VALUES (1, 'FC', 
   2. When the user accesses the option Create LoTL, they will be presented with a list of all the TSLs in the system. It contains the following options:
      + Update selected Trusted Service Lists: Add Trusted Lists with the checkbox checked in the Actions column ;
      + Generate and sign LoTL;
-     + Generate and Sign List of Trusted Entities XML: Generate the XML of the selected LoTE (To be able to generate the xml and sign it, the user must associate at least one existing TSP/TE in the system);
-     + Generate and Sign Lists of Trusted Entities JSON: Generate the JSON of the selected LoTE (To be able to generate the json and sign it, the user must associate at least one existing TSP/TE in the system);
        
   3. When the user accesses the option LoTL Information, they will be presented with the following options:
      +  Add new language Info: To add new information to the data in different language;
