@@ -390,7 +390,10 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
     clean_dict = remove_none(root)
 
-    json_str = json.dumps(clean_dict)
+    dict={
+        "LoTE":clean_dict
+    }
+    json_str = json.dumps(dict)
     json_bytes= json_str.encode('utf-8')
 
     cert_for_hash=x509.load_pem_x509_certificate(cert, default_backend())
