@@ -210,8 +210,8 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         LoTEVersionIdentifier=confxml.LoTEVersionIdentifier,
         LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"],
         SchemeOperatorName=schemeOName,
-        ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].isoformat(),
-        NextUpdate=dictFromDB_trusted_lists["next_update"].isoformat(),
+        ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].isoformat() + "Z",
+        NextUpdate=dictFromDB_trusted_lists["next_update"].isoformat()+ "Z",
         LoTEType=LoTEType,
         SchemeOperatorAddress=schemeOAddress,
         SchemeName=schemeName,
@@ -388,6 +388,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         ListAndSchemeInformation=schemeInfo
     )
 
+    
     clean_dict = remove_none(root)
 
     dict={
@@ -404,9 +405,18 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     encoded_file, json_hash_before_sign= jadesigner(base64.b64encode(json_bytes).decode("utf-8"),base64.b64encode(cert).decode("utf-8"), cfgserv.priv_key_UT )
 
     # with open ("teste.xml", "w") as file: 
-    #     signed_root.write(file, level=0) 
+    #     signed_root.write(file, level=0)
 
-    return encoded_file, thumbprint, json_hash_before_sign
+
+    file=base64.b64decode(encoded_file).decode()
+
+    file=json.loads(file)
+
+    print(file)
+
+    jwt= f'{file["signatures"][0]["protected"]}.{file["payload"]}.{file["signatures"][0]["signature"]}'
+
+    return base64.b64encode(jwt.encode()).decode(), thumbprint, json_hash_before_sign
 
 
 def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):

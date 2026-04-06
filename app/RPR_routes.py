@@ -1062,9 +1062,9 @@ def download_json():
 
     return send_file(
         io.BytesIO(file_data),
-        download_name="generated_file.json",
+        download_name="generated_file.txt",
         as_attachment=True,
-        mimetype='application/json'
+        mimetype='text/plain'
     )
 
 @rpr.route('/validate_xml', methods=["GET", "POST"])
@@ -1249,7 +1249,7 @@ def create_tsl_db():
     PolicyOrLegalNotice_lang = request.form.get('Policy Or Legal Notice')
     #PointerstootherTSL = request.form.get('Pointers to other TSL')
     #DistributionPoints = request.form.get('Distribution Points')
-    Issue_date = datetime.now()
+    Issue_date = datetime.now(timezone.utc)
     NextUpdate = Issue_date + timedelta(days=6*30)
     #Status = request.form.get('Status determination approach')
     AdditionalInformation = request.form.get('Additional Information')
@@ -2203,7 +2203,7 @@ def lotl_xml():
 
         return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
-@rpr.route('/lotl/xml_TE', methods=["GET", "POST"])
+#@rpr.route('/lotl/xml_TE', methods=["GET", "POST"])
 def lote_xml():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -2308,7 +2308,7 @@ def lote_xml():
 
         return render_template("download_lotl.html", lote=True, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
-@rpr.route('/lotl/json', methods=["GET", "POST"])
+#@rpr.route('/lotl/json', methods=["GET", "POST"])
 def lotl_json():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -2533,7 +2533,7 @@ def create_lotl_db():
     PolicyOrLegalNotice_lang = request.form.get('Policy Or Legal Notice')
     PointerstootherTSL = request.form.get('Pointers to other TSL')
     DistributionPoints = request.form.get('Distribution Points')
-    Issue_date = datetime.now()
+    Issue_date = datetime.now(timezone.utc)
     NextUpdate = Issue_date + timedelta(days=6*30)
     Status = request.form.get('Status determination approach')
     AdditionalInformation = request.form.get('Additional Information')
