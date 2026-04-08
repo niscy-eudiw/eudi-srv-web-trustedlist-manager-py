@@ -114,6 +114,17 @@ class ConfService:
 
     national=[]
 
+    #test
+    service_dict={
+                "http://uri.etsi.org/19602/LoTEType/EUPIDProvidersList": "http://uri.etsi.org/19602/SvcType/PID/Issuance",
+                "http://uri.etsi.org/19602/LoTEType/EUWalletProvidersList":"http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance",
+                "http://uri.etsi.org/19602/LoTEType/EUWRPACProvidersList":"http://uri.etsi.org/19602/SvcType/WRPAC/Issuance",
+                "http://uri.etsi.org/19602/LoTEType/EUWRPRCProvidersList":"http://uri.etsi.org/19602/SvcType/WRPRC/Issuance",
+                "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":"http://uri.etsi.org/19602/SvcType/PubEAA/Issuance",
+                "http://uri.etsi.org/19602/LoTEType/EURegistrarsAndRegistersList": "http://uri.etsi.org/19602/SvcType/Register"
+               
+    }
+
     # qualified=["http://uri.etsi.org/TrstSvc/Svctype/CA/QC","http://uri.etsi.org/TrstSvc/Svctype/Certstatus/OCSP/QC",
     #            "http://uri.etsi.org/TrstSvc/Svctype/Certstatus/CRL/QC","http://uri.etsi.org/TrstSvc/Svctype/TSA/QTST",
     #            "http://uri.etsi.org/TrstSvc/Svctype/EDS/Q","http://uri.etsi.org/TrstSvc/Svctype/EDS/REM/Q",

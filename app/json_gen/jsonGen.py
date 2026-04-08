@@ -226,7 +226,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         SchemeTypeCommunityRules=schemeCRules,
         SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
         PolicyOrLegalNotice=PolicyOrLegalNotice,
-        HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"],
+        #HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"],
         #PointersToOtherLoTE=Pointers,
         DistributionPoints=URIDP,
 
@@ -369,7 +369,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 ServiceInformation=JSON.ServiceInformation(
                     ServiceName=ServiceName,
                     ServiceDigitalIdentity=ServiceDigitalIdentity,
-                    #ServiceTypeIdentifier=each["service_type"],
+                    ServiceTypeIdentifier=cfgserv.service_dict[dictFromDB_trusted_lists["TSLType"]],
                     #ServiceStatus=each["status"],
                     #StatusStartingTime=each["status_start_date"].isoformat(),
                     SchemeServiceDefinitionURI=SchemeServiceDefinitionURI,
