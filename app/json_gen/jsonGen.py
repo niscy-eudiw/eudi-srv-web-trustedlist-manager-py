@@ -138,14 +138,20 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     schemeCRules= list()
 
     #for cycle
-    schemeCRules.append(JSON.MultiLangString("en", confxml.LoTESchemeTypeCommunityRules[LoTEType]))
+    schemeCRules.append(JSON.NonEmptyMultiLangURI("en", confxml.LoTESchemeTypeCommunityRules[LoTEType]))
 
     #PolicyOrLegalNotice
     PolicyOrLegalNotice= list()
 
     #for cycle
     for scheme in dictFromDB_trusted_lists["PolicyOrLegalNotice"]:
-        PolicyOrLegalNotice.append(JSON.MultiLangString(scheme["lang"], scheme["text"]))
+        policy={
+            "LoTEPolicy":{
+                "lang":scheme["lang"],
+                "uriValue":scheme["text"]
+            }
+        }
+        PolicyOrLegalNotice.append(policy)
 
     #PointerToOtherTSL
     Pointers= JSON.PointersToOtherLoTE()
@@ -221,7 +227,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
         PolicyOrLegalNotice=PolicyOrLegalNotice,
         HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"],
-        PointersToOtherLoTE=Pointers,
+        #PointersToOtherLoTE=Pointers,
         DistributionPoints=URIDP,
 
 
@@ -265,12 +271,12 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     
         ele_address = parse_json_field(tsp["EletronicAddress"])
         for item in ele_address:
-            TSPEletronicAddress.append(JSON.NonEmptyMultiLangURI(item['lang'],item["URI"]))
+            TSPEletronicAddress.append(JSON.NonEmptyMultiLangURI(lang=item['lang'],uriValue=item["URI"]))
         
         
         TSPAddress=JSON.TEAddress(
-            TEPostalAddress=address,
-            TEElectronicAddress=ele_address
+            TEPostalAddress=TSPPostalAddress,
+            TEElectronicAddress=TSPEletronicAddress
         )
 
 
@@ -315,7 +321,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                     ServiceName.append(JSON.MultiLangString(item["lang"], item["text"]))
 
                 X509Certificates= list()
-                X509Certificates.append(each["digital_identity"])
+                X509Certificates.append(JSON.PkiOb(val=each["digital_identity"]))
                 ServiceDigitalIdentity=JSON.ServiceDigitalIdentity(
                     X509Certificates=X509Certificates
                 )
