@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    tags: [ 'v..*' ]
+    tags: [ 'v.*' ]
   workflow_dispatch:
 
 env:
@@ -12,7 +12,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     permissions:
       packages: write
       contents: read
@@ -29,13 +28,18 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.SECRET_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5.7.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # if tag push → semantic version only
+            type=semver,pattern={{version}}
+            # if manual run → branch-sha
+            type=raw,value=${{ github.ref_name }}-sha-${{ github.sha }},enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push Docker image
         id: build-and-push
