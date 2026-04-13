@@ -120,6 +120,11 @@
                                                                 <option value="{{ item }}">{{ item }}</option>
                                                             {% endfor %}
                                                         </optgroup>
+                                                        <optgroup label="LoTE">
+                                                            {% for item in LoTE %}
+                                                                <option value="{{ item }}">{{ item }}</option>
+                                                            {% endfor %}
+                                                        </optgroup>
                                                     </select>
                                                 </div>
                                             </div> 
@@ -193,7 +198,7 @@
                                                 <div class="col-md-12">
                                                     <label for="{{ name }}">{{ name }}</label>
                                                     <small class="form-text text-muted">{{ desc[name] }}</small>
-                                                    <select class="js-example-basic-single" id="{{value}}" name="{{name}}" style="width: 100%; box-sizing: border-box;" required>
+                                                    <select class="js-example-basic-single" id="{{value}}" name="{{name}}" style="width: 100%; box-sizing: border-box;" >
                                                         {% for value in status["Others"] %}
                                                             <option value="{{ value }}">{{ value }}</option>
                                                         {% endfor %}
@@ -258,6 +263,7 @@
         
         $("#category").on("change", function() {  
             var value = $(this).find(":selected");
+            var selected = this.value;
             var optgroup = value.closest("optgroup");
             var category = optgroup.attr("label");
             var secondSelect = document.getElementById("status");
@@ -265,6 +271,12 @@
 
             if (category == "Non-Qualified" || category == "National"){
                 category = "Others"
+            }
+            if (category == "LoTE") {
+                if( selected == "http://uri.etsi.org/19602/SvcType/PubEAA/Issuance" || selected == "http://uri.etsi.org/19602/SvcType/PubEAA/Revocation" ){
+                    category="Pub-EAA_Providers"
+                }
+                
             }
 
             secondSelect.innerHTML = "";
@@ -282,7 +294,8 @@
     const data = {
         qualified: {{ qualified | tojson | safe }},
         non_qualified: {{ non_qualified | tojson | safe }},
-        national: {{ national | tojson | safe }}
+        national: {{ national | tojson | safe }},
+        
     };
 
 

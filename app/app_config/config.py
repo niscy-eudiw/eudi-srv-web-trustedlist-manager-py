@@ -75,7 +75,7 @@ class ConfService:
 
     SchemeTypeCommunityRules ={
       "Eu Common": "https://uri.etsi.org/TrstSvc/TrustedList/schemerules/EUcommon", 
-      "Scheme Territory": "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/"
+      "Scheme Territory": "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/",
     }
 
     TSLType = ["http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric","http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist" ,
@@ -97,20 +97,22 @@ class ConfService:
     ]
 
     ServiceStatus= { "Qualified":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted", "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn"],
-                     "Others":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel","http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/deprecatedatnationallevel"]}
+                     "Others":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel","http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/deprecatedatnationallevel"],
+                     "Pub-EAA_Providers": ["http://uri.etsi.org/19602/PubEAAProvidersList/SvcStatus/notified", "http://uri.etsi.org/19602/PubEAAProvidersList/SvcStatus/withdrawn"]}
 
-    #Service Identifiers
-    service_category = {
-      "Qualified": "qualified", 
-      "Non Qualified": "non_qualified", 
-      "National": "national"
-    }
 
     qualified=["http://uri.etsi.org/TrstSvc/Svctype/EAA/Q"]
 
     non_qualified=["http://uri.etsi.org/TrstSvc/Svctype/EAA","http://uri.etsi.org/TrstSvc/Svctype/EAA/Pub-EAA",
                     "http://uri.etsi.org/Svc/Svctype/Provider/Wallet","http://uri.etsi.org/Svc/Svctype/Provider/PID",
                     "http://uri.etsi.org/Svc/Svctype/CA/RPaccess"]
+    
+    providers=[ "http://uri.etsi.org/19602/SvcType/PID/Issuance", "http://uri.etsi.org/19602/SvcType/PID/Revocation",
+                "http://uri.etsi.org/19602/SvcType/WalletSolution/Issuance", "http://uri.etsi.org/19602/SvcType/WalletSolution/Revocation",
+                "http://uri.etsi.org/19602/SvcType/WRPAC/Issuance", "http://uri.etsi.org/19602/SvcType/WRPAC/Revocation",
+                "http://uri.etsi.org/19602/SvcType/WRPRC/Issuance", "http://uri.etsi.org/19602/SvcType/WRPRC/Revocation",
+                "http://uri.etsi.org/19602/SvcType/PubEAA/Issuance", "http://uri.etsi.org/19602/SvcType/PubEAA/Revocation",
+                "http://uri.etsi.org/19602/SvcType/Register"]
 
     national=[]
 

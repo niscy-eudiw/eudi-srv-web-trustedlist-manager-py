@@ -65,6 +65,7 @@ from app.app_config.xml_config import ConfXML as confxml
 from xml_gen.xmlGen import xml_gen_xml, xml_gen_lotl_xml, xml_validator
 from xml_gen.xmlGen_List import xml_gen_xml_lotl
 from dateutil.relativedelta import relativedelta
+from db import get_db_connection as conn
 import ast
 
 rpr = Blueprint("RPR", __name__, url_prefix="/")
@@ -1870,7 +1871,7 @@ def create_service():
     
     return render_template("form_service.html", title="Service",status = cfgserv.ServiceStatus, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, 
                            data = cfgserv.qualifiers, redirect_url= cfgserv.service_url + "service/create/db", qualified = cfgserv.qualified,
-                           non_qualified = cfgserv.non_qualified, national = cfgserv.national, serv_cat = cfgserv.service_category)
+                           non_qualified = cfgserv.non_qualified, national = cfgserv.national,LoTE=cfgserv.providers)
 
 
 @rpr.route('/service/create/db', methods=["GET", "POST"])
