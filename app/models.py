@@ -2090,7 +2090,7 @@ def get_lotl_old_cert(id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting lotl_old_certificates information, for the TSL: {id}", extra=extra)
+                logger.info(f"Getting lotl_old_certificates information, for the TSL: {id}", extra=extra)
                 print(f"Getting lotl_old_certificates information, for the TSL: {id}")
                 return result
             else:
