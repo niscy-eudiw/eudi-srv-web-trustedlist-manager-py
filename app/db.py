@@ -29,7 +29,8 @@ def get_db_connection():
             port=ConfDataBase.DATABASE['port'],
             user=ConfDataBase.DATABASE['user'],
             password=ConfDataBase.DATABASE['password'],
-            database=ConfDataBase.DATABASE['database']
+            database=ConfDataBase.DATABASE['database'],
+            ssl={'ssl': True}
         )
         return connection
     except pymysql.Error as e:
