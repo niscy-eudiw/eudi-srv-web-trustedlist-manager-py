@@ -79,7 +79,7 @@
                         <!-- <status>EID_COUNTRY_SELECTION</status> -->
                         <h2>Please enter your Service information</h2>
                         <!--bean-ext:form action="" styleClass="mt"-->
-                        <form id="selectCountryForm" method="post" action="{{redirect_url}}" onsubmit="return validateImage()" accept-charset="UTF-8" enctype="multipart/form-data" autocapitalize="off" spellcheck="false">
+                        <form id="selectCountryForm" method="post" action="{{redirect_url}}" onsubmit="return checkCertificate()" accept-charset="UTF-8" enctype="multipart/form-data" autocapitalize="off" spellcheck="false">
                             <!-- <div class="nodisplay"><input type="hidden" name="TxId" value="ECAS_TX-7404446-Rej9lkLFeXORXm9rG7q4Xqo1xGRJ86gt3hoJcfMG3XyxQrAyn8mu9PbXRCZoKKUbCzLlIzG5jKgHy4vlfgkG5M-rS0vSrmBGYCAxyMeVAWeYi-PVgrhNnzagSfzJvUraGtvIPzqv8cbsV46ZMUiinVIlcDkNWEKzr5uBS6CMnabjUfRGxDHabrZictNyNLy0AsLWy" /></div><input type="hidden" name="loginRequestId" value="ECAS_LR-12907874-lFk8VGOXm5Wv9sTtMFxxCMYjUFYj1oyp1KB0e9CptxxL0NuACxlcyti7UHNPxbdzOqSrnNBPN1ll8kLzi00LRN-rS0vSrmBGYCna66T9IuSKW-P6QgQVzQzxVCzOgIh6P3d1X9xVGnkDA3YFGOAmdliNnzQVzScjsEzc7t8ao1FsJS3VNDfzPNYnzH2FPsp38aFmqD" id="loginRequestId" /> -->
                             <h3>Test Provider Form</h3>
                             <p>This data is only used for {{title}} Registration for testing purposes.</p>
@@ -291,6 +291,40 @@
             }
         });
     });
+
+    function checkCertificate(){
+        const textarea = document.querySelector('textarea[name="Digital Identity"]');
+        const value = textarea.value;
+
+        console.log(value)
+        $.ajax({
+            url: '{{url_certificate}}',
+            method: 'GET',
+            data: {
+                "value": value
+            },
+
+            success: function(response) {
+                console.log('Success:', response);
+                document.getElementById('myselectCountryForm').submit();
+                
+            },
+            error: function(xhr, status, error) {
+                let msg = "Error";
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    msg = data.error || msg;
+                } catch {}
+
+                console.error("Backend error:", msg);
+                //console.error('Error:', error);
+                alert(msg)
+                return false;
+            }
+        });
+    return false;
+ 
+    }
     const data = {
         qualified: {{ qualified | tojson | safe }},
         non_qualified: {{ non_qualified | tojson | safe }},
@@ -380,8 +414,6 @@
                 document.getElementById('myselectCountryForm').submit(); 
             }
         }
-
-        
         function validateImage() {
 
         

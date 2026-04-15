@@ -1752,7 +1752,33 @@ def create_service():
     
     return render_template("form_service.html", title="Service",status = cfgserv.ServiceStatus, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, 
                            data = cfgserv.qualifiers, redirect_url= cfgserv.service_url + "service/create/db", qualified = cfgserv.qualified,
-                           non_qualified = cfgserv.non_qualified, national = cfgserv.national,LoTE=cfgserv.providers)
+                           non_qualified = cfgserv.non_qualified, national = cfgserv.national,LoTE=cfgserv.providers, url_certificate=cfgserv.service_url + "checkcertificate")
+
+@rpr.route('/checkcertificate', methods=["GET","POST"])
+def checkcertificate():
+
+    try:
+
+        digital_identity = request.args.get("value")
+        decoded= base64.b64decode(digital_identity)
+        cert = x509.load_der_x509_certificate(decoded, default_backend())
+        print(2)
+
+        return jsonify({"message": {"message": "Valid Certificate"}}),200
+
+    except (ValueError, TypeError):
+        try:
+            digital_identity = request.args.get("value")
+            decoded= base64.b64decode(digital_identity)
+            cert = x509.load_pem_x509_certificate(digital_identity.encode(), default_backend())
+
+            return jsonify({"message": {"message": "Valid Certificate"}}),200
+        except (ValueError, TypeError):
+
+            return jsonify({"error": "Invalid Certificate"}),400
+        
+
+    
 
 
 @rpr.route('/service/create/db', methods=["GET", "POST"])
