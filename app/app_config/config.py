@@ -54,6 +54,25 @@ class ConfService:
     sca_signer_url=os.getenv("SCA_SIGNER_URL","http://localhost:8086")
 
 
+
+    test_lotl=[
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/EU/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/AT/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/CZ/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/DE/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/EE/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/FI/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/FR/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/GR/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/HU/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/IT/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/LU/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/NL/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/NO/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/PL/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/TL/PT/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/UT/01.xml", 
+        "https://trustedlist.serviceproviders.eudiw.dev/LOTL/01.xml", 
+    ]
+
+    test_lote=[
+      "https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/PIDProviders.jwt","https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/PubEAAProviders.jwt",
+      "https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/RegistrarsAndRegisters.jwt ","https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/WalletProviders.jwt",
+      "https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/WRPACProviders.jwt","https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/WRPRCProviders.jwt"    ]
+
+
     roles = {
       "tsp_op":"TSP Operator",
       "tsl_op":"TSL Operator",

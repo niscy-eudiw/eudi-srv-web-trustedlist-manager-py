@@ -76,7 +76,14 @@
                         <p> For Authentication: <a href={{pid_auth}}>{{pid_auth}}</a></p>
                         <p> To authenticate, it is necessary to have a EUDIW and a PID (MSO Mdoc).</p>
                         <!--bean-ext:form action="" styleClass="mt"-->
-                        
+                        <h3> Test LoTL for testing purposes</h3>
+                            {% for lotl in test_lotl %}
+                                <p><a href="{{lotl}}">{{lotl}}</a></p>
+                            {% endfor %}
+                        <h3> Test LoTE for testing purposes</h3>
+                            {% for lote in test_lote %}
+                                <p><a href="{{lote}}">{{lote}}</a></p>
+                            {% endfor %}
                         </div>
 
                 </div>

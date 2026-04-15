@@ -75,7 +75,8 @@ rpr.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '
 @rpr.route('/', methods=['GET','POST'])
 def initial_page():
 
-    return render_template('initial_page.html', redirect_url= cfgserv.service_url, pid_auth = cfgserv.service_url + "authentication", certificateList=cfgserv.service_url + "authentication_List")
+    return render_template('initial_page.html', redirect_url= cfgserv.service_url, pid_auth = cfgserv.service_url + "authentication", certificateList=cfgserv.service_url + "authentication_List", test_lotl=cfgserv.test_lotl,
+                           test_lote=cfgserv.test_lote)
 
 @rpr.route('/menu', methods=['GET','POST'])
 def menu():
