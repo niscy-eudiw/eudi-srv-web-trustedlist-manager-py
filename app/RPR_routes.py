@@ -47,6 +47,7 @@ from flask import (
 import requests
 
 import base64
+from cryptography import x509
 import urllib.parse
 from app.xml_gen_lote.xmlGen import xml_gen_lote_xml, xml_gen_xml_LoTE, xml_lote_validator
 from app.json_gen.jsonGen import json_gen_json, json_gen_lote_json
@@ -112,18 +113,13 @@ def menu_lotl():
 
 @rpr.route("/authentication", methods=["GET","POST"])
 def authentication():
-
-    url = "https://" + cfgserv.url_verifier +"/ui/presentations"
-    payload ={
-        "type": "vp_token",
-        "nonce": "hiCV7lZi5qAeCy7NFzUWSR4iCfSmRb99HfIvCkPaCLc=",
-        "dcql_query": {
+    cred = {
             "credentials": [
             {
                 "id": "query_0",
                 "format": "mso_mdoc",
                 "meta": {
-                "doctype_value": "eu.europa.ec.eudi.pid.1"
+                    "doctype_value": "eu.europa.ec.eudi.pid.1"
                 },
                 "claims": [
                 {
@@ -165,8 +161,14 @@ def authentication():
             }
             ]
         }
-    }
+    
 
+    url = "https://" + cfgserv.url_verifier +"/ui/presentations"
+    payload ={
+        "type": "vp_token",
+        "nonce": "hiCV7lZi5qAeCy7NFzUWSR4iCfSmRb99HfIvCkPaCLc=",
+        "dcql_query": cred
+    }
 
     headers = {
         "Content-Type": "application/json",
@@ -174,7 +176,6 @@ def authentication():
 
     response = requests.request("POST", url, headers=headers, data=json.dumps(payload)).json()
     
-
     QR_code_url = (
         "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
         + response["client_id"]
@@ -182,138 +183,22 @@ def authentication():
         + response["request_uri"]
     )
 
-    
-    payload_sameDevice=payload
     session["session_id"]=str(uuid.uuid4())
     session["certificate_List"]=False
 
-    payload_sameDevice.update({"wallet_response_redirect_uri_template":"https://dev.verifier.eudiw.dev/get-wallet-code?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
-
-    # payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
-    #                                                    "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
-
-
-    response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
-    print(response_same_device)
-
-    deeplink_url = (
-        "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
-        + response_same_device["client_id"]
-        + "&request_uri="
-        + response_same_device["request_uri"]
-    )
-
-    # oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry), "certificate_List":False}})
-
-
-    # Generate QR code
-    # img = qrcode.make("uri")
-    # QRCode.print_ascii()
-
-    qrcode = segno.make(QR_code_url)
-    out = io.BytesIO()
-    qrcode.save(out, kind='png', scale=3)
-
-    """ qrcode.to_artistic(
-        background=cfgtest.qr_png,
-        target=out,
-        kind="png",
-        scale=4,
-    ) """
-    # qrcode.terminal()
-    # qr_img_base64 = qrcode.png_data_uri(scale=4)
-
-    qr_img_base64 = "data:image/png;base64," + base64.b64encode(out.getvalue()).decode(
-        "utf-8"
-    )
-
-    return render_template(
-        "pid_login_qr_code.html",
-        url_data=deeplink_url,
-        qrcode=qr_img_base64,
-        presentation_id=response["transaction_id"],
-        redirect_url= cfgserv.service_url
-    )
-@rpr.route("/authentication_List", methods=["GET","POST"])
-def authentication_List():
-
-    url = "https://" + cfgserv.url_verifier +"/ui/presentations"
-    payload ={
+    payload_sameDevice ={
         "type": "vp_token",
         "nonce": "hiCV7lZi5qAeCy7NFzUWSR4iCfSmRb99HfIvCkPaCLc=",
-        "dcql_query": {
-            "credentials": [
-            {
-                "id": "query_0",
-                "format": "mso_mdoc",
-                "meta": {
-                "doctype_value": "eu.europa.ec.eudi.pid.1"
-                },
-                "claims": [
-                {
-                    "path": [
-                    "eu.europa.ec.eudi.pid.1",
-                    "family_name"
-                    ],
-                    "intent_to_retain": False
-                },
-                {
-                    "path": [
-                    "eu.europa.ec.eudi.pid.1",
-                    "given_name"
-                    ],
-                    "intent_to_retain": False
-                },
-                {
-                    "path": [
-                    "eu.europa.ec.eudi.pid.1",
-                    "birth_date"
-                    ],
-                    "intent_to_retain": False
-                },
-                {
-                    "path": [
-                    "eu.europa.ec.eudi.pid.1",
-                    "issuing_authority"
-                    ],
-                    "intent_to_retain": False
-                },
-                {
-                    "path": [
-                    "eu.europa.ec.eudi.pid.1",
-                    "issuing_country"
-                    ],
-                    "intent_to_retain": False
-                }
-                ]
-            }
-            ]
-        }
+        "request_uri_method": "get",
+        "dcql_query": cred,
+        "profile": "haip",
+        "wallet_response_redirect_uri_template": f"{cfgserv.service_url}getpidoid4vp?response_code={{RESPONSE_CODE}}&session_id=" + session["session_id"]
     }
 
+    response_same_device= requests.request("POST", url, headers=headers, json=payload_sameDevice).json()
 
-    headers = {
-        "Content-Type": "application/json",
-    }
-
-    response = requests.request("POST", url, headers=headers, data=json.dumps(payload)).json()
-
-    QR_code_url = (
-        "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
-        + response["client_id"]
-        + "&request_uri="
-        + response["request_uri"]
-    )
-
-    payload_sameDevice=payload
-    session["session_id"]=str(uuid.uuid4())
-    session["certificate_List"]=True
-
-    payload_sameDevice.update({"wallet_response_redirect_uri_template":cfgserv.service_url +
-                                                       "getpidoid4vp?response_code={RESPONSE_CODE}&session_id=" + session["session_id"]})
-
-    response_same_device= requests.request("POST", url, headers=headers, data=json.dumps(payload_sameDevice)).json()
-
+    print(response_same_device)
+    
     deeplink_url = (
         "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
         + response_same_device["client_id"]
@@ -321,12 +206,8 @@ def authentication_List():
         + response_same_device["request_uri"]
     )
 
-    oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry), "certificate_List":True}})
+    oid4vp_requests.update({session["session_id"]:{"response": response_same_device, "expires":datetime.now() + timedelta(minutes=cfgserv.deffered_expiry), "certificate_List":False}})
 
-
-    # Generate QR code
-    # img = qrcode.make("uri")
-    # QRCode.print_ascii()
 
     qrcode = segno.make(QR_code_url)
     out = io.BytesIO()
