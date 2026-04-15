@@ -197,7 +197,6 @@ def authentication():
 
     response_same_device= requests.request("POST", url, headers=headers, json=payload_sameDevice).json()
 
-    print(response_same_device)
     
     deeplink_url = (
         "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
