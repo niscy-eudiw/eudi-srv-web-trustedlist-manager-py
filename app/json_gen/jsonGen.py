@@ -233,6 +233,9 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
     )
 
+    if LoTEType == "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
+        schemeInfo.HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"]
+
     #--------------------------------------------#
 
     #TrustServiceProviderList
@@ -369,12 +372,14 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 ServiceInformation=JSON.ServiceInformation(
                     ServiceName=ServiceName,
                     ServiceDigitalIdentity=ServiceDigitalIdentity,
-                    ServiceTypeIdentifier=cfgserv.service_dict[dictFromDB_trusted_lists["TSLType"]],
-                    #ServiceStatus=each["status"],
-                    #StatusStartingTime=each["status_start_date"].isoformat(),
+                    ServiceTypeIdentifier=each["service_type"],
                     SchemeServiceDefinitionURI=SchemeServiceDefinitionURI,
 
                 )
+                if each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Issuance" or each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Revocation" :
+                    ServiceInformation.ServiceStatus= each["status"]
+                    ServiceInformation.StatusStartingTime= each["status_start_date"].isoformat() + "Z"
+
                 TSPService= JSON.TrustedEntityService(
                     ServiceInformation=ServiceInformation
                 )

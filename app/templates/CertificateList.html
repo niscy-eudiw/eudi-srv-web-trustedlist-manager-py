@@ -178,9 +178,12 @@
                                                         <a class="btn btn-default" id="{{id}}" data-toggle="modal" data-target="#ModalList" data-id="{{id}}"><span class="glyphicon glyphicon-cog"></span></a>
                                                     {% endif %}
                                                     {% if title == "Trusted Lists" %}
-                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml?id={{id}}"><span class="glyphicon glyphicon-file"></span></a>
-                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml_TE?id={{id}}"><span class="glyphicon glyphicon-download"></span></a>
-                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/json?id={{id}}"><span class="glyphicon glyphicon-download-alt"></span></a>
+                                                            {% if certificate.get("TSL Type") in lotetype.keys() %}
+                                                                <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml_TE?id={{id}}"><span class="glyphicon glyphicon-download"></span></a>
+                                                                <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/json?id={{id}}"><span class="glyphicon glyphicon-download-alt"></span></a>
+                                                            {% else %}
+                                                                <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml?id={{id}}"><span class="glyphicon glyphicon-file"></span></a>
+                                                            {% endif %}
                                                     {% endif %}
                                                 </td>
                                             </tr>

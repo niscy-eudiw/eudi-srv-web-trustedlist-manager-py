@@ -601,25 +601,6 @@ def op_edit_db():
 
 
 # TSL
-@rpr.route('/tsl/XMLgen')
-def xml_gen():
-
-    temp_user_id = session['temp_user_id']
-    user = session[temp_user_id]
-
-    tsl_dict = func.get_tsl_xml(user["id"], session["session_id"])
-    data = []
-
-    for item in tsl_dict:
-
-        new_item = {
-            "id": item["tsl_id"],
-            "name": item["SchemeName_lang"]
-        }
-        
-        data.append(new_item)
-
-    return render_template("form_genXML.html", data=data, temp_user_id = temp_user_id, redirect_url = "/tsl/xml")
 
 @rpr.route('/tsl/xml', methods=["GET", "POST"])
 def xml():
@@ -1058,15 +1039,15 @@ def list_tsl():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
-        return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id)
+        return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
 
     
 @rpr.route('/tsl/create')

@@ -161,7 +161,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     schemeInfo.set_PolicyOrLegalNotice(PolicyOrLegalNotice)
 
     #HistoricalInformationPeriod
-    schemeInfo.set_HistoricalInformationPeriod(dictFromDB_trusted_lists["HistoricalInformationPeriod"])
+    if LoTEType == "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
+        schemeInfo.set_HistoricalInformationPeriod(dictFromDB_trusted_lists["HistoricalInformationPeriod"])
 
     #PointerToOtherTSL
     Pointers= LOTE.OtherLoTEPointersType()
@@ -247,7 +248,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     Pointer.AdditionalInformation=AdditionalInfo
     Pointers.add_OtherLoTEPointer(Pointer)
 
-    schemeInfo.PointersToOtherLoTE=Pointers
+    #PointersToOtherLoTE
+    #schemeInfo.PointersToOtherLoTE=Pointers
     
     schemeInfo.ListIssueDateTime=dictFromDB_trusted_lists["issue_date"]
     
@@ -354,7 +356,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
                 ServiceName=LOTE.InternationalNamesType()
                 SchemeServiceDefinitionURI=LOTE.NonEmptyMultiLangURIListType()
 
-                #ServiceInformation.set_ServiceTypeIdentifier(LOTE.NonEmptyURIType(each["service_type"]))
+                ServiceInformation.set_ServiceTypeIdentifier(LOTE.NonEmptyURIType(each["service_type"]))
 
                 serv_name = parse_json_field(each["ServiceName"])
                 for item in serv_name:
@@ -368,8 +370,11 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
                 ServiceDigitalIdentity.add_DigitalId(digitalID)
                 ServiceInformation.set_ServiceDigitalIdentity(ServiceDigitalIdentity)
 
-                #ServiceInformation.set_ServiceStatus(LOTE.NonEmptyURIType(each["status"]))
-                #ServiceInformation.set_StatusStartingTime(each["status_start_date"])
+                if each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Issuance" or each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Revocation" :
+                    ServiceInformation.set_ServiceStatus(LOTE.NonEmptyURIType(each["status"]))
+                    ServiceInformation.set_StatusStartingTime(each["status_start_date"])
+
+
 
                 uri = parse_json_field(each["SchemeServiceDefinitionURI"])
                 for item in uri:

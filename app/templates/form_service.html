@@ -296,7 +296,6 @@
         const textarea = document.querySelector('textarea[name="Digital Identity"]');
         const value = textarea.value;
 
-        console.log(value)
         $.ajax({
             url: '{{url_certificate}}',
             method: 'GET',
@@ -305,8 +304,8 @@
             },
 
             success: function(response) {
-                console.log('Success:', response);
-                document.getElementById('myselectCountryForm').submit();
+
+                document.getElementById("selectCountryForm").submit();
                 
             },
             error: function(xhr, status, error) {
