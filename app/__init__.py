@@ -185,7 +185,7 @@ def page_not_found(e):
     )
 
 def initialize_db():
-    with open('app/script_db.sql', 'r') as f:
+    with open('/app/script_db.sql', 'r') as f:
         sql = f.read()
 
     connection = pymysql.connect(

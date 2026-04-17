@@ -60,11 +60,11 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     aux = 0
     if(check is not None):
         for each in check:
-            if(each["cert"] != cert_cleaned):
+            if(each["cert"] == cert_cleaned):
                 aux = 1
-    else:
-        if(aux != 1):
-            func.insert_old_cert(cert_cleaned, tsl_id, log_id)
+                break
+    if(aux != 1):
+        func.insert_old_cert(cert_cleaned, tsl_id, log_id)
     
     root=test.TrustStatusListType()
 
@@ -678,10 +678,11 @@ def xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, log_id):
         #for cycle novo
         aux = func.get_old_cert(tsl_data["id"], log_id)
 
-        for each in aux:
-            digitalID=test.DigitalIdentityType()
-            digitalID.set_X509Certificate(base64.b64decode(each["cert"]))
-            serviceDigitalIdentity.add_DigitalId(digitalID)
+        if aux is not None:
+            for each in aux:
+                digitalID=test.DigitalIdentityType()
+                digitalID.set_X509Certificate(base64.b64decode(each["cert"]))
+                serviceDigitalIdentity.add_DigitalId(digitalID)
         #end
 
         ServiceDigitalIdentities.add_ServiceDigitalIdentity(serviceDigitalIdentity)
