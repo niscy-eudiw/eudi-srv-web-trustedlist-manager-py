@@ -193,6 +193,8 @@ def initialize_db():
         port=ConfDataBase.DATABASE['port'],
         user=ConfDataBase.DATABASE['user'],
         password=ConfDataBase.DATABASE['password'],
+        database=ConfDataBase.DATABASE['database'],
+        ssl={'ssl': True}
     )
 
     try:

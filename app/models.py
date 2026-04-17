@@ -46,7 +46,7 @@ def check_user(hash_pid, log_id):
                 user_id = result[0]
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting OPERATOR information: {hash_pid}", extra=extra)
+                logger.info(f"Getting OPERATOR information: {hash_pid}", extra=extra)
                 print(f"Getting OPERATOR information: {hash_pid}")
                 return user_id
             else:
@@ -88,7 +88,7 @@ def get_user_id_by_hash_pid(hash_pid, log_id):
                 user_id = result[0]
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting OPERATOR information: {hash_pid}", extra=extra)
+                logger.info(f"Getting OPERATOR information: {hash_pid}", extra=extra)
                 print(f"Getting OPERATOR information: {hash_pid}")
                 return user_id
             else:
@@ -186,7 +186,7 @@ def check_country(user_country, log_id):
                 country_id = result[0]
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting Countries information, for the Country Code: {user_country}", extra=extra)
+                logger.info(f"Getting Countries information, for the Country Code: {user_country}", extra=extra)
                 print(f"Getting Countries information, for the Country Code: {user_country}")
                 return country_id
             else:
@@ -304,7 +304,7 @@ def check_role_user(id, log_id):
                 role = result[0]
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting OPERATOR information: {id}", extra=extra)
+                logger.info(f"Getting OPERATOR information: {id}", extra=extra)
                 print(f"Getting OPERATOR information: {id}")
                 return role
             else:
@@ -343,7 +343,7 @@ def get_user_tsl(id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information, for the OPERATOR: {id}", extra=extra)
+                logger.info(f"Getting TSL information, for the OPERATOR: {id}", extra=extra)
                 print(f"Getting TSL information, for the OPERATOR: {id}")
                 return result
             else:
@@ -415,7 +415,7 @@ def get_tsp_tsl(id, log_id):
                 user_id = result[0]
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSP information, for the TSL: {id}", extra=extra)
+                logger.info(f"Getting TSP information, for the TSL: {id}", extra=extra)
                 print(f"Getting TSP information, for the TSL: {id}")
                 return user_id
             else:
@@ -455,7 +455,7 @@ def get_service_tsp(id, log_id):
                 user_id = result[0]
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE information, for the TSP: {id}", extra=extra)
+                logger.info(f"Getting SERVICE information, for the TSP: {id}", extra=extra)
                 print(f"Getting SERVICE information, for the TSP: {id}")
                 return user_id
             else:
@@ -496,7 +496,7 @@ def get_data_tsp(id, log_id):
                 user_id = dict(zip(column_names, result))
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSP information: {id}", extra=extra)
+                logger.info(f"Getting TSP information: {id}", extra=extra)
                 print(f"Getting TSP information: {id}")
 
                 return user_id
@@ -570,7 +570,7 @@ def get_tsl(id, log_id):
                 tsl_info = dict(zip(column_names, result))
 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information: {id}", extra=extra)
+                logger.info(f"Getting TSL information: {id}", extra=extra)
                 print(f"Getting TSL information: {id}")
                 
                 return tsl_info
@@ -613,7 +613,7 @@ def get_user(id, log_id):
                 user_info = dict(zip(column_names, result))
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting OPERATOR information: {id}", extra=extra)
+                logger.info(f"Getting OPERATOR information: {id}", extra=extra)
                 print(f"Getting OPERATOR information: {id}")
 
                 return user_info
@@ -652,7 +652,7 @@ def get_tsp(user_id, log_id):
 
             if result:
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSP information, for the OPERATOR: {user_id}", extra=extra)
+                logger.info(f"Getting TSP information, for the OPERATOR: {user_id}", extra=extra)
                 print(f"Getting TSP information, for the OPERATOR: {user_id}")
                         
                 return result
@@ -690,7 +690,7 @@ def get_service(user_id, log_id):
 
             if result:
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE information, for the OPERATOR: {user_id}", extra=extra)
+                logger.info(f"Getting SERVICE information, for the OPERATOR: {user_id}", extra=extra)
                 print(f"Getting SERVICE information, for the OPERATOR: {user_id}")
                 
                 return result
@@ -732,7 +732,7 @@ def get_data_service(service_id, log_id):
                 service_info = dict(zip(column_names, result))
 
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE information: {service_id}", extra=extra)
+                logger.info(f"Getting SERVICE information: {service_id}", extra=extra)
                 print(f"Getting SERVICE information: {service_id}")
                 
                 return service_info
@@ -774,7 +774,7 @@ def get_data_op(id, log_id):
                 user_info = dict(zip(column_names, result))
  
                 extra = {'code': log_id} 
-                logger.error(f"Getting OPERATOR information: {id}", extra=extra)
+                logger.info(f"Getting OPERATOR information: {id}", extra=extra)
                 print(f"Getting OPERATOR information: {id}")
                 
                 return user_info
@@ -1051,7 +1051,7 @@ def get_data_op_edit(id, log_id):
                 user_info = dict(zip(column_names, result))
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting OPERATOR information: {id}", extra=extra)
+                logger.info(f"Getting OPERATOR information: {id}", extra=extra)
                 print(f"Getting OPERATOR information: {id}")
                 
                 return user_info
@@ -1092,7 +1092,7 @@ def get_data_edit_tsl(id, log_id):
                 user_info = dict(zip(column_names, result))
 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information: {id}", extra=extra)
+                logger.info(f"Getting TSL information: {id}", extra=extra)
                 print(f"Getting TSL information: {id}")
                 
                 return user_info
@@ -1242,7 +1242,7 @@ def get_data_service_edit(id, log_id):
                 column_names = [desc[0] for desc in cursor.description]
                 user_info = dict(zip(column_names, result))
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE information: {id}", extra=extra)
+                logger.info(f"Getting SERVICE information: {id}", extra=extra)
                 print(f"Getting SERVICE information: {id}")
                 
                 return user_info
@@ -1312,7 +1312,7 @@ def get_service_update(id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE information, for the OPERATOR: {id}", extra=extra)
+                logger.info(f"Getting SERVICE information, for the OPERATOR: {id}", extra=extra)
                 print(f"Getting SERVICE information, for the OPERATOR: {id}")
                 return result
             else:
@@ -1380,7 +1380,7 @@ def get_tsp_update(id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSP information, for the OPERATOR: {id}", extra=extra)
+                logger.info(f"Getting TSP information, for the OPERATOR: {id}", extra=extra)
                 print(f"Getting TSP information, for the OPERATOR: {id}")
                 return result
             else:
@@ -1417,7 +1417,7 @@ def get_tsl_name(id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information: {id}", extra=extra)
+                logger.info(f"Getting TSL information: {id}", extra=extra)
                 print(f"Getting TSL information: {id}")
                 return result
             else:
@@ -1454,7 +1454,7 @@ def get_tsp_name(id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSP information: {id}", extra=extra)
+                logger.info(f"Getting TSP information: {id}", extra=extra)
                 print(f"Getting TSP information: {id}")
                 return result
             else:
@@ -1521,7 +1521,7 @@ def get_tsl_xml(id, log_id):
             result = cursor.fetchall()
             if result:
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information, for the OPERATOR: {id}", extra=extra)
+                logger.info(f"Getting TSL information, for the OPERATOR: {id}", extra=extra)
                 print(f"Getting TSL information, for the OPERATOR: {id}")
                 return result
             else:
@@ -1558,7 +1558,7 @@ def get_tsp_xml(tsl_id, log_id):
 
             if result:
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSP information, for the TSL: {tsl_id}", extra=extra)
+                logger.info(f"Getting TSP information, for the TSL: {tsl_id}", extra=extra)
                 print(f"Getting TSP information, for the TSL: {tsl_id}")
                 
                 return result
@@ -1597,7 +1597,7 @@ def get_service_xml(tsp_id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE information, for the TSP: {tsp_id}", extra=extra)
+                logger.info(f"Getting SERVICE information, for the TSP: {tsp_id}", extra=extra)
                 print(f"Getting SERVICE information, for the TSP: {tsp_id}")
                 return result
             else:
@@ -1636,7 +1636,7 @@ def check_tsp(tsl_id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSP information, for the TSL: {tsl_id}", extra=extra)
+                logger.info(f"Getting TSP information, for the TSL: {tsl_id}", extra=extra)
                 print(f"Getting TSP information, for the TSL: {tsl_id}")
                 return result
             else:
@@ -1675,7 +1675,7 @@ def check_service(tsp_id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE information, for the TSP: {tsp_id}", extra=extra)
+                logger.info(f"Getting SERVICE information, for the TSP: {tsp_id}", extra=extra)
                 print(f"Getting SERVICE information, for the TSP: {tsp_id}")
                 return result
             else:
@@ -1772,7 +1772,7 @@ def get_tsls_ids(log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information", extra=extra)
+                logger.info(f"Getting TSL information", extra=extra)
                 print(f"Getting TSL information")
                 return result
             else:
@@ -1812,7 +1812,7 @@ def get_tsl_loft(log_id):
 
             if result:
                 extra = {'code': log_id} 
-                logger.error("Getting TSL information in LOTL", extra=extra)
+                logger.info("Getting TSL information in LOTL", extra=extra)
                 print("Getting TSL information in LOTL")
                 
                 return result
@@ -1852,7 +1852,7 @@ def get_lotl_tsl(log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information", extra=extra)
+                logger.info(f"Getting TSL information", extra=extra)
                 print(f"Getting TSL information")
                 return result
             else:
@@ -1927,7 +1927,7 @@ def get_data_edit_lotl_tsl(id, log_id):
                 user_info = dict(zip(column_names, result))
 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information: {id}", extra=extra)
+                logger.info(f"Getting TSL information: {id}", extra=extra)
                 print(f"Getting TSL information: {id}")
                 
                 return user_info
@@ -2019,7 +2019,7 @@ def get_lotltsl(id, log_id):
                 tsl_info = dict(zip(column_names, result))
 
                 extra = {'code': log_id} 
-                logger.error(f"Getting TSL information: {id}", extra=extra)
+                logger.info(f"Getting TSL information: {id}", extra=extra)
                 print(f"Getting TSL information: {id}")
                 
                 return tsl_info
