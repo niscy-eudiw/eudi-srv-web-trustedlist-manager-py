@@ -1119,16 +1119,15 @@ def edit_tsl(grouped, tsl_id, log_id):
             cursor = connection.cursor()
             SchemeName_lang = json.dumps(grouped['SchemeName_lang'])
             Uri_lang = json.dumps(grouped['Uri_lang'])
-            SchemeTypeCommunityRules_lang = json.dumps(grouped['SchemeTypeCommunityRules_lang'])
             PolicyOrLegalNotice_lang = json.dumps(grouped['PolicyOrLegalNotice_lang'])
             DistributionPoints = json.dumps(grouped['DistributionPoints'])
 
             insert_query = """
                                 UPDATE trusted_lists 
-                                SET schemeTerritory = %s, SchemeName_lang = %s, Uri_lang = %s, SchemeTypeCommunityRules_lang = %s, PolicyOrLegalNotice_lang = %s, DistributionPoints = %s
+                                SET schemeTerritory = %s, SchemeName_lang = %s, Uri_lang = %s, PolicyOrLegalNotice_lang = %s, DistributionPoints = %s
                                 WHERE tsl_id = %s
                             """
-            cursor.execute(insert_query, (grouped['SchemeCountry'], SchemeName_lang, Uri_lang, SchemeTypeCommunityRules_lang, PolicyOrLegalNotice_lang, DistributionPoints, tsl_id))
+            cursor.execute(insert_query, (grouped['SchemeCountry'], SchemeName_lang, Uri_lang, PolicyOrLegalNotice_lang, DistributionPoints, tsl_id))
             
             connection.commit()
             
