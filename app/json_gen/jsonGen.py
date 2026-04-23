@@ -423,7 +423,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
     file=json.loads(file)
 
-    print(file)
+    #print(file)
 
     jwt= f'{file["signatures"][0]["protected"]}.{file["payload"]}.{file["signatures"][0]["signature"]}'
 

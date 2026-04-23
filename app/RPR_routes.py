@@ -933,7 +933,7 @@ def download_json():
 @rpr.route('/validate_xml', methods=["GET", "POST"])
 def validate_xml():
 
-    print(request.args)
+    #print(request.args)
     encoded_file = request.args.get("file")
     lote=request.args.get("lote")
     file_data = base64.b64decode(encoded_file)
@@ -1730,7 +1730,6 @@ def checkcertificate():
         digital_identity = request.args.get("value")
         decoded= base64.b64decode(digital_identity)
         cert = x509.load_der_x509_certificate(decoded, default_backend())
-        print(2)
 
         return jsonify({"message": {"message": "Valid Certificate"}}),200
 
