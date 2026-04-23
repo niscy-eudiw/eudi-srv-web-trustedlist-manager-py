@@ -68,8 +68,8 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     
     root=LOTE.ListOfTrustedEntitiesType()
 
-    root.set_LOTETag("http://uri.etsi.org/19612/TSLTag")
-    root.set_Id("TrustServiceStatusList")
+    root.set_LOTETag("http://uri.etsi.org/1960201/LoTETag")
+    root.set_Id("ListofTrustedEntities")
 
     schemeInfo = LOTE.LoTEListAndSchemeInformationType()
 
