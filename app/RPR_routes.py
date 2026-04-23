@@ -196,7 +196,6 @@ def authentication():
     }
 
     response_same_device= requests.request("POST", url, headers=headers, json=payload_sameDevice).json()
-
     
     deeplink_url = (
         "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
@@ -227,11 +226,12 @@ def authentication():
 
     return render_template(
         "pid_login_qr_code.html",
-        url_data="deeplink_url",
+        url_data=deeplink_url,
         qrcode=qr_img_base64,
         presentation_id=response["transaction_id"],
         redirect_url= cfgserv.service_url
     )
+
 
 @rpr.route("/pid_authorization")
 def pid_authorization_get():
