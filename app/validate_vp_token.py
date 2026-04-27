@@ -80,7 +80,7 @@ def validate_vp_token(response_json):
 
         return True, "Status invalid:" + str(mdoc_cbor["status"])
 
-    print("\nmdoc_cbor: ", mdoc_cbor)
+    #print("\nmdoc_cbor: ", mdoc_cbor)
 
     error, errorMsg = validate_certificate(mdoc_cbor["documents"][0])
 

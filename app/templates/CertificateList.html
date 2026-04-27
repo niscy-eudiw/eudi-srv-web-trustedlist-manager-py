@@ -81,7 +81,7 @@
               <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">{% if title == "Trusted Lists"%}Add existing Trust Service Providers {% elif title == "Trust Service Providers" %} Add existing services {% endif %}</h4>
+                        <h4 class="modal-title">{% if title == "Trusted Lists and LoTEs" %}Add existing Trust Service Providers/Trusted Entities {% elif title == "Trust Service Providers and Trusted Entities" %} Add existing services {% endif %}</h4>
                     </div>
                     <div class="modal-body">
                         <table class="table table-striped" id="Add_list" >
@@ -169,16 +169,16 @@
                                                     <td id="{{name}}">{{value}}</td>
                                                 {% endfor %}
                                                 <td>
-                                                    {% if title == "Trust Service Providers" or title == "Services" or title == "Trusted Lists" or title == "Trusted Lists (lotl)" %}
+                                                    {% if title == "Trust Service Providers and Trusted Entities" or title == "Services" or title == "Trusted Lists and LoTEs" or title == "Trusted Lists (lotl)" %}
                                                         <a class="btn btn-primary btn-xs" id="{{id}}" href="{{url}}/data_lang?id={{id}}" ><span class="glyphicon glyphicon-plus"></span></a>
                                                     {% endif %}
                                                     <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/edit?id={{id}}"><span class="glyphicon glyphicon-pencil"></span></a>
                                                     <!-- <a class="btn btn-danger btn-xs" id="{{id}}" data-toggle="modal" data-target="#myModal" data-id="{{id}}"><span class="glyphicon glyphicon-remove-circle"></span></a> -->
-                                                    {% if title == "Trust Service Providers" or title == "Trusted Lists" %}
+                                                    {% if title == "Trust Service Providers and Trusted Entities" or title == "Trusted Lists and LoTEs" %}
                                                         <a class="btn btn-default" id="{{id}}" data-toggle="modal" data-target="#ModalList" data-id="{{id}}"><span class="glyphicon glyphicon-cog"></span></a>
                                                     {% endif %}
-                                                    {% if title == "Trusted Lists" %}
-                                                            {% if certificate.get("TSL Type") in lotetype.keys() %}
+                                                    {% if title == "Trusted Lists and LoTEs" %}
+                                                            {% if certificate.get("Type") in lotetype.keys() %}
                                                                 <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml_TE?id={{id}}"><span class="glyphicon glyphicon-download"></span></a>
                                                                 <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/json?id={{id}}"><span class="glyphicon glyphicon-download-alt"></span></a>
                                                             {% else %}
@@ -197,21 +197,21 @@
 
                 </div>
             </div>
-            {% if title == "Trust Service Providers" or title == "Services" or title == "Trusted Lists" or title == "Trusted Lists (lotl)" %}
+            {% if title == "Trust Service Providers and Trusted Entities" or title == "Services" or title == "Trusted Lists and LoTEs" or title == "Trusted Lists (lotl)" %}
                 <p><span class="glyphicon glyphicon-plus"></span> = Add new language Info</p>
             {% endif %}
 
-            {% if title == "Trust Service Providers" or title == "Services" or title == "Trusted Lists" or title == "Trusted Lists (lotl)" %}
+            {% if title == "Trust Service Providers and Trusted Entities" or title == "Services" or title == "Trusted Lists and LoTEs" or title == "Trusted Lists (lotl)" %}
                 <p><span class="glyphicon glyphicon-pencil"></span> = Edit {{h1}}</p>
             {% endif %}
 
             <!-- <p><span class="glyphicon glyphicon-remove-circle"></span> = Delete {{title}}</p> -->
-            {% if title == "Trust Service Providers"%}
+            {% if title == "Trust Service Providers and Trusted Entities"%}
                 <p><span class="glyphicon glyphicon-cog"></span> = Add Services</p>
             {% endif %}
 
-            {% if title == "Trusted Lists" %}
-                <p><span class="glyphicon glyphicon-cog"></span> = Add Trust Service Providers</p>
+            {% if title == "Trusted Lists and LoTEs" %}
+                <p><span class="glyphicon glyphicon-cog"></span> = Add Trust Service Providers/Trusted Entities</p>
                 <p><span class="glyphicon glyphicon-file"></span> = Generate and Sign Trusted Service List</p>
                 <p><span class="glyphicon glyphicon-download"></span> = Generate and Sign List of Trusted Entities XML</p>
                 <p><span class="glyphicon glyphicon-download-alt"></span> = Generate and Sign Lists of Trusted Entities JSON</p>
@@ -316,10 +316,10 @@ function Ajax_request_update(checks,id) {
 
     var list= {{list | tojson}}
 
-    if ( title == "Trust Service Providers"){
+    if ( title == "Trust Service Providers and Trusted Entities"){
        var  url='{{url}}/update_services'
 
-    }else if (title == "Trusted Lists" ){
+    }else if (title == "Trusted Lists and LoTEs" ){
         var url='{{url}}/update_tsps'
     }
 

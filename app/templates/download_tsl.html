@@ -153,12 +153,7 @@
         }, 1);
     }
     function validateXML(){
-        lote=false
-
-        if("{{lote}}"){
-
-           lote=true     
-        }
+        lote="{{lote}}"
 
         $.ajax({
             url: '{{url}}validate_xml',

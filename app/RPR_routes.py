@@ -196,7 +196,6 @@ def authentication():
     }
 
     response_same_device= requests.request("POST", url, headers=headers, json=payload_sameDevice).json()
-
     
     deeplink_url = (
         "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="
@@ -232,6 +231,7 @@ def authentication():
         presentation_id=response["transaction_id"],
         redirect_url= cfgserv.service_url
     )
+
 
 @rpr.route("/pid_authorization")
 def pid_authorization_get():
@@ -691,16 +691,16 @@ def xml():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+            return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+            return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
 
-    return render_template("download_tsl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
+    return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
 @rpr.route('/tsl/xml_TE', methods=["GET", "POST"])
 def xml_TE():
@@ -713,10 +713,10 @@ def xml_TE():
     check = func.check_tsl(tsl_id, session["session_id"])
 
     if check == "tsp":
-        flash("This TSL doesn't have at least one TSP associated.", "danger")
+        flash("This LoTE doesn't have at least one TE associated.", "danger")
         return redirect('/tsl/list')
     elif check == "service":
-        flash("This TSL doesn't have at least one Service associated to an TSP.", "warning")
+        flash("This LoTE doesn't have at least one Service associated to an TE.", "warning")
         return redirect('/tsl/list')
     
     user_info = func.get_user_info(user["id"], session["session_id"])
@@ -751,7 +751,7 @@ def xml_TE():
 
     
     dictFromDB_trusted_lists={
-        "Version":  confxml.TLSVersionIdentifier,
+        "Version":  confxml.LoTEVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"],
         "TSLType": tsl_info["TSLType"],
         "SchemeName":   tsl_info["SchemeName_lang"],
@@ -813,10 +813,10 @@ def json_file():
     check = func.check_tsl(tsl_id, session["session_id"])
 
     if check == "tsp":
-        flash("This TSL doesn't have at least one TSP associated.", "danger")
+        flash("This LoTE doesn't have at least one TE associated.", "danger")
         return redirect('/tsl/list')
     elif check == "service":
-        flash("This TSL doesn't have at least one Service associated to an TSP.", "warning")
+        flash("This LoTE doesn't have at least one Service associated to an TE.", "warning")
         return redirect('/tsl/list')
     
     user_info = func.get_user_info(user["id"], session["session_id"])
@@ -851,7 +851,7 @@ def json_file():
 
     
     dictFromDB_trusted_lists={
-        "Version":  confxml.TLSVersionIdentifier,
+        "Version":  confxml.LoTEVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"],
         "TSLType": tsl_info["TSLType"],
         "SchemeName":   tsl_info["SchemeName_lang"],
@@ -933,12 +933,12 @@ def download_json():
 @rpr.route('/validate_xml', methods=["GET", "POST"])
 def validate_xml():
 
-    print(request.args)
+    #print(request.args)
     encoded_file = request.args.get("file")
     lote=request.args.get("lote")
     file_data = base64.b64decode(encoded_file)
 
-    if lote :
+    if lote == True :
         code,msg= xml_lote_validator(file_data)
     else:
         code,msg= xml_validator(file_data)
@@ -962,19 +962,6 @@ def operator_menu_tsl():
     else:
         return render_template("operator_menu.html", user = user['given_name'], temp_user_id = temp_user_id)
 
-@rpr.route('/tsl/view')
-def view_tsl():
-    
-    temp_user_id = session['temp_user_id']
-    user = session[temp_user_id]
-    
-    tsl = func.get_tsl_info(user["id"], session["session_id"])
-
-    if tsl is None:
-        return render_template("view.html", temp_user_id = temp_user_id, tsl = None, message = "User dont have a tsl created")
-    else:
-        return render_template("view.html", temp_user_id = temp_user_id, tsl = tsl)
-
 @rpr.route('/tsl/list')
 def list_tsl():
         
@@ -983,7 +970,7 @@ def list_tsl():
     
     tsl_dict = func.get_tsl_info(user["id"], session["session_id"])
     
-    header_table=[ "Version","Sequence Number","TSL Type","Scheme Name","Scheme Territory","Issue Date","Next Update"]
+    header_table=[ "Version","Sequence Number","Type","Scheme Name","Scheme Territory","Issue Date","Next Update"]
     if(tsl_dict == "err"):
         data={}
     else:
@@ -995,7 +982,7 @@ def list_tsl():
                 tsl["tsl_id"]:{
                     "Version":tsl["Version"],
                     "Sequence Number":tsl["SequenceNumber"],
-                    "TSL Type":tsl["TSLType"],
+                    "Type":tsl["TSLType"],
                     "Scheme Name":tsl["SchemeName_lang"],
                     "Scheme Territory":tsl["schemeTerritory"],
                     "Issue Date":tsl["issue_date"],
@@ -1039,15 +1026,15 @@ def list_tsl():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists/Lists of Trusted Entities", menu = menu, data=data, title="Trusted Lists and LoTEs", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists/Lists of Trusted Entities", menu = menu, data=data, title="Trusted Lists and LoTEs", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
-        return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+        return render_template("CertificateList.html", h1 = "Trusted Service Lists/Lists of Trusted Entities", menu = menu, data=data, title="Trusted Lists and LoTEs", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
 
     
 @rpr.route('/tsl/create')
@@ -1060,7 +1047,7 @@ def create_tsl():
 
     form_items={
         "Lang": "lang",
-        "TSL Type" : "TSLType",
+        "Type" : "TSLType",
         "Scheme Name": "string", 
         "Scheme Information URI": "string",
         "Scheme Territory": "country",
@@ -1086,12 +1073,12 @@ def create_tsl():
     }
 
     attributesForm.update(form_items)
-    rules = cfgserv.SchemeTypeCommunityRules
+    #rules = cfgserv.SchemeTypeCommunityRules
     # for items in rules:
     #     if 'Scheme Territory' in items:
     #         rules[items] = rules[items] + user['issuing_country']
             
-    return render_template("form_create.html", h3 = "Trusted List information form", countries=cfgserv.eu_countries, title="Trusted List", rules = rules, status = cfgserv.statusDetermination,  TSLType= cfgserv.TSLType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsl/create/db")
+    return render_template("form_create.html", h3 = "Trusted List or LoTE information form", countries=cfgserv.eu_countries, title="Trusted Lists or LoTEs", status = cfgserv.statusDetermination,  TSLType= cfgserv.TSLType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsl/create/db")
 
 @rpr.route('/tsl/create/db', methods=["GET", "POST"])
 def create_tsl_db():
@@ -1101,8 +1088,8 @@ def create_tsl_db():
 
     lang = request.form.get('Lang') 
     Version = confxml.TLSVersionIdentifier
-    Sequence_number = 1
-    TSLType = request.form.get('TSL Type')
+    Sequence_number = 0
+    Type = request.form.get('Type')
     SchemeName_lang = request.form.get('Scheme Name')
     Uri_lang = request.form.get('Scheme Information URI')
     
@@ -1135,7 +1122,7 @@ def create_tsl_db():
     lotl = 0
 
     check = func.check_country(user['issuing_country'], session["session_id"])
-    check = func.tsl_db_info(user['id'], Version, Sequence_number,TSLType, SchemeName_lang, Uri_lang,
+    check = func.tsl_db_info(user['id'], Version, Sequence_number,Type, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
                              AdditionalInformation, schemeTerritory, lotl, check, session["session_id"])
     
@@ -1165,7 +1152,7 @@ def tsl_edit():
                 extra = {'code': session["session_id"]} 
                 logger.error(f"error: {e}", extra=extra)
 
-    return render_template("dynamic-form_edit_TLS.html", rules = cfgserv.SchemeTypeCommunityRules, h3 = "Trusted Service Lists Information", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "tsl/edit_db")
+    return render_template("dynamic-form_edit_TLS.html", h3 = "Trusted Service Lists or LoTEs Information", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "tsl/edit_db")
 
 @rpr.route('/tsl/edit_db', methods=["GET", "POST"])
 def tsl_edit_db():
@@ -1212,7 +1199,7 @@ def tsl_edit_db():
         return ("erro")
     else:
         return redirect('/tsl/list')
-        
+#depois
 @rpr.route('/tsl/update_tsps', methods=["GET", "POST"])
 def update_tsps():
 
@@ -1256,7 +1243,7 @@ def tsl_lang():
 
     attributesForm.update(form_items)
     
-    return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Lists", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsl/tsl_db_data_lang")
+    return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Lists and LoTEs", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsl/tsl_db_data_lang")
 
 
 @rpr.route('/tsl/tsl_db_data_lang', methods=["GET", "POST"])
@@ -1333,7 +1320,7 @@ def list_tsp():
     user = session[temp_user_id]
 
     tsp_dict = func.get_tsp_info(user["id"], session["session_id"])
-    header_table=[ "TSP Name", "Trade Name", "Postal Address", "EletronicAddress","TSP InformationURI"]
+    header_table=[ "TSP/TE Name", "Trade Name", "Postal Address", "EletronicAddress","InformationURI"]
 
     if(tsp_dict == "err"):
         data = {}
@@ -1344,11 +1331,11 @@ def list_tsp():
         for tsp in tsp_dict:
             data_temp={
                 tsp["tsp_id"]:{
-                    "TSP Name": tsp["name"],
+                    "TSP/TE Name": tsp["name"],
                     "Trade Name": tsp["trade_name"],
                     "Postal Address": tsp["postal_address"],
                     "EletronicAddress": tsp["EletronicAddress"],
-                    "TSP InformationURI": tsp["TSPInformationURI"]
+                    "InformationURI": tsp["TSPInformationURI"]
                 }
             }
             data.update(data_temp)
@@ -1387,15 +1374,15 @@ def list_tsp():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("CertificateList.html", h1 = "Trust Service Providers", menu = menu, data=data, title="Trust Service Providers", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Trust Service Providers/Trusted Entities", menu = menu, data=data, title="Trust Service Providers and Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("CertificateList.html", h1 = "Trust Service Providers", menu = menu, data=data, title="Trust Service Providers", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Trust Service Providers/Trusted Entities", menu = menu, data=data, title="Trust Service Providers and Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
-        return render_template("CertificateList.html", h1 = "Trust Service Providers", menu = menu, data=data, title="Trust Service Providers", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
+        return render_template("CertificateList.html", h1 = "Trust Service Providers/Trusted Entities", menu = menu, data=data, title="Trust Service Providers and Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
 
 @rpr.route('/tsp/create')
 def create_tsp():
@@ -1409,7 +1396,7 @@ def create_tsp():
         "Name": "string",
         "Trade Name": "string",
         "Eletronic Address": "string",
-        "TSP Information URI": "string",
+        "Information URI": "string",
         "Street Address" : "string",
         "Locality": "string",
         "State Or Province": "string",
@@ -1422,7 +1409,7 @@ def create_tsp():
         "Name": "string",
         "Trade Name": "string",
         "Eletronic Address": "string",
-        "TSP Information URI": "string",
+        "Information URI": "string",
         "Street Address": "string",
         "Locality": "string",
         "State Or Province": "string",
@@ -1432,7 +1419,7 @@ def create_tsp():
 
     attributesForm.update(form_items)
     
-    return render_template("form_create.html", h3 = "Trusted Service Provider information form", countries=cfgserv.eu_countries, title="Trusted Service Provider", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/create/db")
+    return render_template("form_create.html", h3 = "Trusted Service Provider/Trusted Entity information form", countries=cfgserv.eu_countries, title="Trusted Service Provider/Trusted Entity", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/create/db")
 
 
 @rpr.route('/tsp/create/db', methods=["GET", "POST"])
@@ -1448,7 +1435,7 @@ def create_tsp_db():
     StateOrProvince= request.form.get('State Or Province')
     PostalCode= request.form.get('Postal Code')
     EletronicAddress= request.form.get('Eletronic Address')
-    TSPInformationURI= request.form.get('TSP Information URI')
+    TSPInformationURI= request.form.get('Information URI')
     country= request.form.get('Country Name')
     lang = request.form.get('Lang')
 
@@ -1477,7 +1464,7 @@ def tsp_lang():
         "Name": "string",
         "Trade Name": "string",
         "Eletronic Address": "string",
-        "TSP Information URI": "string",
+        "Information URI": "string",
         "Street Address" : "string",
         "Locality": "string",
         "State Or Province": "string",
@@ -1489,7 +1476,7 @@ def tsp_lang():
         "Name": "string",
         "Trade Name": "string",
         "Eletronic Address": "string",
-        "TSP Information URI": "string",
+        "Information URI": "string",
         "Street Address" : "string",
         "Locality": "string",
         "State Or Province": "string",
@@ -1499,7 +1486,7 @@ def tsp_lang():
 
     attributesForm.update(form_items)
     
-    return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Service Provider", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/tsp_db_data_lang")
+    return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Service Provider/Trusted Entity", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/tsp_db_data_lang")
 
 
 @rpr.route('/tsp/tsp_db_data_lang', methods=["GET", "POST"])
@@ -1517,7 +1504,7 @@ def tsp_db_lang():
     PostalCode= request.form.get('Postal Code')
     CountryName= request.form.get('Country Name')
     EletronicAddress= request.form.get('Eletronic Address')
-    TSPInformationURI= request.form.get('TSP Information URI')
+    TSPInformationURI= request.form.get('Information URI')
     lang = request.form.get('Lang')
 
     db_data = func.get_data_tsp(tsp_id, session["session_id"])
@@ -1593,7 +1580,7 @@ def tsp_edit():
         db_data[key] = json.loads(db_data[key])
 
     
-    return render_template("dynamic-form_edit_TLS.html", h3 = "Trusted Service Provider Information", title = "Trusted Service Provider", id = tsp_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/tsp/tsp_edit_db")
+    return render_template("dynamic-form_edit_TLS.html", h3 = "Trusted Service Provider/Trusted Entity Information", title = "Trust Service Provider/Trusted Entity", id = tsp_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/tsp/tsp_edit_db")
 
 @rpr.route('/tsp/tsp_edit_db', methods=["GET", "POST"])
 def tsp_edit_db():
@@ -1640,7 +1627,7 @@ def tsp_edit_db():
         return ("erro")
     else:
         return redirect('/tsp/list')
-        
+#depois        
 @rpr.route('/tsp/update_services', methods=["GET", "POST"])
 def update_services():
 
@@ -1691,15 +1678,15 @@ def list_service():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("CertificateList.html", h1 = "Trust Services", menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"service", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Services", menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"service", temp_user_id = temp_user_id)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("CertificateList.html", h1 = "Trust Services", menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"service", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Services", menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"service", temp_user_id = temp_user_id)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
-        return render_template("CertificateList.html", h1 = "Trust Services",  menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"service", temp_user_id = temp_user_id)
+        return render_template("CertificateList.html", h1 = "Services",  menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"service", temp_user_id = temp_user_id)
 
 @rpr.route('/service/create')
 def create_service():
@@ -1743,7 +1730,6 @@ def checkcertificate():
         digital_identity = request.args.get("value")
         decoded= base64.b64decode(digital_identity)
         cert = x509.load_der_x509_certificate(decoded, default_backend())
-        print(2)
 
         return jsonify({"message": {"message": "Valid Certificate"}}),200
 
@@ -1757,10 +1743,6 @@ def checkcertificate():
         except (ValueError, TypeError):
 
             return jsonify({"error": "Invalid Certificate"}),400
-        
-
-    
-
 
 @rpr.route('/service/create/db', methods=["GET", "POST"])
 def service_tsp_db():
@@ -1772,6 +1754,7 @@ def service_tsp_db():
     service_name = request.form.get('Service Name')
     #qualifier = request.form.get('Qualifier')
     digital_identity = request.form.get('Digital Identity')
+    
     status = request.form.get('Service Status')
     status_start_date = request.form.get('Status Start Date')
     uri = request.form.get('Scheme Service Definition URI')
@@ -1869,7 +1852,7 @@ def service_edit():
     for key in db_data: 
         db_data[key] = json.loads(db_data[key])
     
-    return render_template("dynamic-form_edit_TLS.html", h3 = "Trust Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/service/service_edit_db")
+    return render_template("dynamic-form_edit_TLS.html", h3 = "Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/service/service_edit_db")
 
 @rpr.route('/service/service_edit_db', methods=["GET", "POST"])
 def service_edit_db():
@@ -2302,6 +2285,7 @@ def lotl_json():
 
         return render_template("download_lotl.html", menu = menu, json=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
+#depois
 @rpr.route('/lotl/tsl_list')
 def list_tsl_lotl():
         
