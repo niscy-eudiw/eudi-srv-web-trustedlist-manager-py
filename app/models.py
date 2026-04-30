@@ -363,7 +363,7 @@ def get_user_tsl(id, log_id):
             connection.close()
 
 
-def insert_tsp_info(user_id, name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, log_id):
+def insert_tsp_info(user_id, name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, Type, log_id):
     try:
         connection = conn()
         if connection:
@@ -371,11 +371,11 @@ def insert_tsp_info(user_id, name, trade_name, PostalAddress, EletronicAddress, 
             
             insert_query = """
                             INSERT INTO trust_service_providers 
-                            (name, trade_name, postal_address, EletronicAddress, TSPInformationURI, operator_id) 
-                            VALUES (%s, %s, %s, %s, %s, %s)
+                            (name, trade_name, postal_address, EletronicAddress, TSPInformationURI, type, operator_id) 
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
                             """
             
-            cursor.execute(insert_query, (name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, user_id,))
+            cursor.execute(insert_query, (name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, Type, user_id,))
             
             connection.commit()
             

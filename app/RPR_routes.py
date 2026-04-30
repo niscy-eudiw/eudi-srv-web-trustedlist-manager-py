@@ -702,207 +702,6 @@ def xml():
 
     return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
-@rpr.route('/tsl/xml_TE', methods=["GET", "POST"])
-def xml_TE():
-    
-    temp_user_id = session['temp_user_id']
-    user = session[temp_user_id]
-
-    tsl_id = request.args.get("id")
-
-    check = func.check_tsl(tsl_id, session["session_id"])
-
-    if check == "tsp":
-        flash("This LoTE doesn't have at least one TE associated.", "danger")
-        return redirect('/tsl/list')
-    elif check == "service":
-        flash("This LoTE doesn't have at least one Service associated to an TE.", "warning")
-        return redirect('/tsl/list')
-    
-    user_info = func.get_user_info(user["id"], session["session_id"])
-
-    tsl_info = func.tsl_info(tsl_id, session["session_id"])
-
-    lang_based_fields = [
-        "SchemeName_lang",
-        "Uri_lang",
-        "SchemeTypeCommunityRules_lang",
-        "PolicyOrLegalNotice_lang"
-    ]
-
-    for key in lang_based_fields:
-        try:
-            tsl_info[key] = json.loads(tsl_info[key]) if tsl_info[key] else []
-        except json.JSONDecodeError:
-            extra = {'code': session["session_id"]} 
-            logger.error(f"Error decoding : {key}: {tsl_info[key]}", extra=extra)
-            print(f"Error decoding {key}: {tsl_info[key]}")
-            tsl_info[key] = []
-
-    try:
-        tsl_info["DistributionPoints"] = json.loads(tsl_info["DistributionPoints"]) if tsl_info["DistributionPoints"] else []
-        if not isinstance(tsl_info["DistributionPoints"], list):
-            raise ValueError("DistributionPoints não é uma lista válida!")
-    except (json.JSONDecodeError, ValueError):
-        extra = {'code': session["session_id"]} 
-        logger.error(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}", extra=extra)
-        print(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}")
-        tsl_info["DistributionPoints"] = []
-
-    
-    dictFromDB_trusted_lists={
-        "Version":  confxml.LoTEVersionIdentifier,
-        "SequenceNumber":   tsl_info["SequenceNumber"],
-        "TSLType": tsl_info["TSLType"],
-        "SchemeName":   tsl_info["SchemeName_lang"],
-        "SchemeInformationURI": tsl_info["Uri_lang"],
-        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
-        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
-        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
-        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-        "schemeTerritory": tsl_info["schemeTerritory"],
-        #AdditionalInformation,ver
-
-        #"DistributionPoints" :  tsl_info["DistributionPoints"],
-        "issue_date" :  tsl_info["issue_date"],
-        "next_update":  tsl_info["next_update"],
-        "status":   tsl_info["status"]
-    }
-    
-    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
-
-    service_data = []
-
-    for item in tsp_data:
-        tsp_id = item["tsp_id"]
-        
-        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
-    
-        service_data.append(service_info)
-
-    # for service_list in service_data:
-    #     for service in service_list:
-    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
-
-    file, thumbprint, xml_hash_before_sign = xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
-     
-    if(cfgserv.two_operators):
-        role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
-        if(role == "tsl_op"):
-            menu= cfgserv.service_url + "menu_tsl"
-            return render_template("download_tsl.html", menu = menu, lote=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
-        elif(role == "tsp_op"):
-            menu= cfgserv.service_url + "menu_tsp"
-            return render_template("download_tsl.html", menu = menu, lote=True,  xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
-        else:
-            return ("error")
-    else:
-        menu= cfgserv.service_url + "menu"
-
-    return render_template("download_tsl.html", menu = menu, lote=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
-
-@rpr.route('/tsl/json', methods=["GET", "POST"])
-def json_file():
-    
-    temp_user_id = session['temp_user_id']
-    user = session[temp_user_id]
-
-    tsl_id = request.args.get("id")
-
-    check = func.check_tsl(tsl_id, session["session_id"])
-
-    if check == "tsp":
-        flash("This LoTE doesn't have at least one TE associated.", "danger")
-        return redirect('/tsl/list')
-    elif check == "service":
-        flash("This LoTE doesn't have at least one Service associated to an TE.", "warning")
-        return redirect('/tsl/list')
-    
-    user_info = func.get_user_info(user["id"], session["session_id"])
-
-    tsl_info = func.tsl_info(tsl_id, session["session_id"])
-
-    lang_based_fields = [
-        "SchemeName_lang",
-        "Uri_lang",
-        "SchemeTypeCommunityRules_lang",
-        "PolicyOrLegalNotice_lang"
-    ]
-
-    for key in lang_based_fields:
-        try:
-            tsl_info[key] = json.loads(tsl_info[key]) if tsl_info[key] else []
-        except json.JSONDecodeError:
-            extra = {'code': session["session_id"]} 
-            logger.error(f"Error decoding : {key}: {tsl_info[key]}", extra=extra)
-            print(f"Error decoding {key}: {tsl_info[key]}")
-            tsl_info[key] = []
-
-    try:
-        tsl_info["DistributionPoints"] = json.loads(tsl_info["DistributionPoints"]) if tsl_info["DistributionPoints"] else []
-        if not isinstance(tsl_info["DistributionPoints"], list):
-            raise ValueError("DistributionPoints não é uma lista válida!")
-    except (json.JSONDecodeError, ValueError):
-        extra = {'code': session["session_id"]} 
-        logger.error(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}", extra=extra)
-        print(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}")
-        tsl_info["DistributionPoints"] = []
-
-    
-    dictFromDB_trusted_lists={
-        "Version":  confxml.LoTEVersionIdentifier,
-        "SequenceNumber":   tsl_info["SequenceNumber"],
-        "TSLType": tsl_info["TSLType"],
-        "SchemeName":   tsl_info["SchemeName_lang"],
-        "SchemeInformationURI": tsl_info["Uri_lang"],
-        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
-        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
-        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
-        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-        "schemeTerritory": tsl_info["schemeTerritory"],
-        #AdditionalInformation,ver
-
-        #"DistributionPoints" :  tsl_info["DistributionPoints"],
-        "issue_date" :  tsl_info["issue_date"],
-        "next_update":  tsl_info["next_update"],
-        "status":   tsl_info["status"]
-    }
-    
-    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
-
-    service_data = []
-
-    for item in tsp_data:
-        tsp_id = item["tsp_id"]
-        
-        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
-    
-        service_data.append(service_info)
-
-    # for service_list in service_data:
-    #     for service in service_list:
-    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
-
-    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
-    
-    if(cfgserv.two_operators):
-        role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
-        if(role == "tsl_op"):
-            menu= cfgserv.service_url + "menu_tsl"
-            return render_template("download_tsl.html", menu = menu, json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
-        elif(role == "tsp_op"):
-            menu= cfgserv.service_url + "menu_tsp"
-            return render_template("download_tsl.html", menu = menu,json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id)
-        else:
-            return ("error")
-    else:
-        menu= cfgserv.service_url + "menu"
-
-    return render_template("download_tsl.html", menu = menu,json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id, url= cfgserv.service_url)
-
-    
 @rpr.route('/download', methods=["GET", "POST"])
 def download_tsl():
 
@@ -916,6 +715,7 @@ def download_tsl():
         as_attachment=True,
         mimetype='application/xml'
     )
+
 @rpr.route('/download_json', methods=["GET", "POST"])
 def download_json():
 
@@ -978,18 +778,19 @@ def list_tsl():
         data={}
 
         for tsl in tsl_dict:
-            data_temp={
-                tsl["tsl_id"]:{
-                    "Version":tsl["Version"],
-                    "Sequence Number":tsl["SequenceNumber"],
-                    "Type":tsl["TSLType"],
-                    "Scheme Name":tsl["SchemeName_lang"],
-                    "Scheme Territory":tsl["schemeTerritory"],
-                    "Issue Date":tsl["issue_date"],
-                    "Next Update":tsl["next_update"]
+            if tsl["TSLType"] in cfgserv.TSLType:
+                data_temp={
+                    tsl["tsl_id"]:{
+                        "Version":tsl["Version"],
+                        "Sequence Number":tsl["SequenceNumber"],
+                        "Type":tsl["TSLType"],
+                        "Scheme Name":tsl["SchemeName_lang"],
+                        "Scheme Territory":tsl["schemeTerritory"],
+                        "Issue Date":tsl["issue_date"],
+                        "Next Update":tsl["next_update"]
+                    }
                 }
-            }
-            data.update(data_temp)
+                data.update(data_temp)
     
     tsp_dict = func.get_tsp_update(user["id"], session["session_id"])
     
@@ -998,43 +799,44 @@ def list_tsl():
         if(tsp_dict != "err"):
 
             for item in tsp_dict:
-                name = json.loads(item["name"])
-                
-                name_txt = name[0]["text"] if name else "No Name"
-                if(item["tsl_id"] != None):
-                    tsl_name = func.get_tsl_name(item["tsl_id"], session["session_id"])
-                    aux_name = json.loads(tsl_name["SchemeName_lang"])
-                    tsl_name = aux_name[0]["text"] if aux_name else "No Name"
+                if item["type"] == "TSP":
+                    name = json.loads(item["name"])
                     
-                    new_item = {
-                        "id": item["tsp_id"],
-                        "name": name_txt,
-                        "associated_id": item["tsl_id"],
-                        "ass_name": tsl_name
-                    }
-                else:
-                    new_item = {
-                        "id": item["tsp_id"],
-                        "name": name_txt,
-                        "associated_id": item["tsl_id"],
-                        "ass_name": ""
-                    }
-                
-                list.append(new_item)
+                    name_txt = name[0]["text"] if name else "No Name"
+                    if(item["tsl_id"] != None):
+                        tsl_name = func.get_tsl_name(item["tsl_id"], session["session_id"])
+                        aux_name = json.loads(tsl_name["SchemeName_lang"])
+                        tsl_name = aux_name[0]["text"] if aux_name else "No Name"
+                        
+                        new_item = {
+                            "id": item["tsp_id"],
+                            "name": name_txt,
+                            "associated_id": item["tsl_id"],
+                            "ass_name": tsl_name
+                        }
+                    else:
+                        new_item = {
+                            "id": item["tsp_id"],
+                            "name": name_txt,
+                            "associated_id": item["tsl_id"],
+                            "ass_name": ""
+                        }
+                    
+                    list.append(new_item)
     
     if(cfgserv.two_operators):
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists/Lists of Trusted Entities", menu = menu, data=data, title="Trusted Lists and LoTEs", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists/Lists of Trusted Entities", menu = menu, data=data, title="Trusted Lists and LoTEs", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
-        return render_template("CertificateList.html", h1 = "Trusted Service Lists/Lists of Trusted Entities", menu = menu, data=data, title="Trusted Lists and LoTEs", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+        return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
 
     
 @rpr.route('/tsl/create')
@@ -1329,16 +1131,17 @@ def list_tsp():
         data = {}
         
         for tsp in tsp_dict:
-            data_temp={
-                tsp["tsp_id"]:{
-                    "TSP/TE Name": tsp["name"],
-                    "Trade Name": tsp["trade_name"],
-                    "Postal Address": tsp["postal_address"],
-                    "EletronicAddress": tsp["EletronicAddress"],
-                    "InformationURI": tsp["TSPInformationURI"]
+            if tsp["type"] == "TSP":
+                data_temp={
+                    tsp["tsp_id"]:{
+                        "TSP/TE Name": tsp["name"],
+                        "Trade Name": tsp["trade_name"],
+                        "Postal Address": tsp["postal_address"],
+                        "EletronicAddress": tsp["EletronicAddress"],
+                        "InformationURI": tsp["TSPInformationURI"]
+                    }
                 }
-            }
-            data.update(data_temp)
+                data.update(data_temp)
 
     service_dict = func.get_service_update(user["id"], session["session_id"])
     
@@ -1346,43 +1149,44 @@ def list_tsp():
 
     if(service_dict != "err"):
         for item in service_dict:
-            name = json.loads(item["ServiceName"])
-            name_txt = name[0]["text"] if name else "No Name"
+            if item["service_type"] in cfgserv.qualified or item["service_type"] in cfgserv.non_qualified or item["service_type"] in cfgserv.national:
+                name = json.loads(item["ServiceName"])
+                name_txt = name[0]["text"] if name else "No Name"
 
-            if(item["tsp_id"] != None):
-                tsp_name = func.get_tsp_name(item["tsp_id"], session["session_id"])
-                aux_name = json.loads(tsp_name["name"])
-                tsp_name = aux_name[0]["text"] if aux_name else "No Name"
+                if(item["tsp_id"] != None):
+                    tsp_name = func.get_tsp_name(item["tsp_id"], session["session_id"])
+                    aux_name = json.loads(tsp_name["name"])
+                    tsp_name = aux_name[0]["text"] if aux_name else "No Name"
 
-                new_item = {
-                    "id": item["service_id"],
-                    "name": name_txt,
-                    "associated_id": item["tsp_id"],
-                    "ass_name": tsp_name
-                }
-            else:
-                new_item = {
-                    "id": item["service_id"],
-                    "name": name_txt,
-                    "associated_id": item["tsp_id"],
-                    "ass_name": ""
-                }
-            
-            list.append(new_item)
+                    new_item = {
+                        "id": item["service_id"],
+                        "name": name_txt,
+                        "associated_id": item["tsp_id"],
+                        "ass_name": tsp_name
+                    }
+                else:
+                    new_item = {
+                        "id": item["service_id"],
+                        "name": name_txt,
+                        "associated_id": item["tsp_id"],
+                        "ass_name": ""
+                    }
+                
+                list.append(new_item)
 
     if(cfgserv.two_operators):
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("CertificateList.html", h1 = "Trust Service Providers/Trusted Entities", menu = menu, data=data, title="Trust Service Providers and Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Trust Service Providers", menu = menu, data=data, title="Trust Service Providers", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("CertificateList.html", h1 = "Trust Service Providers/Trusted Entities", menu = menu, data=data, title="Trust Service Providers and Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
+            return render_template("CertificateList.html", h1 = "Trust Service Providers", menu = menu, data=data, title="Trust Service Providers", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
-        return render_template("CertificateList.html", h1 = "Trust Service Providers/Trusted Entities", menu = menu, data=data, title="Trust Service Providers and Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
+        return render_template("CertificateList.html", h1 = "Trust Service Providers", menu = menu, data=data, title="Trust Service Providers", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
 
 @rpr.route('/tsp/create')
 def create_tsp():
@@ -1419,7 +1223,7 @@ def create_tsp():
 
     attributesForm.update(form_items)
     
-    return render_template("form_create.html", h3 = "Trusted Service Provider/Trusted Entity information form", countries=cfgserv.eu_countries, title="Trusted Service Provider/Trusted Entity", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/create/db")
+    return render_template("form_create.html", h3 = "Trusted Service Provider", countries=cfgserv.eu_countries, title="Trusted Service Provider", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/create/db")
 
 
 @rpr.route('/tsp/create/db', methods=["GET", "POST"])
@@ -1445,7 +1249,7 @@ def create_tsp_db():
     TSPInformationURI = '[{"lang":"' + lang + '", "URI":"'+ TSPInformationURI + '"}]'
     PostalAddress = '[{"lang":"' + lang + '", "StreetAddress":"'+ StreetAddress + '", "Locality":"'+ Locality + '", "StateOrProvince":"'+ StateOrProvince + '", "PostalCode":"'+ PostalCode + '", "CountryName":"'+ country + '"}]'
     
-    check = func.tsp_db_info(user['id'], name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, session["session_id"])
+    check = func.tsp_db_info(user['id'], name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, "TSP", session["session_id"])
 
     if check is None:
         return "err"
@@ -1486,7 +1290,7 @@ def tsp_lang():
 
     attributesForm.update(form_items)
     
-    return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Service Provider/Trusted Entity", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/tsp_db_data_lang")
+    return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Service Provider", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsp/tsp_db_data_lang")
 
 
 @rpr.route('/tsp/tsp_db_data_lang', methods=["GET", "POST"])
@@ -1661,17 +1465,18 @@ def list_service():
         data = {}
     
         for service in service_dict:
-            data_temp={
-                service["service_id"]:{
-                    "Service Type": service["service_type"],
-                    "Service Name": service["ServiceName"],
-                    "Status": service["status"],
-                    "Status start date": service["status_start_date"],
-                    "Qualifier": service["qualifier"],
-                    "SchemeService Definition URI": service["SchemeServiceDefinitionURI"]
+            if service["service_type"] in cfgserv.qualified or service["service_type"] in cfgserv.non_qualified or service["service_type"] in cfgserv.national:
+                data_temp={
+                    service["service_id"]:{
+                        "Service Type": service["service_type"],
+                        "Service Name": service["ServiceName"],
+                        "Status": service["status"],
+                        "Status start date": service["status_start_date"],
+                        "Qualifier": service["qualifier"],
+                        "SchemeService Definition URI": service["SchemeServiceDefinitionURI"]
+                    }
                 }
-            }
-            data.update(data_temp)
+                data.update(data_temp)
     list = []
     
     if(cfgserv.two_operators):
@@ -1947,27 +1752,27 @@ def list_lotl():
         data={}
 
         for tsl in tsl_dict:
-            if(tsl['lotl'] != None):
-                if(tsl['lotl'] == 0):
-                    included = False
-                elif(tsl['lotl'] == 1):
-                    included = True
-                data_temp={
-                    tsl["tsl_id"]:{
-                        "Version":tsl["Version"],
-                        "Sequence Number":tsl["SequenceNumber"],
-                        "TSL Type":tsl["TSLType"],
-                        "Scheme Name":tsl["SchemeName_lang"],
-                        "Scheme Territory":tsl["schemeTerritory"],
-                        "Issue Date":tsl["issue_date"],
-                        "Next Update":tsl["next_update"],
-                        "included":included
+            if tsl["TSLType"] in cfgserv.TSLType:
+                if(tsl['lotl'] != None):
+                    if(tsl['lotl'] == 0):
+                        included = False
+                    elif(tsl['lotl'] == 1):
+                        included = True
+                    data_temp={
+                        tsl["tsl_id"]:{
+                            "Version":tsl["Version"],
+                            "Sequence Number":tsl["SequenceNumber"],
+                            "TSL Type":tsl["TSLType"],
+                            "Scheme Name":tsl["SchemeName_lang"],
+                            "Scheme Territory":tsl["schemeTerritory"],
+                            "Issue Date":tsl["issue_date"],
+                            "Next Update":tsl["next_update"],
+                            "included":included
+                        }
                     }
-                }
-                data.update(data_temp)
+                    data.update(data_temp)
     
     return render_template("AdminList.html", h3 = "List of Trusted Lists", data=data, title="List Of Trusted Lists", menu= cfgserv.service_url + "menu_lotl", header_table=header_table, url=cfgserv.service_url +"lotl", temp_user_id = temp_user_id, servi = cfgserv.service_url + "lotl/xml")
-
 
 
 @rpr.route('/lotl/xml', methods=["GET", "POST"])
