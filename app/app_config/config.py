@@ -118,8 +118,10 @@ class ConfService:
 
     ServiceStatus= { "Qualified":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted", "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn"],
                      "Others":["http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel","http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/deprecatedatnationallevel"],
-                     "Pub-EAA_Providers": ["http://uri.etsi.org/19602/PubEAAProvidersList/SvcStatus/notified", "http://uri.etsi.org/19602/PubEAAProvidersList/SvcStatus/withdrawn"]}
+                     }
 
+    LoTE_ServiceStatus={
+                        "Pub-EAA_Providers": ["http://uri.etsi.org/19602/PubEAAProvidersList/SvcStatus/notified", "http://uri.etsi.org/19602/PubEAAProvidersList/SvcStatus/withdrawn"]}
 
     qualified=["http://uri.etsi.org/TrstSvc/Svctype/EAA/Q"]
 

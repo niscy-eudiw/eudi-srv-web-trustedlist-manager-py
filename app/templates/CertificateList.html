@@ -81,7 +81,7 @@
               <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">{% if title == "Trusted Lists" or title == "LoTES" %}Add existing Trust Service Providers/Trusted Entities {% eltitle == "Trust Service Providers" or title == "Trusted Entities"  %} Add existing services {% endif %}</h4>
+                        <h4 class="modal-title">{% if title == "Trusted Lists" or title == "LoTES" %}Add existing Trust Service Providers/Trusted Entities {% elif title == "Trust Service Providers" or title == "Trusted Entities"  %} Add existing services {% endif %}</h4>
                     </div>
                     <div class="modal-body">
                         <table class="table table-striped" id="Add_list" >
@@ -169,22 +169,22 @@
                                                     <td id="{{name}}">{{value}}</td>
                                                 {% endfor %}
                                                 <td>
-                                                    {% title == "Trust Service Providers" or title == "Trusted Entities"  or title == "Services" or  title == "Trusted Lists" or title == "LoTEs" or title == "Trusted Lists (lotl)" %}
+                                                    {% if title == "Trust Service Providers" or title == "Trusted Entities"  or title == "Services" or  title == "Trusted Lists" or title == "LoTEs" or title == "Trusted Lists (lotl)" %}
                                                         <a class="btn btn-primary btn-xs" id="{{id}}" href="{{url}}/data_lang?id={{id}}" ><span class="glyphicon glyphicon-plus"></span></a>
                                                     {% endif %}
                                                     <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/edit?id={{id}}"><span class="glyphicon glyphicon-pencil"></span></a>
                                                     <!-- <a class="btn btn-danger btn-xs" id="{{id}}" data-toggle="modal" data-target="#myModal" data-id="{{id}}"><span class="glyphicon glyphicon-remove-circle"></span></a> -->
-                                                    {% title == "Trust Service Providers" or title == "Trusted Entities"  or  title == "Trusted Lists" or title == "LoTEs" %}
+                                                    {% if title == "Trust Service Providers" or title == "Trusted Entities"  or  title == "Trusted Lists" or title == "LoTEs" %}
                                                         <a class="btn btn-default" id="{{id}}" data-toggle="modal" data-target="#ModalList" data-id="{{id}}"><span class="glyphicon glyphicon-cog"></span></a>
                                                     {% endif %}
-                                                    {%  title == "Trusted Lists" or title == "LoTEs" %}
-                                                            {% if certificate.get("Type") in lotetype.keys() %}
-                                                                <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml_TE?id={{id}}"><span class="glyphicon glyphicon-download"></span></a>
-                                                                <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/json?id={{id}}"><span class="glyphicon glyphicon-download-alt"></span></a>
-                                                            {% else %}
-                                                                <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml?id={{id}}"><span class="glyphicon glyphicon-file"></span></a>
-                                                            {% endif %}
+                                                    
+                                                    {% if title == "LoTEs" %}
+                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml_TE?id={{id}}"><span class="glyphicon glyphicon-download"></span></a>
+                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/json?id={{id}}"><span class="glyphicon glyphicon-download-alt"></span></a>
+                                                    {% elif title == "Trusted Lists" %}
+                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml?id={{id}}"><span class="glyphicon glyphicon-file"></span></a>
                                                     {% endif %}
+                                                    
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -206,7 +206,7 @@
             {% endif %}
 
             <!-- <p><span class="glyphicon glyphicon-remove-circle"></span> = Delete {{title}}</p> -->
-            {% title == "Trust Service Providers" or title == "Trusted Entities" %}
+            {% if  title == "Trust Service Providers" or title == "Trusted Entities" %}
                 <p><span class="glyphicon glyphicon-cog"></span> = Add Services</p>
             {% endif %}
 

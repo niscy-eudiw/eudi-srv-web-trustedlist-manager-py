@@ -828,15 +828,15 @@ def list_tsl():
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
         if(role == "tsl_op"):
             menu= cfgserv.service_url + "menu_tsl"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id)
         elif(role == "tsp_op"):
             menu= cfgserv.service_url + "menu_tsp"
-            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+            return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id)
         else:
             return ("error")
     else:
         menu= cfgserv.service_url + "menu"
-        return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id, lotetype=cfgserv.service_dict)
+        return render_template("CertificateList.html", h1 = "Trusted Service Lists", menu = menu, data=data, title="Trusted Lists", list= list, header_table=header_table, url=cfgserv.service_url +"tsl", temp_user_id = temp_user_id)
 
     
 @rpr.route('/tsl/create')
@@ -1122,7 +1122,7 @@ def list_tsp():
     user = session[temp_user_id]
 
     tsp_dict = func.get_tsp_info(user["id"], session["session_id"])
-    header_table=[ "TSP/TE Name", "Trade Name", "Postal Address", "EletronicAddress","InformationURI"]
+    header_table=[ "TSP Name", "Trade Name", "Postal Address", "EletronicAddress","InformationURI"]
 
     if(tsp_dict == "err"):
         data = {}

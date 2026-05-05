@@ -104,11 +104,18 @@
                         <a href="{{ url_for('RPR.op_edit') }}" class="menu-option">Edit information</a>
 
                         <h3>Trusted Service List (TSL) and List of Trusted Entities (LoTE) Management</h3>
-                        <a href="{{ url_for('RPR.list_tsl') }}" class="menu-option"></span>Manage TSL and LoTE</a>
+                        <a href="{{ url_for('RPR.list_tsl') }}" class="menu-option"></span>Manage TSL </a>
                         
                         <h3>Trust Service Provider (TSP) and Trusted Entities (TE) Management</h3>
                         <a href="{{ url_for('RPR.list_service') }}" class="menu-option"></span>Manage Trust Services</a>
-                        <a href="{{ url_for('RPR.list_tsp') }}" class="menu-option"></span>Manage TSP and TE</a>
+                        <a href="{{ url_for('RPR.list_tsp') }}" class="menu-option"></span>Manage TSP </a>
+
+                        <h3>List of Trusted Entities (LoTE) Management</h3>
+                        <a href="{{ url_for('LoTE.list_lote') }}" class="menu-option"></span>Manage LoTE</a>
+                        
+                        <h3>Trusted Entities (TE) Management</h3>
+                        <a href="{{ url_for('LoTE.list_te_service') }}" class="menu-option"></span>Manage  Services</a>
+                        <a href="{{ url_for('LoTE.list_te') }}" class="menu-option"></span>Manage TE</a>
 
 
                         <a href="{{ url_for('RPR.logout') }}" class="menu-option" style="background-color: #ff4d4d;">Logout</a>

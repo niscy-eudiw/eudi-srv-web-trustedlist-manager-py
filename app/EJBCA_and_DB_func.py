@@ -259,9 +259,9 @@ def check_role_user(id, log_id):
         return "Error processing the form.", 500
 
  
-def tsp_db_info(user_id, name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI,  log_id):
+def tsp_db_info(user_id, name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, Type,  log_id):
     try:
-        check = db.insert_tsp_info(user_id, name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, log_id) 
+        check = db.insert_tsp_info(user_id, name, trade_name, PostalAddress, EletronicAddress, TSPInformationURI, Type, log_id) 
 
         return check
     

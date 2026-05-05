@@ -16,7 +16,7 @@
 #
 ###############################################################################
 """
-This rpr_routes.py file is the blueprint of the Web Trusted List Manager service.
+This lote_routes.py file is the blueprint of the Web Trusted List Manager service.
 """
 
 from app import logger
@@ -69,11 +69,11 @@ from dateutil.relativedelta import relativedelta
 from db import get_db_connection as conn
 import ast
 
-rpr = Blueprint("RPR", __name__, url_prefix="/")
+lote = Blueprint("LoTE", __name__, url_prefix="/")
 
-rpr.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template/')
+lote.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template/')
 
-@rpr.route('/lote/xml_TE', methods=["GET", "POST"])
+@lote.route('/lote/xml_TE', methods=["GET", "POST"])
 def xml_TE():
     
     temp_user_id = session['temp_user_id']
@@ -173,7 +173,7 @@ def xml_TE():
 
     return render_template("download_tsl.html", menu = menu, lote=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
-@rpr.route('/lote/json', methods=["GET", "POST"])
+@lote.route('/lote/json', methods=["GET", "POST"])
 def json_file():
     
     temp_user_id = session['temp_user_id']
@@ -273,7 +273,7 @@ def json_file():
 
     return render_template("download_tsl.html", menu = menu,json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
-@rpr.route('/lote/list')
+@lote.route('/lote/list')
 def list_lote():
         
     temp_user_id = session['temp_user_id']
@@ -350,7 +350,7 @@ def list_lote():
         return render_template("CertificateList.html", h1 = "Lists of Trusted Entities", menu = menu, data=data, title="LoTEs", list= list, header_table=header_table, url=cfgserv.service_url +"lote", temp_user_id = temp_user_id)
 
     
-@rpr.route('/lote/create')
+@lote.route('/lote/create')
 def create_lote():
     
     temp_user_id = session['temp_user_id']
@@ -393,7 +393,7 @@ def create_lote():
             
     return render_template("form_create.html", h3 = "LoTE information form", countries=cfgserv.eu_countries, title="LoTEs", TSLType= cfgserv.LoTEType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "lote/create/db")
 
-@rpr.route('/lote/create/db', methods=["GET", "POST"])
+@lote.route('/lote/create/db', methods=["GET", "POST"])
 def create_lote_db():
     
     temp_user_id = session['temp_user_id']
@@ -444,7 +444,7 @@ def create_lote_db():
     else:   
         return redirect('/lote/list')
 
-@rpr.route('/lote/edit', methods=["GET", "POST"])
+@lote.route('/lote/edit', methods=["GET", "POST"])
 def lote_edit():
     
     if not request.args.get("id"):
@@ -467,7 +467,7 @@ def lote_edit():
 
     return render_template("dynamic-form_edit_TLS.html", h3 = "LoTEs Information", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "lote/edit_db")
 
-@rpr.route('/lote/edit_db', methods=["GET", "POST"])
+@lote.route('/lote/edit_db', methods=["GET", "POST"])
 def lote_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -513,7 +513,7 @@ def lote_edit_db():
     else:
         return redirect('/lote/list')
 #depois
-@rpr.route('/lote/update_tes', methods=["GET", "POST"])
+@lote.route('/lote/update_tes', methods=["GET", "POST"])
 def update_TEs():
 
     tsl_id = request.args.get("id")
@@ -531,7 +531,7 @@ def update_TEs():
 
     return redirect('/lote/list')
 
-@rpr.route('/lote/data_lang')
+@lote.route('/lote/data_lang')
 def lote_lang():
     temp_user_id = session['temp_user_id']
     
@@ -559,7 +559,7 @@ def lote_lang():
     return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="LoTEs", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "lote/lote_db_data_lang")
 
 
-@rpr.route('/lote/lote_db_data_lang', methods=["GET", "POST"])
+@lote.route('/lote/lote_db_data_lang', methods=["GET", "POST"])
 def lote_db_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -626,14 +626,14 @@ def lote_db_lang():
         return redirect('/lote/list')
 
 # TSP
-@rpr.route('/te/list')
+@lote.route('/te/list')
 def list_te():
 
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
 
     tsp_dict = func.get_tsp_info(user["id"], session["session_id"])
-    header_table=[ "TSP/TE Name", "Trade Name", "Postal Address", "EletronicAddress","InformationURI"]
+    header_table=[ "TE Name", "Trade Name", "Postal Address", "EletronicAddress","InformationURI"]
 
     if(tsp_dict == "err"):
         data = {}
@@ -642,7 +642,7 @@ def list_te():
         data = {}
         
         for tsp in tsp_dict:
-            if tsp["Type"] == "TE":
+            if tsp["type"] == "TE":
                 data_temp={
                 
                     tsp["tsp_id"]:{
@@ -700,7 +700,7 @@ def list_te():
         menu= cfgserv.service_url + "menu"
         return render_template("CertificateList.html", h1 = "Trusted Entities", menu = menu, data=data, title="Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"te", temp_user_id = temp_user_id)
 
-@rpr.route('/te/create')
+@lote.route('/te/create')
 def create_te():
     
     temp_user_id = session['temp_user_id']
@@ -738,7 +738,7 @@ def create_te():
     return render_template("form_create.html", h3 = "Trusted Entity information form", countries=cfgserv.eu_countries, title="Trusted Entity", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "te/create/db")
 
 
-@rpr.route('/te/create/db', methods=["GET", "POST"])
+@lote.route('/te/create/db', methods=["GET", "POST"])
 def create_te_db():
     
     temp_user_id = session['temp_user_id']
@@ -769,7 +769,7 @@ def create_te_db():
         return redirect('/te/list')
         
 
-@rpr.route('/te/data_lang')
+@lote.route('/te/data_lang')
 def te_lang():
     temp_user_id = session['temp_user_id']
     
@@ -805,7 +805,7 @@ def te_lang():
     return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Entity", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "te/te_db_data_lang")
 
 
-@rpr.route('/te/te_db_data_lang', methods=["GET", "POST"])
+@lote.route('/te/te_db_data_lang', methods=["GET", "POST"])
 def te_db_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -883,7 +883,7 @@ def te_db_lang():
         return redirect('/te/list')
 
 
-@rpr.route('/te/edit')
+@lote.route('/te/edit')
 def te_edit():
         
     temp_user_id = session['temp_user_id']
@@ -898,7 +898,7 @@ def te_edit():
     
     return render_template("dynamic-form_edit_TLS.html", h3 = "Trusted Entity Information", title = "Trusted Entity", id = tsp_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/te/te_edit_db")
 
-@rpr.route('/te/te_edit_db', methods=["GET", "POST"])
+@lote.route('/te/te_edit_db', methods=["GET", "POST"])
 def te_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -944,7 +944,7 @@ def te_edit_db():
     else:
         return redirect('/te/list')
 #depois        
-@rpr.route('/te/update_services', methods=["GET", "POST"])
+@lote.route('/te/update_services', methods=["GET", "POST"])
 def update_services():
 
     tsp_id = request.args.get("id")
@@ -963,7 +963,7 @@ def update_services():
     return redirect('/te/list')
     
 # Service
-@rpr.route('/te_service/list')
+@lote.route('/te_service/list')
 def list_te_service():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -1005,7 +1005,7 @@ def list_te_service():
         menu= cfgserv.service_url + "menu"
         return render_template("CertificateList.html", h1 = "Services",  menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"te_service", temp_user_id = temp_user_id)
 
-@rpr.route('/te_service/create')
+@lote.route('/te_service/create')
 def create_service():
     
     temp_user_id = session['temp_user_id']
@@ -1035,10 +1035,11 @@ def create_service():
 
     attributesForm.update(form_items)
     
-    return render_template("form_service.html", title="Service",status = cfgserv.ServiceStatus, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, 
-                           data = cfgserv.qualifiers, redirect_url= cfgserv.service_url + "te_service/create/db", LoTE=cfgserv.providers, url_certificate=cfgserv.service_url + "checkcertificate")
+    return render_template("form_service.html", title="Service",status = cfgserv.LoTE_ServiceStatus, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, 
+                           data = cfgserv.qualifiers, redirect_url= cfgserv.service_url + "te_service/create/db",qualified = [],
+                           non_qualified = [], national = [], LoTE=cfgserv.providers, url_certificate=cfgserv.service_url + "checkcertificate")
 
-@rpr.route('/te_service/create/db', methods=["GET", "POST"])
+@lote.route('/te_service/create/db', methods=["GET", "POST"])
 def service_te_db():
     
     temp_user_id = session['temp_user_id']
@@ -1065,7 +1066,7 @@ def service_te_db():
         
         return redirect('/te_service/list')
        
-@rpr.route('/te_service/data_lang')
+@lote.route('/te_service/data_lang')
 def service_lang():
     
     temp_user_id = session['temp_user_id']
@@ -1091,7 +1092,7 @@ def service_lang():
                            data = cfgserv.qualifiers, redirect_url= cfgserv.service_url + "te_service/service_lang_db")
 
 
-@rpr.route('/te_service/service_lang_db', methods=["GET", "POST"])
+@lote.route('/te_service/service_lang_db', methods=["GET", "POST"])
 def service_db():
     
     temp_user_id = session['temp_user_id']
@@ -1133,7 +1134,7 @@ def service_db():
         return redirect('/te_service/list')
        
 
-@rpr.route('/te_service/edit')
+@lote.route('/te_service/edit')
 def service_edit():
         
     temp_user_id = session['temp_user_id']
@@ -1148,7 +1149,7 @@ def service_edit():
     
     return render_template("dynamic-form_edit_TLS.html", h3 = "Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/te_service/service_edit_db")
 
-@rpr.route('/te_service/service_edit_db', methods=["GET", "POST"])
+@lote.route('/te_service/service_edit_db', methods=["GET", "POST"])
 def service_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -1196,7 +1197,7 @@ def service_edit_db():
 
 
 # logout
-@rpr.route('/logout')
+@lote.route('/logout')
 def logout():
     session.clear()
     
