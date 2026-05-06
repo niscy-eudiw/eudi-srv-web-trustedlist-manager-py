@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS `trust_service_providers` (
   `trade_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `EletronicAddress` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `TSPInformationURI` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `type` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `operator_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`tsp_id`),
   KEY `trust_service_providers_ibfk_1` (`tsl_id`),

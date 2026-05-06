@@ -1146,6 +1146,35 @@ def edit_tsl(grouped, tsl_id, log_id):
             cursor.close()
             connection.close()
 
+def edit_tsl_dates(IssueDate, NextUpdate, tsl_id, log_id):
+    try:
+        connection = conn()
+        if connection:
+            cursor = connection.cursor()
+
+            insert_query = """
+                                UPDATE trusted_lists 
+                                SET issue_date = %s, next_update = %s WHERE tsl_id = %s
+                            """
+            cursor.execute(insert_query, (IssueDate, NextUpdate, tsl_id))
+            
+            connection.commit()
+            
+            extra = {'code': log_id} 
+            logger.info(f"TSL dates successfully updated: {tsl_id}", extra=extra)
+
+            print(f"TSL dates successfully updated: {tsl_id}")
+            return cursor.lastrowid
+
+    except pymysql.MySQLError as e:
+        extra = {'code': log_id} 
+        logger.error(f"Error inserting user: {e}", extra=extra)
+        print(f"Error updating user: {e}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+
 
 def get_data_tsp_edit(id, log_id):
     try:

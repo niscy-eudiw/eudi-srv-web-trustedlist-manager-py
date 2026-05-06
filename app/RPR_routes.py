@@ -649,58 +649,71 @@ def xml():
         print(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}")
         tsl_info["DistributionPoints"] = []
 
+    Issue_date = datetime.now(timezone.utc)
+    NextUpdate = Issue_date + timedelta(days=6*30)
+
+    check = func.edit_tsl_dates(
+        Issue_date, NextUpdate, 
+        tsl_id, 
+        session["session_id"]
+    )
+
+    if check is None:
+        return ("error")
     
-    dictFromDB_trusted_lists={
-        "Version":  confxml.TLSVersionIdentifier,
-        "SequenceNumber":   tsl_info["SequenceNumber"],
-        #"TSLType":  confxml.TSLType.get("EU"),
-        "SchemeName":   tsl_info["SchemeName_lang"],
-        "SchemeInformationURI": tsl_info["Uri_lang"],
-        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
-        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
-        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
-        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-        "schemeTerritory": tsl_info["schemeTerritory"],
-        #AdditionalInformation,ver
-
-        #"DistributionPoints" :  tsl_info["DistributionPoints"],
-        "issue_date" :  tsl_info["issue_date"],
-        "next_update":  tsl_info["next_update"],
-        "status":   tsl_info["status"]
-    }
-    
-    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
-
-    service_data = []
-
-    for item in tsp_data:
-        tsp_id = item["tsp_id"]
-        
-        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
-    
-        service_data.append(service_info)
-
-    # for service_list in service_data:
-    #     for service in service_list:
-    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
-
-    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
-
-    if(cfgserv.two_operators):
-        role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
-        if(role == "tsl_op"):
-            menu= cfgserv.service_url + "menu_tsl"
-            return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
-        elif(role == "tsp_op"):
-            menu= cfgserv.service_url + "menu_tsp"
-            return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
-        else:
-            return ("error")
     else:
-        menu= cfgserv.service_url + "menu"
 
-    return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
+        dictFromDB_trusted_lists={
+            "Version":  confxml.TLSVersionIdentifier,
+            "SequenceNumber":   tsl_info["SequenceNumber"],
+            #"TSLType":  confxml.TSLType.get("EU"),
+            "SchemeName":   tsl_info["SchemeName_lang"],
+            "SchemeInformationURI": tsl_info["Uri_lang"],
+            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+            #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
+            "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
+            #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
+            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+            "schemeTerritory": tsl_info["schemeTerritory"],
+            #AdditionalInformation,ver
+
+            #"DistributionPoints" :  tsl_info["DistributionPoints"],
+            "issue_date" :  Issue_date,
+            "next_update":   NextUpdate,
+            "status":   tsl_info["status"]
+        }
+        
+        tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
+
+        service_data = []
+
+        for item in tsp_data:
+            tsp_id = item["tsp_id"]
+            
+            service_info = func.get_service_info_xml(tsp_id, session["session_id"])
+        
+            service_data.append(service_info)
+
+        # for service_list in service_data:
+        #     for service in service_list:
+        #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
+
+        file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+
+        if(cfgserv.two_operators):
+            role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
+            if(role == "tsl_op"):
+                menu= cfgserv.service_url + "menu_tsl"
+                return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+            elif(role == "tsp_op"):
+                menu= cfgserv.service_url + "menu_tsp"
+                return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id)
+            else:
+                return ("error")
+        else:
+            menu= cfgserv.service_url + "menu"
+
+        return render_template("download_tsl.html", lote=False, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
 @rpr.route('/download', methods=["GET", "POST"])
 def download_tsl():
@@ -738,8 +751,9 @@ def validate_xml():
     lote=request.args.get("lote")
     file_data = base64.b64decode(encoded_file)
 
-    if lote == True :
+    if lote == "True" :
         code,msg= xml_lote_validator(file_data)
+
     else:
         code,msg= xml_validator(file_data)
         
@@ -750,7 +764,6 @@ def validate_xml():
     else:
         return jsonify({"error":msg}),code
     
-
 
 @rpr.route('/operator_menu_tsl', methods=["GET"])
 def operator_menu_tsl():
@@ -1752,8 +1765,7 @@ def list_lotl():
         data={}
 
         for tsl in tsl_dict:
-            if tsl["TSLType"] in cfgserv.TSLType:
-                if(tsl['lotl'] != None):
+                if(tsl['lotl'] != None and tsl["TSLType"] in cfgserv.TSLType):
                     if(tsl['lotl'] == 0):
                         included = False
                     elif(tsl['lotl'] == 1):
@@ -1794,6 +1806,7 @@ def lotl_xml():
     if(tsl_data == "err"):
         flash("You don't have a Lotl Trusted List created, so it's not possible to generate the XML. Please create a new Lotl TSL.", "danger")
         return redirect('/lotl/list')
+    
     lang_based_fields = [
         "SchemeName_lang",
         "Uri_lang",
@@ -1810,7 +1823,20 @@ def lotl_xml():
             print(f"Error decoding {key}: {tsl_data[key]}")
             tsl_data[key] = []
     
+    Issue_date = datetime.now(timezone.utc)
+    NextUpdate = Issue_date + timedelta(days=6*30)
+
+    check = func.edit_tsl_dates(
+        Issue_date, NextUpdate, 
+        tsl_data["tsl_id"], 
+        session["session_id"]
+    )
+
+    if check is None:
+        return ("error")
+    
     else:
+
         tsl_mom = tsl_data
         dict_tsl_mom = {
             "Version":  confxml.TLSVersionIdentifier,
@@ -1823,8 +1849,8 @@ def lotl_xml():
             "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
             "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
             #"DistributionPoints" :  tsl_mom["DistributionPoints"],
-            "issue_date" :  tsl_mom["issue_date"],
-            "next_update":  tsl_mom["next_update"],
+            "issue_date" :  Issue_date,
+            "next_update":  NextUpdate,
             "status":   tsl_mom["status"]
         }
     
@@ -1865,20 +1891,20 @@ def lotl_xml():
             role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
             if(role == "tsl_op"):
                 menu= cfgserv.service_url + "menu_tsl"
-                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+                return render_template("download_lotl.html", url =cfgserv.service_url, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
             elif(role == "tsp_op"):
                 menu= cfgserv.service_url + "menu_tsp"
-                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+                return render_template("download_lotl.html", url =cfgserv.service_url, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
             else:
                 return ("error")
         else:
             if(role == "lotl_op"):
                 menu= cfgserv.service_url + "menu_lotl"
-                return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+                return render_template("download_lotl.html", url =cfgserv.service_url, menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
             
             menu= cfgserv.service_url + "menu"
 
-        return render_template("download_lotl.html", menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
+        return render_template("download_lotl.html", url =cfgserv.service_url,  menu = menu, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
 #@rpr.route('/lotl/xml_TE', methods=["GET", "POST"])
 def lote_xml():
@@ -1899,6 +1925,7 @@ def lote_xml():
     if(tsl_data == "err"):
         flash("You don't have a Lotl Trusted List created, so it's not possible to generate the XML. Please create a new Lotl TSL.", "danger")
         return redirect('/lotl/list')
+    
     lang_based_fields = [
         "SchemeName_lang",
         "Uri_lang",
@@ -1915,7 +1942,20 @@ def lote_xml():
             print(f"Error decoding {key}: {tsl_data[key]}")
             tsl_data[key] = []
     
+    Issue_date = datetime.now(timezone.utc)
+    NextUpdate = Issue_date + timedelta(days=6*30)
+
+    check = func.edit_tsl_dates(
+        Issue_date, NextUpdate, 
+        tsl_data["tsl_id"], 
+        session["session_id"]
+    )
+
+    if check is None:
+        return ("error")
+    
     else:
+
         tsl_mom = tsl_data
         dict_tsl_mom = {
             "Version":  confxml.TLSVersionIdentifier,
@@ -1928,8 +1968,8 @@ def lote_xml():
             "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
             "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
             #"DistributionPoints" :  tsl_mom["DistributionPoints"],
-            "issue_date" :  tsl_mom["issue_date"],
-            "next_update":  tsl_mom["next_update"],
+            "issue_date" :  Issue_date,
+            "next_update":  NextUpdate,
             "status":   tsl_mom["status"]
         }
     
@@ -2004,6 +2044,7 @@ def lotl_json():
     if(tsl_data == "err"):
         flash("You don't have a Lotl Trusted List created, so it's not possible to generate the XML. Please create a new Lotl TSL.", "danger")
         return redirect('/lotl/list')
+    
     lang_based_fields = [
         "SchemeName_lang",
         "Uri_lang",
@@ -2020,7 +2061,6 @@ def lotl_json():
             print(f"Error decoding {key}: {tsl_data[key]}")
             tsl_data[key] = []
     
-    else:
         tsl_mom = tsl_data
         dict_tsl_mom = {
             "Version":  confxml.TLSVersionIdentifier,
@@ -2037,7 +2077,6 @@ def lotl_json():
             "next_update":  tsl_mom["next_update"],
             "status":   tsl_mom["status"]
         }
-    
         for each in tsl_info:
             for key in lang_based_fields:
                 try:

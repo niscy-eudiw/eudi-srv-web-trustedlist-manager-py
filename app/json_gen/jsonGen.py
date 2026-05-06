@@ -48,7 +48,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
@@ -226,7 +226,6 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         SchemeTypeCommunityRules=schemeCRules,
         SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
         PolicyOrLegalNotice=PolicyOrLegalNotice,
-        #HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"],
         #PointersToOtherLoTE=Pointers,
         DistributionPoints=URIDP,
 
@@ -528,14 +527,14 @@ def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
     #for cycle
 
     AdditionalInfo_SchemeOperatorName=list()
-    AdditionalInfo_SchemeOperatorName.append(JSON.MultiLangString("en", "EU-LOTL"))
+    AdditionalInfo_SchemeOperatorName.append(JSON.MultiLangString("en", "EU-LOTE"))
 
 
     #SchemeTypeCommunityRules
     schemetypeCommunityRules_add=list()
 
     #for cycle
-    schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["LoTL"]))
+    schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.SchemeTypeCommunityRules["EU"]))
 
     AdditionalInfo=JSON.LoTEQualifier(
         LoTEType=confxml.TSLType["LoTL"],

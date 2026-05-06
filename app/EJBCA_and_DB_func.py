@@ -487,6 +487,18 @@ def edit_tsl_db_info(grouped, tsl_id, log_id):
         logger.error(f"Error processing the form, edit_tsl_db_info: {e}", extra=extra)
         print(f"Error processing the form, edit_tsl_db_info: {e}")
         return "Error processing the form.", 500
+
+def edit_tsl_dates(IssueDate, NextUpdate, tsl_id, log_id):
+    try:
+        check = db.edit_tsl_dates(IssueDate, NextUpdate, tsl_id, log_id)
+        return check
+        
+    except Exception as e:
+        
+        extra = {'code': log_id} 
+        logger.error(f"Error processing the form, edit_tsl_dates: {e}", extra=extra)
+        print(f"Error processing the form, edit_tsl_dates: {e}")
+        return "Error processing the form.", 500
     
 def get_data_tsp_edit(tsp_id, log_id):
     try:

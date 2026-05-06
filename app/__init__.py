@@ -218,8 +218,10 @@ def create_app():
     app.register_error_handler(404, page_not_found)
 
     from . import (RPR_routes)
+    from . import (LoTE_routes)
 
     app.register_blueprint(RPR_routes.rpr)
+    app.register_blueprint(LoTE_routes.lote)
 
     # config session
     app.config["SESSION_FILE_THRESHOLD"] = 50
