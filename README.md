@@ -41,7 +41,7 @@ The Reference Implementation Trusted List Provider has the following features:
   + TSL Operator - Member States
   + LoTL Operator - EC
 + Functionalities for TSL Operators:
-  + Manage TSPs and their trust services
+  + Manage TSPs, TEs and their services
   + Create and sign TLs and LoTE
 + Functionalities for LoTL Operators:
   + Create and sign LoTL (combining the TL created by the Member States)
@@ -155,15 +155,22 @@ The URL where the Wallet-driven external SCA is defined:
      + Add information in new language: Add new info to scheme operator data;
      + Edit Information: Edit scheme Operator data;
      + Manage TSL: List all Trusted Lists associated to user;
+     + Manage LoTE: List all Lists of Trusted Entities associated to user;
     
-  3. When the user accesses the option List TSL, they will be presented with a list of all the TSLs associated with them. It contains the following options:
+  2. When the user accesses the option Manage TSL, they will be presented with a list of all the TSLs associated with them. It contains the following options:
      + Create a new Trusted Service List: Create Trusted List;
      + Edit TSL: Update Trusted Lists data that are associated to user;
      + Add new language Info: To add new information to the data in different languages;
      + Add Trust Service Providers: Select Trust Service Providers to be associated with the TSL.
      + Generate and sign Trusted Service List: Generate the XML of the selected TSL (To be able to generate the xml and sign it, the user must associate at least one existing TSP in the system);
-     + Generate and Sign List of Trusted Entities XML: Generate the XML of the selected LoTE (To be able to generate the xml and sign it, the user must associate at least one existing TSP/TE in the system);
-     + Generate and Sign Lists of Trusted Entities JSON: Generate the JSON of the selected LoTE (To be able to generate the json and sign it, the user must associate at least one existing TSP/TE in the system);
+
+  3. When the user accesses the option List TSL, they will be presented with a list of all the TSLs associated with them. It contains the following options:
+     + Create a new List of Trusted Entities: Create LoTE;
+     + Edit LoTE: Update List of Trusted Entities data that are associated to user;
+     + Add new language Info: To add new information to the data in different languages;
+     + Add Trusted Entities: Select Trusted Entities to be associated with the LoTE.
+     + Generate and Sign List of Trusted Entities XML: Generate the XML of the selected LoTE (To be able to generate the xml and sign it, the user must associate at least one existing TE in the system);
+     + Generate and Sign Lists of Trusted Entities JSON: Generate the JSON of the selected LoTE (To be able to generate the json and sign it, the user must associate at least one existing TE in the system);
        
        
   ### 4. Menu - Trust Service Provider user
@@ -171,26 +178,41 @@ The URL where the Wallet-driven external SCA is defined:
   1.  Once the user has logged in with the EUDI Wallet, they are presented with a menu. It contains the following options:
       + Manage TSP: List all Trust Service Providers associated to user;
       + Manage Trust Services: List all Trust Services created by user;
+      + Manage TE: List all Trusted Entities associated to user;
+      + Manage Services: List all Services created by user;
     
   2.  When the user accesses the option List TSPs, they will be presented with a list of all the TSPs associated with them. It contains the following options:
       +  Create a new Trust Service Provider: Adds a New Trust Service Provider;
       +  Edit Trust Service Provider: Edit Trust Service Providers associated to user;
       +  Add new language Info: To add new information to the data in different language;
       +  Add Services: Select services to be associated with the TSP.
-    
-        
+           
   After creating a TSP, the user needs to create a service and associate it with it or associate an existing service.
 
   3. When the user accesses the option List Trust Services, they will be presented with a list of all the Trust Services associated with them. It contains the following options:
       +  Create a new Service: Adds a New Service;
       +  Edit Trust Service: Edit Trust Services associated to user;
+      +  Add new language Info: To add new information to the data in different language;
+    
+ #### Trusted Entities
+ 
+  4.  When the user accesses the option List TEs, they will be presented with a list of all the TEs associated with them. It contains the following options:
+      +  Create a new Trusted Entity: Adds a New Trusted Entity;
+      +  Edit Trust Service Provider: Edit Trust Service Providers associated to user;
+      +  Add new language Info: To add new information to the data in different language;
+      +  Add Services: Select services to be associated with the TSP.
+            
+  After creating a TE, the user needs to create a service and associate it with it or associate an existing service.
+
+  5. When the user accesses the option List Services, they will be presented with a list of all the Services associated with them. It contains the following options:
+      +  Create a new Service: Adds a New Service;
+      +  Edit Service: Edit Trust Services associated to user;
       +  Add new language Info: To add new information to the data in different language;  
 
-  4. Other options are currentelly under development:
-     + Remove TSP: Remove Trust Service Providers Associated to user;
+  6. Other options are currentelly under development:
+     + Remove TE: Remove Trusted Entities Associated to user;
      + Remove Service: Remove Services created by user;
      + Service Status History: List all Service Status History;
-     + Export Audit Log: Export Audit Log;
 
   ### 5. Menu - Admin user
   The Admin user is the only user who can create a single LoTL (List of Trusted Lists).
