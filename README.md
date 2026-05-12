@@ -164,7 +164,7 @@ The URL where the Wallet-driven external SCA is defined:
      + Add Trust Service Providers: Select Trust Service Providers to be associated with the TSL.
      + Generate and sign Trusted Service List: Generate the XML of the selected TSL (To be able to generate the xml and sign it, the user must associate at least one existing TSP in the system);
 
-  3. When the user accesses the option List TSL, they will be presented with a list of all the TSLs associated with them. It contains the following options:
+  3. When the user accesses the option Manage LoTE, they will be presented with a list of all the TSLs associated with them. It contains the following options:
      + Create a new List of Trusted Entities: Create LoTE;
      + Edit LoTE: Update List of Trusted Entities data that are associated to user;
      + Add new language Info: To add new information to the data in different languages;
@@ -181,7 +181,7 @@ The URL where the Wallet-driven external SCA is defined:
       + Manage TE: List all Trusted Entities associated to user;
       + Manage Services: List all Services created by user;
     
-  2.  When the user accesses the option List TSPs, they will be presented with a list of all the TSPs associated with them. It contains the following options:
+  2.  When the user accesses the option Manage TSPs, they will be presented with a list of all the TSPs associated with them. It contains the following options:
       +  Create a new Trust Service Provider: Adds a New Trust Service Provider;
       +  Edit Trust Service Provider: Edit Trust Service Providers associated to user;
       +  Add new language Info: To add new information to the data in different language;
@@ -189,14 +189,14 @@ The URL where the Wallet-driven external SCA is defined:
            
   After creating a TSP, the user needs to create a service and associate it with it or associate an existing service.
 
-  3. When the user accesses the option List Trust Services, they will be presented with a list of all the Trust Services associated with them. It contains the following options:
+  3. When the user accesses the option Manage Trust Services, they will be presented with a list of all the Trust Services associated with them. It contains the following options:
       +  Create a new Service: Adds a New Service;
       +  Edit Trust Service: Edit Trust Services associated to user;
       +  Add new language Info: To add new information to the data in different language;
     
  #### Trusted Entities
  
-  4.  When the user accesses the option List TEs, they will be presented with a list of all the TEs associated with them. It contains the following options:
+  4.  When the user accesses the option Manage TEs, they will be presented with a list of all the TEs associated with them. It contains the following options:
       +  Create a new Trusted Entity: Adds a New Trusted Entity;
       +  Edit Trust Service Provider: Edit Trust Service Providers associated to user;
       +  Add new language Info: To add new information to the data in different language;
@@ -204,7 +204,7 @@ The URL where the Wallet-driven external SCA is defined:
             
   After creating a TE, the user needs to create a service and associate it with it or associate an existing service.
 
-  5. When the user accesses the option List Services, they will be presented with a list of all the Services associated with them. It contains the following options:
+  5. When the user accesses the option Manage Services, they will be presented with a list of all the Services associated with them. It contains the following options:
       +  Create a new Service: Adds a New Service;
       +  Edit Service: Edit Trust Services associated to user;
       +  Add new language Info: To add new information to the data in different language;  
