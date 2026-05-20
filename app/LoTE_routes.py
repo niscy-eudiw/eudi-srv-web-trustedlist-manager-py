@@ -122,55 +122,56 @@ def xml_TE():
 
     Issue_date = datetime.now(timezone.utc)
     NextUpdate = Issue_date + timedelta(days=6*30)
+    
+    dictFromDB_trusted_lists={
+        "Version":  confxml.LoTEVersionIdentifier,
+        "SequenceNumber":   tsl_info["SequenceNumber"] + 1 ,
+        "TSLType": tsl_info["TSLType"],
+        "SchemeName":   tsl_info["SchemeName_lang"],
+        "SchemeInformationURI": tsl_info["Uri_lang"],
+        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
+        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
+        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
+        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+        "schemeTerritory": tsl_info["schemeTerritory"],
+        #AdditionalInformation,ver
 
-    check = func.edit_tsl_dates(
-        Issue_date, NextUpdate, 
+        #"DistributionPoints" :  tsl_info["DistributionPoints"],
+        "issue_date" :  Issue_date,
+        "next_update":  NextUpdate,
+        "status":   tsl_info["status"]
+    }
+    
+    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
+
+    service_data = []
+
+    for item in tsp_data:
+        tsp_id = item["tsp_id"]
+        
+        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
+    
+        service_data.append(service_info)
+
+    # for service_list in service_data:
+    #     for service in service_list:
+    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
+
+    file, thumbprint, xml_hash_before_sign = xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+    
+    check = func.edit_tsl_dates_and_sequence_number(
+        Issue_date, NextUpdate,
+        tsl_info["SequenceNumber"] + 1 , 
         tsl_id, 
         session["session_id"]
-    )
+        )
+
 
     if check is None:
         return ("error")
     
     else:
-    
-        dictFromDB_trusted_lists={
-            "Version":  confxml.LoTEVersionIdentifier,
-            "SequenceNumber":   tsl_info["SequenceNumber"],
-            "TSLType": tsl_info["TSLType"],
-            "SchemeName":   tsl_info["SchemeName_lang"],
-            "SchemeInformationURI": tsl_info["Uri_lang"],
-            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-            #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
-            "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
-            #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
-            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-            "schemeTerritory": tsl_info["schemeTerritory"],
-            #AdditionalInformation,ver
-
-            #"DistributionPoints" :  tsl_info["DistributionPoints"],
-            "issue_date" :  Issue_date,
-            "next_update":  NextUpdate,
-            "status":   tsl_info["status"]
-        }
-        
-        tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
-
-        service_data = []
-
-        for item in tsp_data:
-            tsp_id = item["tsp_id"]
-            
-            service_info = func.get_service_info_xml(tsp_id, session["session_id"])
-        
-            service_data.append(service_info)
-
-        # for service_list in service_data:
-        #     for service in service_list:
-        #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
-
-        file, thumbprint, xml_hash_before_sign = xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
-        
         if(cfgserv.two_operators):
             role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
             if(role == "tsl_op"):
@@ -236,54 +237,56 @@ def json_file():
     Issue_date = datetime.now(timezone.utc)
     NextUpdate = Issue_date + timedelta(days=6*30)
 
-    check = func.edit_tsl_dates(
-        Issue_date, NextUpdate, 
+    
+    dictFromDB_trusted_lists={
+        "Version":  confxml.LoTEVersionIdentifier,
+        "SequenceNumber":   tsl_info["SequenceNumber"] + 1,
+        "TSLType": tsl_info["TSLType"],
+        "SchemeName":   tsl_info["SchemeName_lang"],
+        "SchemeInformationURI": tsl_info["Uri_lang"],
+        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
+        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
+        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
+        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+        "schemeTerritory": tsl_info["schemeTerritory"],
+        #AdditionalInformation,ver
+
+        #"DistributionPoints" :  tsl_info["DistributionPoints"],
+        "issue_date" :  Issue_date,
+        "next_update":  NextUpdate,
+        "status":   tsl_info["status"]
+    }
+    
+    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
+
+    service_data = []
+
+    for item in tsp_data:
+        tsp_id = item["tsp_id"]
+        
+        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
+    
+        service_data.append(service_info)
+
+    # for service_list in service_data:
+    #     for service in service_list:
+    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
+
+    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+    
+    check = func.edit_tsl_dates_and_sequence_number(
+        Issue_date, NextUpdate,
+        tsl_info["SequenceNumber"] + 1 , 
         tsl_id, 
         session["session_id"]
     )
+
 
     if check is None:
         return ("error")
     
     else:
-    
-        dictFromDB_trusted_lists={
-            "Version":  confxml.LoTEVersionIdentifier,
-            "SequenceNumber":   tsl_info["SequenceNumber"],
-            "TSLType": tsl_info["TSLType"],
-            "SchemeName":   tsl_info["SchemeName_lang"],
-            "SchemeInformationURI": tsl_info["Uri_lang"],
-            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-            #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
-            "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
-            #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
-            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-            "schemeTerritory": tsl_info["schemeTerritory"],
-            #AdditionalInformation,ver
-
-            #"DistributionPoints" :  tsl_info["DistributionPoints"],
-            "issue_date" :  Issue_date,
-            "next_update":  NextUpdate,
-            "status":   tsl_info["status"]
-        }
-        
-        tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
-
-        service_data = []
-
-        for item in tsp_data:
-            tsp_id = item["tsp_id"]
-            
-            service_info = func.get_service_info_xml(tsp_id, session["session_id"])
-        
-            service_data.append(service_info)
-
-        # for service_list in service_data:
-        #     for service in service_list:
-        #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
-
-        json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
-        
         if(cfgserv.two_operators):
             role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
             if(role == "tsl_op"):

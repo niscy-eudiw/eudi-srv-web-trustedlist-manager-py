@@ -652,53 +652,56 @@ def xml():
     Issue_date = datetime.now(timezone.utc)
     NextUpdate = Issue_date + timedelta(days=6*30)
 
-    check = func.edit_tsl_dates(
-        Issue_date, NextUpdate, 
+    dictFromDB_trusted_lists={
+        "Version":  confxml.TLSVersionIdentifier,
+        "SequenceNumber":   tsl_info["SequenceNumber"] + 1,
+        #"TSLType":  confxml.TSLType.get("EU"),
+        "SchemeName":   tsl_info["SchemeName_lang"],
+        "SchemeInformationURI": tsl_info["Uri_lang"],
+        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+        #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
+        "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
+        #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
+        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+        "schemeTerritory": tsl_info["schemeTerritory"],
+        #AdditionalInformation,ver
+
+        #"DistributionPoints" :  tsl_info["DistributionPoints"],
+        "issue_date" :  Issue_date,
+        "next_update":   NextUpdate,
+        "status":   tsl_info["status"]
+    }
+    
+    tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
+
+    service_data = []
+
+    for item in tsp_data:
+        tsp_id = item["tsp_id"]
+        
+        service_info = func.get_service_info_xml(tsp_id, session["session_id"])
+    
+        service_data.append(service_info)
+
+    # for service_list in service_data:
+    #     for service in service_list:
+    #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
+
+    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+
+
+    check = func.edit_tsl_dates_and_sequence_number(
+        Issue_date, NextUpdate,
+        tsl_info["SequenceNumber"] + 1 , 
         tsl_id, 
         session["session_id"]
     )
+
 
     if check is None:
         return ("error")
     
     else:
-
-        dictFromDB_trusted_lists={
-            "Version":  confxml.TLSVersionIdentifier,
-            "SequenceNumber":   tsl_info["SequenceNumber"],
-            #"TSLType":  confxml.TSLType.get("EU"),
-            "SchemeName":   tsl_info["SchemeName_lang"],
-            "SchemeInformationURI": tsl_info["Uri_lang"],
-            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-            #"SchemeTypeCommunityRules": tsl_info["SchemeTypeCommunityRules_lang"],
-            "PolicyOrLegalNotice":  tsl_info["PolicyOrLegalNotice_lang"],
-            #"pointers_to_other_tsl" :   tsl_info["pointers_to_other_tsl"].encode('utf-8'),
-            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-            "schemeTerritory": tsl_info["schemeTerritory"],
-            #AdditionalInformation,ver
-
-            #"DistributionPoints" :  tsl_info["DistributionPoints"],
-            "issue_date" :  Issue_date,
-            "next_update":   NextUpdate,
-            "status":   tsl_info["status"]
-        }
-        
-        tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
-
-        service_data = []
-
-        for item in tsp_data:
-            tsp_id = item["tsp_id"]
-            
-            service_info = func.get_service_info_xml(tsp_id, session["session_id"])
-        
-            service_data.append(service_info)
-
-        # for service_list in service_data:
-        #     for service in service_list:
-        #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
-
-        file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
 
         if(cfgserv.two_operators):
             role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
@@ -1826,9 +1829,60 @@ def lotl_xml():
     Issue_date = datetime.now(timezone.utc)
     NextUpdate = Issue_date + timedelta(days=6*30)
 
-    check = func.edit_tsl_dates(
-        Issue_date, NextUpdate, 
-        tsl_data["tsl_id"], 
+    tsl_mom = tsl_data
+    dict_tsl_mom = {
+        "Version":  confxml.TLSVersionIdentifier,
+        "SequenceNumber":   tsl_mom["SequenceNumber"] + 1,
+        "SchemeName":   tsl_mom["SchemeName_lang"],
+        "SchemeInformationURI": tsl_mom["Uri_lang"],
+        #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+        #"SchemeTypeCommunityRules": tsl_mom["SchemeTypeCommunityRules_lang"],
+        "PolicyOrLegalNotice":  tsl_mom["PolicyOrLegalNotice_lang"],
+        "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+        "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+        #"DistributionPoints" :  tsl_mom["DistributionPoints"],
+        "issue_date" :  Issue_date,
+        "next_update":  NextUpdate,
+        "status":   tsl_mom["status"]
+    }
+
+    for each in tsl_info:
+        for key in lang_based_fields:
+            try:
+                each[key] = json.loads(each[key]) if each[key] else []
+            except json.JSONDecodeError:
+                extra = {'code': session["session_id"]} 
+                logger.error(f"Error decoding : {key}: {each[key]}", extra=extra)
+                print(f"Error decoding {key}: {each[key]}")
+                each[key] = []
+
+        dictFromDB_trusted_lists = {
+            "id": each["tsl_id"],
+            "Version":  confxml.TLSVersionIdentifier,
+            "SequenceNumber":   each["SequenceNumber"],
+            #"TSLType":  confxml.TSLType.get("EU"),
+            "SchemeName":   each["SchemeName_lang"],
+            "SchemeInformationURI": each["Uri_lang"],
+            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
+            #"SchemeTypeCommunityRules": each["SchemeTypeCommunityRules_lang"],
+            "PolicyOrLegalNotice":  each["PolicyOrLegalNotice_lang"],
+            #"pointers_to_other_tsl" :   each["pointers_to_other_tsl"].encode('utf-8'),
+            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
+            "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+            #"DistributionPoints" :  each["DistributionPoints"],
+            "issue_date" :  each["issue_date"],
+            "next_update":  each["next_update"],
+            "status":   each["status"],
+            "schemeTerritory": each["schemeTerritory"]
+        }
+        tsl_list.append(dictFromDB_trusted_lists) 
+        
+    file, thumbprint, xml_hash_before_sign = xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, session["session_id"])
+
+    check = func.edit_tsl_dates_and_sequence_number(
+        Issue_date, NextUpdate,
+        tsl_mom["SequenceNumber"] + 1 , 
+        tsl_mom["tsl_id"], 
         session["session_id"]
     )
 
@@ -1836,56 +1890,6 @@ def lotl_xml():
         return ("error")
     
     else:
-
-        tsl_mom = tsl_data
-        dict_tsl_mom = {
-            "Version":  confxml.TLSVersionIdentifier,
-            "SequenceNumber":   tsl_mom["SequenceNumber"],
-            "SchemeName":   tsl_mom["SchemeName_lang"],
-            "SchemeInformationURI": tsl_mom["Uri_lang"],
-            #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-            #"SchemeTypeCommunityRules": tsl_mom["SchemeTypeCommunityRules_lang"],
-            "PolicyOrLegalNotice":  tsl_mom["PolicyOrLegalNotice_lang"],
-            "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-            "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
-            #"DistributionPoints" :  tsl_mom["DistributionPoints"],
-            "issue_date" :  Issue_date,
-            "next_update":  NextUpdate,
-            "status":   tsl_mom["status"]
-        }
-    
-        for each in tsl_info:
-            for key in lang_based_fields:
-                try:
-                    each[key] = json.loads(each[key]) if each[key] else []
-                except json.JSONDecodeError:
-                    extra = {'code': session["session_id"]} 
-                    logger.error(f"Error decoding : {key}: {each[key]}", extra=extra)
-                    print(f"Error decoding {key}: {each[key]}")
-                    each[key] = []
-
-            dictFromDB_trusted_lists = {
-                "id": each["tsl_id"],
-                "Version":  confxml.TLSVersionIdentifier,
-                "SequenceNumber":   each["SequenceNumber"],
-                #"TSLType":  confxml.TSLType.get("EU"),
-                "SchemeName":   each["SchemeName_lang"],
-                "SchemeInformationURI": each["Uri_lang"],
-                #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
-                #"SchemeTypeCommunityRules": each["SchemeTypeCommunityRules_lang"],
-                "PolicyOrLegalNotice":  each["PolicyOrLegalNotice_lang"],
-                #"pointers_to_other_tsl" :   each["pointers_to_other_tsl"].encode('utf-8'),
-                "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
-                "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
-                #"DistributionPoints" :  each["DistributionPoints"],
-                "issue_date" :  each["issue_date"],
-                "next_update":  each["next_update"],
-                "status":   each["status"],
-                "schemeTerritory": each["schemeTerritory"]
-            }
-            tsl_list.append(dictFromDB_trusted_lists) 
-            
-        file, thumbprint, xml_hash_before_sign = xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, session["session_id"])
         
         if(cfgserv.two_operators):
             role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
@@ -2129,7 +2133,6 @@ def lotl_json():
 
         return render_template("download_lotl.html", menu = menu, json=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
-#depois
 @rpr.route('/lotl/tsl_list')
 def list_tsl_lotl():
         
@@ -2149,18 +2152,19 @@ def list_tsl_lotl():
         data={}
 
         for tsl in tsl_dict:
-            data_temp={
-                tsl["tsl_id"]:{
-                    "Version":tsl["Version"],
-                    "Sequence Number":tsl["SequenceNumber"],
-                    "TSL Type":tsl["TSLType"],
-                    "Scheme Name":tsl["SchemeName_lang"],
-                    "Scheme Territory":tsl["schemeTerritory"],
-                    "Issue Date":tsl["issue_date"],
-                    "Next Update":tsl["next_update"]
+            if tsl["TSLType"] in cfgserv.TSLType:
+                data_temp={
+                    tsl["tsl_id"]:{
+                        "Version":tsl["Version"],
+                        "Sequence Number":tsl["SequenceNumber"],
+                        "TSL Type":tsl["TSLType"],
+                        "Scheme Name":tsl["SchemeName_lang"],
+                        "Scheme Territory":tsl["schemeTerritory"],
+                        "Issue Date":tsl["issue_date"],
+                        "Next Update":tsl["next_update"]
+                    }
                 }
-            }
-            data.update(data_temp)
+                data.update(data_temp)
     
     tsp_dict = func.get_tsp_update(user["id"], session["session_id"])
     

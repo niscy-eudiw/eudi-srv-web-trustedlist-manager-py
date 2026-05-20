@@ -48,7 +48,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
     service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
@@ -214,10 +214,10 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
 
     schemeInfo=JSON.ListAndSchemeInformation(
         LoTEVersionIdentifier=confxml.LoTEVersionIdentifier,
-        LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"],
+        LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"] ,
         SchemeOperatorName=schemeOName,
-        ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].isoformat() + "Z",
-        NextUpdate=dictFromDB_trusted_lists["next_update"].isoformat()+ "Z",
+        ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        NextUpdate=dictFromDB_trusted_lists["next_update"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         LoTEType=LoTEType,
         SchemeOperatorAddress=schemeOAddress,
         SchemeName=schemeName,
@@ -377,7 +377,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 )
                 if each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Issuance" or each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Revocation" :
                     ServiceInformation.ServiceStatus= each["status"]
-                    ServiceInformation.StatusStartingTime= each["status_start_date"].isoformat() + "Z"
+                    ServiceInformation.StatusStartingTime= each["status_start_date"].strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
                 TSPService= JSON.TrustedEntityService(
                     ServiceInformation=ServiceInformation
@@ -625,8 +625,8 @@ def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
         LoTEVersionIdentifier=confxml.TLSVersionIdentifier,
         LoTESequenceNumber=dict_tsl_mom["SequenceNumber"],
         SchemeOperatorName=schemeOName,
-        ListIssueDateTime=dict_tsl_mom["issue_date"].isoformat(),
-        NextUpdate=dict_tsl_mom["next_update"].isoformat(),
+        ListIssueDateTime=dict_tsl_mom["issue_date"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        NextUpdate=dict_tsl_mom["next_update"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         LoTEType=confxml.TSLType["EU"],
         SchemeOperatorAddress=schemeOAddress,
         SchemeName=schemeName,

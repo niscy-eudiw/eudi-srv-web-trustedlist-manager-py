@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `trusted_list_updates` (
 -- A despejar estrutura para tabela trusted_lists.trust_services
 CREATE TABLE IF NOT EXISTS `trust_services` (
   `service_id` int(11) NOT NULL AUTO_INCREMENT,
-  `service_type` varchar(50) DEFAULT NULL,
+  `service_type` varchar(250) DEFAULT NULL,
   `digital_identity` text DEFAULT NULL,
   `status` varchar(250) DEFAULT NULL,
   `status_start_date` datetime DEFAULT NULL,

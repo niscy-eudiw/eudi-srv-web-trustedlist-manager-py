@@ -1146,7 +1146,7 @@ def edit_tsl(grouped, tsl_id, log_id):
             cursor.close()
             connection.close()
 
-def edit_tsl_dates(IssueDate, NextUpdate, tsl_id, log_id):
+def edit_tsl_dates_and_sequence_number(IssueDate, NextUpdate,sequence_number, tsl_id, log_id):
     try:
         connection = conn()
         if connection:
@@ -1154,9 +1154,9 @@ def edit_tsl_dates(IssueDate, NextUpdate, tsl_id, log_id):
 
             insert_query = """
                                 UPDATE trusted_lists 
-                                SET issue_date = %s, next_update = %s WHERE tsl_id = %s
+                                SET issue_date = %s, next_update = %s, SequenceNumber = %s  WHERE tsl_id = %s
                             """
-            cursor.execute(insert_query, (IssueDate, NextUpdate, tsl_id))
+            cursor.execute(insert_query, (IssueDate, NextUpdate,sequence_number, tsl_id))
             
             connection.commit()
             

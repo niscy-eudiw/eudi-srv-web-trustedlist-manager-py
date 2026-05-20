@@ -488,9 +488,9 @@ def edit_tsl_db_info(grouped, tsl_id, log_id):
         print(f"Error processing the form, edit_tsl_db_info: {e}")
         return "Error processing the form.", 500
 
-def edit_tsl_dates(IssueDate, NextUpdate, tsl_id, log_id):
+def edit_tsl_dates_and_sequence_number(IssueDate, NextUpdate,sequence_number, tsl_id, log_id):
     try:
-        check = db.edit_tsl_dates(IssueDate, NextUpdate, tsl_id, log_id)
+        check = db.edit_tsl_dates_and_sequence_number(IssueDate, NextUpdate, sequence_number, tsl_id, log_id)
         return check
         
     except Exception as e:
