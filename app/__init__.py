@@ -185,7 +185,7 @@ def page_not_found(e):
     )
 
 def initialize_db():
-    with open('/app/script_db.sql', 'r') as f:
+    with open('app/script_db.sql', 'r') as f:
         sql = f.read()
 
     connection = pymysql.connect(
@@ -213,7 +213,7 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config['SECRET_KEY'] = ConfService.secret_key
 
-    app.register_error_handler(Exception, handle_exception)
+    #app.register_error_handler(Exception, handle_exception)
     app.register_error_handler(requests.exceptions.RequestException, handle_request_exception)
     app.register_error_handler(404, page_not_found)
 
