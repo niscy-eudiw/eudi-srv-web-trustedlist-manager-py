@@ -683,11 +683,23 @@ def xml():
     
         service_data.append(service_info)
 
+        service_history_ids=[]
+
+        service_data=[service for sublist in service_data for service in sublist]
+
+        for service in service_data:
+
+            service_id=service["service_id"]
+
+            service_history_ids.append(service_id)
+
+        service_history=func.get_service_history_xml(service_history_ids, session["session_id"])
+
     # for service_list in service_data:
     #     for service in service_list:
     #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
 
-    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_info["tsl_id"], session["session_id"])
 
 
     check = func.edit_tsl_dates_and_sequence_number(
@@ -1493,7 +1505,26 @@ def list_service():
                     }
                 }
                 data.update(data_temp)
-    list = []
+
+    service_history_ids=[]
+
+    for service in data:
+        service_history_ids.append(service)
+    list=[]
+
+    service_history=func.get_service_history_xml(service_history_ids, session["session_id"])
+    for history in service_history:
+        name = json.loads(history["ServiceName"])       
+        name_txt = name[0]["text"]
+        new_item = {
+            "id": history["history_id"],
+            "name": name_txt,
+            "status": history["status"],
+            "status_start_date":history["status_start_date"],
+            "service_id":history["service_id"]
+        }
+                
+        list.append(new_item)
     
     if(cfgserv.two_operators):
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
@@ -1577,7 +1608,7 @@ def service_tsp_db():
     digital_identity = request.form.get('Digital Identity')
     
     status = request.form.get('Service Status')
-    status_start_date = request.form.get('Status Start Date')
+    status_start_date = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     uri = request.form.get('Scheme Service Definition URI')
     lang = request.form.get('Lang')
 
@@ -1670,9 +1701,11 @@ def service_edit():
 
     db_data = func.get_data_service_edit(service_id, session["session_id"])
 
-    for key in db_data: 
-        db_data[key] = json.loads(db_data[key])
-    
+    for key in db_data:
+        if key != "status" :
+            db_data[key] = json.loads(db_data[key])
+        
+
     return render_template("dynamic-form_edit_TLS.html", h3 = "Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/service/service_edit_db")
 
 @rpr.route('/service/service_edit_db', methods=["GET", "POST"])
@@ -1709,6 +1742,21 @@ def service_edit_db():
                 
         else:
             grouped[key] = value
+            
+    db_data_old = func.get_status_service(service_id, session["session_id"])
+
+    grouped["status_start_date"]=db_data_old.get("status_start_date")
+
+    if(db_data_old != "err"):
+
+        if grouped["status"] != db_data_old.get('status'):
+
+            grouped["status_start_date"]=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+            history= func.insert_service_history(db_data_old.get("service_type"), db_data_old.get("digital_identity"),db_data_old.get("status"),db_data_old.get("status_start_date"), db_data_old.get("ServiceName"),service_id, session["session_id"])
+
+            if history is None:
+                return ("erro")
             
     check = func.edit_service_db_info(
         grouped, 

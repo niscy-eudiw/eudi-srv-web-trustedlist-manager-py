@@ -877,3 +877,45 @@ def get_old_cert(tsl_id, log_id):
         logger.error(f"Error processing the form, check_country: {e}", extra=extra)
         print(f"Error processing the form, check_country: {e}")
         return "Error processing the form.", 500
+    
+def get_status_service(service_id, log_id):
+    try:
+        check = db.get_status_service(service_id, log_id) 
+        
+        return check
+        
+    except Exception as e:
+        
+        extra = {'code': log_id} 
+        logger.error(f"Error processing the form, get_status_service: {e}", extra=extra)
+        print(f"Error processing the form, get_status_service: {e}")
+        return "Error processing the form.", 500
+    
+def insert_service_history(service_type, digital_identity,status,status_start_date, ServiceName,service_id, log_id):
+    try:
+        
+        check = db.insert_service_history(service_type, digital_identity,status,status_start_date, ServiceName,service_id, log_id) 
+        
+        return check
+        
+    except Exception as e:
+        
+        extra = {'code': log_id} 
+        logger.error(f"Error processing the form, insert_service_history: {e}", extra=extra)
+        print(f"Error processing the form, insert_service_history: {e}")
+        return "Error processing the form.", 500
+    
+def get_service_history_xml(service_ids, log_id):
+    try:
+        service = db.get_service_history_xml(service_ids, log_id)
+        if service is None:
+            return None
+        else:
+            return service
+        
+    except Exception as e:
+        
+        extra = {'code': log_id} 
+        logger.error(f"Error processing the form, get_service_history_xml: {e}", extra=extra)
+        print(f"Error processing the form, get_service_history_xml: {e}")
+        return "Error processing the form.", 500

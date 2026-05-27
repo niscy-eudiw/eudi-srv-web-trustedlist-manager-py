@@ -2136,3 +2136,35 @@ def get_lotl_old_cert(id, log_id):
         if connection:
             cursor.close()
             connection.close()
+
+def insert_service_history(service_type, digital_identity,status,status_start_date,ServiceName,service_id, log_id):
+    try:
+        #ServiceName= json.dumps(ServiceName)
+        connection = conn()
+        if connection:
+            cursor = connection.cursor()
+
+            insert_query = """
+                            INSERT INTO service_status_history 
+                            (ServiceName, digital_identity, service_type, status, status_start_date, service_id) 
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            """
+            
+            cursor.execute(insert_query, (ServiceName, digital_identity, service_type, status, status_start_date, service_id))
+            
+            connection.commit()
+            
+            extra = {'code': log_id} 
+            logger.info(f"SERVICE successfully added. New SERVICE_HISTORY ID: {cursor.lastrowid}", extra=extra)
+
+            print(f"SERVICE successfully added. New SERVICE_HISTORY ID: {cursor.lastrowid}")
+            return cursor.lastrowid
+
+    except pymysql.MySQLError as e:
+        extra = {'code': log_id} 
+        logger.error(f"Error inserting SERVICE_HISTORY: {e}", extra=extra)
+        print(f"Error inserting SERVICE_HISTORY: {e}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
