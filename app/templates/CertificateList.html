@@ -104,6 +104,33 @@
               </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
+        <div class="modal fade" tabindex="-1" role="dialog" id="History_List">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Service History</h4>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped" id="history_list" >
+                            <thead>
+                                <tr class="d-flex">
+                                    <th  class="col-sm-2">Name</th> 
+                                    <th  class="col-sm-2">Status</th>
+                                    <th  class="col-sm-2">Status Start Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalHistoryList-body"> 
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+              </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
 
         <div role="main" class="container">
             <div class="row">
@@ -184,6 +211,9 @@
                                                     {% elif title == "Trusted Lists" %}
                                                         <a class="btn btn btn-info btn-xs" id="{{id}}" href="{{url}}/xml?id={{id}}"><span class="glyphicon glyphicon-file"></span></a>
                                                     {% endif %}
+                                                    {% if title == "Services" %}
+                                                        <a class="btn btn btn-info btn-xs" id="{{id}}" data-toggle="modal" data-target="#History_List" data-id="{{id}}"><span class="glyphicon glyphicon-time"></span></a>
+                                                    {% endif %}
                                                     
                                                 </td>
                                             </tr>
@@ -218,6 +248,9 @@
                 <p><span class="glyphicon glyphicon-download"></span> = Generate and Sign List of Trusted Entities XML</p>
                 <p><span class="glyphicon glyphicon-download-alt"></span> = Generate and Sign Lists of Trusted Entities JSON</p>
             {% endif %}
+            {% if title == "Services" %}
+                <p><span class="glyphicon glyphicon-time"></span> = Service History</p>
+            {%endif%}
         </div>
     </div>
 
@@ -312,41 +345,75 @@
 
     });
 
-function Ajax_request_update(checks,id) {
+    $('#History_List').on('show.bs.modal', function(e) {
 
-    var title= {{title | tojson}};
+        var ID = $(e.relatedTarget).data('id');
+        var table = document.getElementById("history_list");
 
-    var list= {{list | tojson}}
+        var modalbody=document.getElementById('modalHistoryList-body');
+        modalbody.innerHTML="";
 
-    if ( title == "Trust Service Providers" || title =="Trusted Entities"){
-       var  url='{{url}}/update_services'
+        var  list= {{ list | tojson |safe}};
 
-    }else if (title == "Trusted Lists" ){
-        var url='{{url}}/update_tsps'
+        list.forEach(function (object){
 
-    }else if (title == "LoTEs" ){
-        var url='{{url}}/update_tes'
-    }
+            if (object.service_id == ID){
+                var row = document.createElement("tr");
 
-    var check = JSON.stringify(checks)
-    $.ajax({
-        url: url,
-        method: 'GET',
-        data:{"id": id , "checks" : check , "user_id":'{{temp_user_id}}', "log_id": '{{log_id}}'},
-        success: function(response) {
-            
-            document.getElementById("panel_msg").style.color="green"
-            document.getElementById("panel_msg").innerHTML="Successfully Added."
-            
-            location.reload();
-            
-        },
-        error: function(xhr, status, error) {
-            var err = JSON.parse(xhr.responseText);
-            document.getElementById("panel_msg").style.color="red"
-            document.getElementById("panel_msg").innerHTML=err["error"]
-            console.error('Error:', error);
+                var td_name=document.createElement("td");
+                td_name.textContent= object.name
+
+                var td_status=document.createElement("td");
+                td_status.textContent= object.status
+
+                var td_status_start_date = document.createElement("td");
+                td_status_start_date.textContent= object.status_start_date
+
+                row.append(td_name);
+                row.append(td_status);
+                row.append(td_status_start_date);
+                modalbody.appendChild(row);
+            }
+        });
+
+
+    });
+
+    function Ajax_request_update(checks,id) {
+
+        var title= {{title | tojson}};
+
+        var list= {{list | tojson}}
+
+        if ( title == "Trust Service Providers" || title =="Trusted Entities"){
+        var  url='{{url}}/update_services'
+
+        }else if (title == "Trusted Lists" ){
+            var url='{{url}}/update_tsps'
+
+        }else if (title == "LoTEs" ){
+            var url='{{url}}/update_tes'
         }
+
+        var check = JSON.stringify(checks)
+        $.ajax({
+            url: url,
+            method: 'GET',
+            data:{"id": id , "checks" : check , "user_id":'{{temp_user_id}}', "log_id": '{{log_id}}'},
+            success: function(response) {
+                
+                document.getElementById("panel_msg").style.color="green"
+                document.getElementById("panel_msg").innerHTML="Successfully Added."
+                
+                location.reload();
+                
+            },
+            error: function(xhr, status, error) {
+                var err = JSON.parse(xhr.responseText);
+                document.getElementById("panel_msg").style.color="red"
+                document.getElementById("panel_msg").innerHTML=err["error"]
+                console.error('Error:', error);
+            }
     });
 }
 

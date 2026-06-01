@@ -718,7 +718,7 @@ def get_data_service(service_id, log_id):
             cursor = connection.cursor()
 
             select_query = """
-                SELECT ServiceName, SchemeServiceDefinitionURI
+                SELECT ServiceName, SchemeServiceDefinitionURI, status
                 FROM trust_services
                 WHERE service_id = %s
             """
@@ -747,6 +747,43 @@ def get_data_service(service_id, log_id):
         extra = {'code': log_id} 
         logger.error(f"Error processing the form: {e}", extra=extra)
         return None
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+
+def get_status_service(id, log_id):
+    try:
+        connection = conn()
+        if connection:
+            cursor = connection.cursor(cursor=pymysql.cursors.DictCursor)
+
+            select_query = """
+                SELECT * 
+                FROM trust_services 
+                WHERE service_id = %s
+            """
+            
+            cursor.execute(select_query, (id,))
+            
+            result = cursor.fetchall()
+            if result:
+                user_info = dict(result[0])
+                extra = {'code': log_id} 
+                logger.info(f"Getting SERVICE information: {id}", extra=extra)
+                print(f"Getting SERVICE information: {id}")
+                return user_info
+            else:
+                extra = {'code': log_id} 
+                logger.error(f"Error Getting SERVICE information: {id}", extra=extra)
+                print(f"Error Getting SERVICE information: {id}")
+                return None
+
+    except pymysql.MySQLError as e:
+        
+        extra = {'code': log_id} 
+        logger.error(f"Error fetching service_id: {e}", extra=extra)
+        print(f"Error fetching service_id: {e}")
     finally:
         if connection:
             cursor.close()
@@ -1298,13 +1335,15 @@ def edit_service(grouped, service_id, log_id):
             cursor = connection.cursor()
             ServiceName = json.dumps(grouped['ServiceName'])
             SchemeServiceDefinitionURI = json.dumps(grouped['SchemeServiceDefinitionURI'])
+            status= grouped["status"]
+            status_start_date= grouped["status_start_date"]
 
             insert_query = """
                                 UPDATE trust_services 
-                                SET ServiceName = %s, SchemeServiceDefinitionURI = %s
+                                SET ServiceName = %s, SchemeServiceDefinitionURI = %s, status = %s, status_start_date = %s
                                 WHERE service_id = %s
                             """
-            cursor.execute(insert_query, (ServiceName, SchemeServiceDefinitionURI, service_id))
+            cursor.execute(insert_query, (ServiceName, SchemeServiceDefinitionURI, status, status_start_date, service_id))
             
             connection.commit()
             
@@ -2164,6 +2203,44 @@ def insert_service_history(service_type, digital_identity,status,status_start_da
         extra = {'code': log_id} 
         logger.error(f"Error inserting SERVICE_HISTORY: {e}", extra=extra)
         print(f"Error inserting SERVICE_HISTORY: {e}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+            
+def get_service_history_xml(service_ids, log_id):
+    try:
+        connection = conn()
+        if connection:
+            cursor = connection.cursor(cursor=pymysql.cursors.DictCursor)
+
+            select_query = f"""
+                SELECT *
+                FROM service_status_history
+                WHERE service_id IN ({','.join(map(str,service_ids))})
+            """
+            
+            cursor.execute(select_query)
+            
+            result = cursor.fetchall()
+
+            if result:
+                
+                extra = {'code': log_id} 
+                logger.error(f"Getting SERVICE_history information, for the services: {service_ids}", extra=extra)
+                print(f"Getting SERVICE_HISTORY information, for the services: {service_ids}")
+                return result
+            else:
+                extra = {'code': log_id} 
+                logger.error(f"Error Getting SERVICE information, for the services: {service_ids}", extra=extra)
+                print(f"Error Getting SERVICE_HISTORY information, for the services: {service_ids}")
+                return None
+
+    except pymysql.MySQLError as e:
+        print(f"Error fetching Service history info: {e}")
+        extra = {'code': log_id} 
+        logger.error(f"Error processing the form: {e}", extra=extra)
+        return None
     finally:
         if connection:
             cursor.close()

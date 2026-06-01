@@ -1706,7 +1706,8 @@ def service_edit():
             db_data[key] = json.loads(db_data[key])
         
 
-    return render_template("dynamic-form_edit_TLS.html", h3 = "Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/service/service_edit_db")
+    return render_template("dynamic-form_edit_TLS.html", h3 = "Trust Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/service/service_edit_db",
+                            qualified = cfgserv.qualified,non_qualified = cfgserv.non_qualified, national = cfgserv.national, status = cfgserv.ServiceStatus)
 
 @rpr.route('/service/service_edit_db', methods=["GET", "POST"])
 def service_edit_db():
