@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `scheme_operators` (
 CREATE TABLE IF NOT EXISTS `service_status_history` (
   `history_id` int(11) NOT NULL AUTO_INCREMENT,
   `service_id` int(11) NOT NULL,
-  `service_type` varchar(50) DEFAULT NULL,
+  `service_type` varchar(250) DEFAULT NULL,
   `digital_identity` text DEFAULT NULL,
   `status` varchar(250) DEFAULT NULL,
   `status_start_date` datetime DEFAULT NULL,

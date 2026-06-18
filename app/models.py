@@ -1294,7 +1294,7 @@ def get_data_service_edit(id, log_id):
             cursor = connection.cursor()
 
             select_query = """
-                SELECT ServiceName, SchemeServiceDefinitionURI
+                SELECT ServiceName, SchemeServiceDefinitionURI, status
                 FROM trust_services
                 WHERE service_id = %s
             """

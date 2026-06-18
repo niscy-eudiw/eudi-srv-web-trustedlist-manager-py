@@ -44,8 +44,7 @@ def parse_json_field(field):
     except json.JSONDecodeError:
         return field
     
-def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_id, log_id):
-    service_data = [service for sublist in service_data for service in sublist]
+def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()
     cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
@@ -216,8 +215,8 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
         LoTEVersionIdentifier=confxml.LoTEVersionIdentifier,
         LoTESequenceNumber=dictFromDB_trusted_lists["SequenceNumber"] ,
         SchemeOperatorName=schemeOName,
-        ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        NextUpdate=dictFromDB_trusted_lists["next_update"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        ListIssueDateTime=dictFromDB_trusted_lists["issue_date"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+        NextUpdate=dictFromDB_trusted_lists["next_update"].strftime("%Y-%m-%dT%H:%M:%SZ"),
         LoTEType=LoTEType,
         SchemeOperatorAddress=schemeOAddress,
         SchemeName=schemeName,
@@ -377,11 +376,69 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data, t
                 )
                 if each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Issuance" or each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Revocation" :
                     ServiceInformation.ServiceStatus= each["status"]
-                    ServiceInformation.StatusStartingTime= each["status_start_date"].strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    ServiceInformation.StatusStartingTime= each["status_start_date"].strftime("%Y-%m-%dT%H:%M:%SZ")
+                
+                #ServiceHistoryInstance
+                #equal to Service Information
+                ServiceHistory= list()
 
                 TSPService= JSON.TrustedEntityService(
-                    ServiceInformation=ServiceInformation
+                    ServiceInformation=ServiceInformation,
                 )
+
+
+                if service_history:
+
+                    for history in service_history:
+                        if each["service_id"] == history["service_id"]:
+
+                            ServiceName=list()
+
+                            serv_name = parse_json_field(history["ServiceName"])
+                            for item in serv_name:
+                                ServiceName.append(JSON.MultiLangString(item["lang"], item["text"]))
+
+                            
+                            ServiceHistoryInstance=JSON.ServiceHistoryInstance(
+                                ServiceName=ServiceName,
+                                ServiceDigitalIdentity=JSON.ServiceDigitalIdentity(),
+                                ServiceTypeIdentifier=history["service_type"],
+                                ServiceStatus=history["status"],
+                                StatusStartingTime=history["status_start_date"].strftime("%Y-%m-%dT%H:%M:%SZ")                                                         
+                            )
+
+                            X509SKIs= list()
+                            cert_service_bytes = base64.b64decode(history["digital_identity"])
+                            try:
+
+                                cert_service = x509.load_der_x509_certificate(cert_service_bytes, default_backend())
+
+                            except (ValueError, TypeError):
+                                
+                                cert_service = x509.load_pem_x509_certificate(cert_service_bytes, default_backend())
+                                
+                            try:
+                                ski = cert_service.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_KEY_IDENTIFIER)
+
+                                ski_value=ski.value.digest.hex()
+
+                                X509SKIs.append(ski_value)
+
+                                ServiceDigitalIdentity=JSON.ServiceDigitalIdentity(
+                                    X509SKIs=X509SKIs
+                                )
+
+                                ServiceHistoryInstance.ServiceDigitalIdentity= ServiceDigitalIdentity
+
+                            except x509.extensions.ExtensionNotFound:
+                                
+                                print("No SKI")
+                            
+                            ServiceHistory.append(ServiceHistoryInstance)
+
+                if ServiceHistory.has__content() == True:
+                    TSPService.ServiceHistory(ServiceHistory)
+
                 TSPServices.append(TSPService)
 
         #AdditionalServiceInformation		

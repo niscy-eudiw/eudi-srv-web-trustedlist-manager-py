@@ -46,9 +46,8 @@ def parse_json_field(field):
     except json.JSONDecodeError:
         return field
     
-def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_id, log_id):
-    service_data = [service for sublist in service_data for service in sublist]
-
+def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
+    
     der_data=open(cfgserv.cert_UT, "rb").read()
     cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
@@ -74,7 +73,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     schemeInfo = LOTE.LoTEListAndSchemeInformationType()
 
     schemeInfo.set_LoTEVersionIdentifier(confxml.LoTEVersionIdentifier)
-    schemeInfo.set_LoTESequenceNumber(dictFromDB_trusted_lists["SequenceNumber"] + 1)
+    schemeInfo.set_LoTESequenceNumber(dictFromDB_trusted_lists["SequenceNumber"])
     TSLType=LOTE.NonEmptyURIType()
     LoTEType=dictFromDB_trusted_lists["TSLType"]
     TSLType.valueOf_=LoTEType
@@ -372,7 +371,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
 
                 if each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Issuance" or each["service_type"] == "http://uri.etsi.org/19602/SvcType/PubEAA/Revocation" :
                     ServiceInformation.set_ServiceStatus(LOTE.NonEmptyURIType(each["status"]))
-                    ServiceInformation.set_StatusStartingTime(each["status_start_date"])
+                    ServiceInformation.set_StatusStartingTime(each["status_start_date"].replace(tzinfo=datetime.timezone.utc))
 
 
 
@@ -381,6 +380,35 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
                     SchemeServiceDefinitionURI.add_URI(LOTE.NonEmptyMultiLangURIType(item["lang"],item["URI"]))
                 
                 ServiceInformation.set_SchemeServiceDefinitionURI(SchemeServiceDefinitionURI)
+
+                #ServiceHistoryInstance
+                #equal to Service Information
+                ServiceHistory=LOTE.ServiceHistoryType()
+
+                if service_history:
+                    for history in service_history:
+                        if each["service_id"] == history["service_id"]:
+                            ServiceHistoryInstance=LOTE.ServiceHistoryInstanceType()
+                            ServiceName=LOTE.InternationalNamesType()
+
+                            ServiceHistoryInstance.set_ServiceTypeIdentifier(LOTE.NonEmptyURIType(history["service_type"]))
+
+                            serv_name = parse_json_field(history["ServiceName"])
+                            for item in serv_name:
+                                ServiceName.add_Name(LOTE.MultiLangNormStringType(item["lang"], item["text"]))
+                            ServiceHistoryInstance.set_ServiceName(ServiceName)
+
+                            ServiceDigitalIdentity=LOTE.DigitalIdentityListType()
+                            digitalID = LOTE.DigitalIdentityType()
+                            digitalID.set_X509Certificate(history["digital_identity"].encode("utf-8"))
+                            ServiceDigitalIdentity.add_DigitalId(digitalID)
+                            ServiceHistoryInstance.set_ServiceDigitalIdentity(ServiceDigitalIdentity)
+
+                            ServiceHistoryInstance.set_ServiceStatus(LOTE.NonEmptyURIType(history["status"]))
+                            ServiceHistoryInstance.set_StatusStartingTime(history["status_start_date"].replace(tzinfo=datetime.timezone.utc))
+                            
+                            ServiceHistory.add_ServiceHistoryInstance(ServiceHistoryInstance)
+
 
                 #Extensions
 
@@ -416,6 +444,10 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
                 # ServiceInformationExtensions.add_Extension(Extension)
                 # ServiceInformationExtensions.add_Extension(ExtensionAdditionalServiceInformation)
                 # ServiceInformation.set_ServiceInformationExtensions(ServiceInformationExtensions)
+
+                if ServiceHistory.has__content() == True:
+                    TSPService.set_ServiceHistory(ServiceHistory)
+
 
                 TSPService.set_ServiceInformation(ServiceInformation)
                 TSPServices.add_TrustedEntityService(TSPService)
@@ -496,7 +528,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
 def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()
-    cert_der= x509.load_der_x509_certificate(der_data, backend=default_backend())
+    cert_der= x509.load_pem_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
