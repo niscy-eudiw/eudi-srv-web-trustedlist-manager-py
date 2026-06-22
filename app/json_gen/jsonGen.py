@@ -380,7 +380,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data,se
                 
                 #ServiceHistoryInstance
                 #equal to Service Information
-                ServiceHistory= list()
+                ServiceHistoryList= list()
 
                 TSPService= JSON.TrustedEntityService(
                     ServiceInformation=ServiceInformation,
@@ -430,14 +430,15 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data,se
 
                                 ServiceHistoryInstance.ServiceDigitalIdentity= ServiceDigitalIdentity
 
+                                ServiceHistoryList.append(ServiceHistoryInstance)
+
                             except x509.extensions.ExtensionNotFound:
                                 
                                 print("No SKI")
                             
-                            ServiceHistory.append(ServiceHistoryInstance)
-
-                if ServiceHistory.has__content() == True:
-                    TSPService.ServiceHistory(ServiceHistory)
+                            
+                if ServiceHistoryList :
+                    TSPService.ServiceHistory=ServiceHistoryList
 
                 TSPServices.append(TSPService)
 
