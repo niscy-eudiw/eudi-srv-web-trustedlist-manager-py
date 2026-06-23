@@ -46,8 +46,9 @@ def parse_json_field(field):
     except json.JSONDecodeError:
         return field
     
-def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_id, log_id):
-    service_data = [service for sublist in service_data for service in sublist]
+def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, service_history, tsl_id, log_id):
+
+    #service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cfgserv.cert_UT, "rb").read()
     cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
@@ -74,7 +75,7 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
     schemeInfo = test.TSLSchemeInformationType()
 
     schemeInfo.TSLVersionIdentifier=confxml.TLSVersionIdentifier
-    schemeInfo.TSLSequenceNumber=dictFromDB_trusted_lists["SequenceNumber"] + 1
+    schemeInfo.TSLSequenceNumber=dictFromDB_trusted_lists["SequenceNumber"]
     TSLType=test.NonEmptyURIType()
     TSLType.set_valueOf_(confxml.TSLType["EU"])
     schemeInfo.TSLType=TSLType
@@ -364,13 +365,40 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
                 ServiceInformation.set_ServiceDigitalIdentity(ServiceDigitalIdentity)
 
                 ServiceInformation.set_ServiceStatus(test.NonEmptyURIType(each["status"]))
-                ServiceInformation.set_StatusStartingTime(each["status_start_date"])
+                ServiceInformation.set_StatusStartingTime(each["status_start_date"].replace(tzinfo=datetime.timezone.utc))
 
                 uri = parse_json_field(each["SchemeServiceDefinitionURI"])
                 for item in uri:
                     SchemeServiceDefinitionURI.add_URI(test.NonEmptyMultiLangURIType(item["lang"],item["URI"]))
                 
                 ServiceInformation.set_SchemeServiceDefinitionURI(SchemeServiceDefinitionURI)
+
+                #ServiceHistoryInstance
+                #equal to Service Information
+                ServiceHistory=test.ServiceHistoryType()
+                if service_history:
+                    for history in service_history:
+                        if each["service_id"] == history["service_id"]:
+                            ServiceHistoryInstance=test.ServiceHistoryInstanceType()
+                            ServiceName=test.InternationalNamesType()
+
+                            ServiceHistoryInstance.set_ServiceTypeIdentifier(test.NonEmptyURIType(history["service_type"]))
+
+                            serv_name = parse_json_field(history["ServiceName"])
+                            for item in serv_name:
+                                ServiceName.add_Name(test.MultiLangNormStringType(item["lang"], item["text"]))
+                            ServiceHistoryInstance.set_ServiceName(ServiceName)
+
+                            ServiceDigitalIdentity=test.DigitalIdentityListType()
+                            digitalID = test.DigitalIdentityType()
+                            digitalID.set_X509Certificate(history["digital_identity"].encode("utf-8"))
+                            ServiceDigitalIdentity.add_DigitalId(digitalID)
+                            ServiceHistoryInstance.set_ServiceDigitalIdentity(ServiceDigitalIdentity)
+
+                            ServiceHistoryInstance.set_ServiceStatus(test.NonEmptyURIType(history["status"]))
+                            ServiceHistoryInstance.set_StatusStartingTime(history["status_start_date"].replace(tzinfo=datetime.timezone.utc))
+                            
+                            ServiceHistory.add_ServiceHistoryInstance(ServiceHistoryInstance)
 
                 #Extensions
 
@@ -406,6 +434,9 @@ def xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl
                 # ServiceInformationExtensions.add_Extension(Extension)
                 # ServiceInformationExtensions.add_Extension(ExtensionAdditionalServiceInformation)
                 # ServiceInformation.set_ServiceInformationExtensions(ServiceInformationExtensions)
+
+                if ServiceHistory.has__content() == True:
+                    TSPService.set_ServiceHistory(ServiceHistory)
 
                 TSPService.set_ServiceInformation(ServiceInformation)
                 TSPServices.add_TSPService(TSPService)

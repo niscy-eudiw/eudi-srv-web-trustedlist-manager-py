@@ -61,9 +61,13 @@ CREATE TABLE IF NOT EXISTS `scheme_operators` (
 -- A despejar estrutura para tabela trusted_lists.service_status_history
 CREATE TABLE IF NOT EXISTS `service_status_history` (
   `history_id` int(11) NOT NULL AUTO_INCREMENT,
-  `service_id` int(11) DEFAULT NULL,
-  `previous_status` varchar(20) DEFAULT NULL,
-  `status_start_date` timestamp NULL DEFAULT NULL,
+  `service_id` int(11) NOT NULL,
+  `service_type` varchar(250) DEFAULT NULL,
+  `digital_identity` text DEFAULT NULL,
+  `status` varchar(250) DEFAULT NULL,
+  `status_start_date` datetime DEFAULT NULL,
+  `qualifier` text DEFAULT NULL,
+  `ServiceName` text DEFAULT NULL,
   PRIMARY KEY (`history_id`),
   KEY `FK_service_status_history_trust_services` (`service_id`),
   CONSTRAINT `FK_service_status_history_trust_services` FOREIGN KEY (`service_id`) REFERENCES `trust_services` (`service_id`) ON DELETE NO ACTION ON UPDATE NO ACTION

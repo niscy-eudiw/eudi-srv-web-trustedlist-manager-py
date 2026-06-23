@@ -649,7 +649,8 @@ def xml():
         print(f"Error decoding DistributionPoints: {tsl_info['DistributionPoints']}")
         tsl_info["DistributionPoints"] = []
 
-    Issue_date = datetime.now(timezone.utc)
+
+    Issue_date = datetime.now(timezone.utc).replace(microsecond=0)
     NextUpdate = Issue_date + timedelta(days=6*30)
 
     dictFromDB_trusted_lists={
@@ -683,11 +684,23 @@ def xml():
     
         service_data.append(service_info)
 
+        service_history_ids=[]
+
+        service_data=[service for sublist in service_data for service in sublist]
+
+        for service in service_data:
+
+            service_id=service["service_id"]
+
+            service_history_ids.append(service_id)
+
+        service_history=func.get_service_history_xml(service_history_ids, session["session_id"])
+
     # for service_list in service_data:
     #     for service in service_list:
     #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
 
-    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data, tsl_info["tsl_id"], session["session_id"])
+    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_info["tsl_id"], session["session_id"])
 
 
     check = func.edit_tsl_dates_and_sequence_number(
@@ -1462,7 +1475,7 @@ def update_services():
         check = func.update_service(service_id, tsp_id, session["session_id"])
         
         if check is None:
-            return ("erro")
+            return ("err")
 
     return redirect('/tsp/list')
     
@@ -1493,7 +1506,27 @@ def list_service():
                     }
                 }
                 data.update(data_temp)
-    list = []
+
+    service_history_ids=[]
+
+    for service in data:
+        service_history_ids.append(service)
+    list=[]
+
+    service_history=func.get_service_history_xml(service_history_ids, session["session_id"])
+    if service_history:
+        for history in service_history:
+            name = json.loads(history["ServiceName"])       
+            name_txt = name[0]["text"]
+            new_item = {
+                "id": history["history_id"],
+                "name": name_txt,
+                "status": history["status"],
+                "status_start_date":history["status_start_date"],
+                "service_id":history["service_id"]
+            }
+                    
+            list.append(new_item)
     
     if(cfgserv.two_operators):
         role = func.check_role_user(session[temp_user_id]['id'], session["session_id"])
@@ -1552,7 +1585,7 @@ def checkcertificate():
         decoded= base64.b64decode(digital_identity)
         cert = x509.load_der_x509_certificate(decoded, default_backend())
 
-        return jsonify({"message": {"message": "Valid Certificate"}}),200
+        #return jsonify({"message": {"message": "Valid Certificate"}}),200
 
     except (ValueError, TypeError):
         try:
@@ -1560,10 +1593,20 @@ def checkcertificate():
             decoded= base64.b64decode(digital_identity)
             cert = x509.load_pem_x509_certificate(digital_identity.encode(), default_backend())
 
-            return jsonify({"message": {"message": "Valid Certificate"}}),200
+            #return jsonify({"message": {"message": "Valid Certificate"}}),200
         except (ValueError, TypeError):
 
             return jsonify({"error": "Invalid Certificate"}),400
+    
+    subject = cert.subject
+
+    org_names = subject.get_attributes_for_oid(x509.NameOID.ORGANIZATION_NAME)
+
+    if org_names:
+        return jsonify({"message": {"message": "Valid Certificate"}}),200
+    else:
+        return jsonify({"error": "Invalid Certificate: OrganizationName attribute not found "}),400
+        
 
 @rpr.route('/service/create/db', methods=["GET", "POST"])
 def service_tsp_db():
@@ -1577,7 +1620,7 @@ def service_tsp_db():
     digital_identity = request.form.get('Digital Identity')
     
     status = request.form.get('Service Status')
-    status_start_date = request.form.get('Status Start Date')
+    status_start_date =  request.form.get('Status Start Date')
     uri = request.form.get('Scheme Service Definition URI')
     lang = request.form.get('Lang')
 
@@ -1587,7 +1630,7 @@ def service_tsp_db():
     check = func.service_db_info(user['id'], ServiceName, SchemeServiceDefinitionURI, digital_identity, service_type, status, status_start_date, session["session_id"])
 
     if check is None:
-        return (check)
+        return ("error")
     else:
         
         return redirect('/service/list')
@@ -1670,10 +1713,13 @@ def service_edit():
 
     db_data = func.get_data_service_edit(service_id, session["session_id"])
 
-    for key in db_data: 
-        db_data[key] = json.loads(db_data[key])
-    
-    return render_template("dynamic-form_edit_TLS.html", h3 = "Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/service/service_edit_db")
+    for key in db_data:
+        if key != "status" :
+            db_data[key] = json.loads(db_data[key])
+        
+
+    return render_template("dynamic-form_edit_TLS.html", h3 = "Trust Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/service/service_edit_db",
+                            qualified = cfgserv.qualified,non_qualified = cfgserv.non_qualified, national = cfgserv.national, status = cfgserv.ServiceStatus)
 
 @rpr.route('/service/service_edit_db', methods=["GET", "POST"])
 def service_edit_db():
@@ -1709,6 +1755,21 @@ def service_edit_db():
                 
         else:
             grouped[key] = value
+            
+    db_data_old = func.get_status_service(service_id, session["session_id"])
+
+    grouped["status_start_date"]=db_data_old.get("status_start_date")
+
+    if(db_data_old != "err"):
+
+        if grouped["status"] != db_data_old.get('status'):
+
+            grouped["status_start_date"]=datetime.now(timezone.utc)
+
+            history= func.insert_service_history(db_data_old.get("service_type"), db_data_old.get("digital_identity"),db_data_old.get("status"),db_data_old.get("status_start_date"), db_data_old.get("ServiceName"),service_id, session["session_id"])
+
+            if history is None:
+                return ("erro")
             
     check = func.edit_service_db_info(
         grouped, 
@@ -1826,7 +1887,7 @@ def lotl_xml():
             print(f"Error decoding {key}: {tsl_data[key]}")
             tsl_data[key] = []
     
-    Issue_date = datetime.now(timezone.utc)
+    Issue_date = datetime.now(timezone.utc).replace(microsecond=0)
     NextUpdate = Issue_date + timedelta(days=6*30)
 
     tsl_mom = tsl_data
@@ -1870,8 +1931,8 @@ def lotl_xml():
             "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
             "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
             #"DistributionPoints" :  each["DistributionPoints"],
-            "issue_date" :  each["issue_date"],
-            "next_update":  each["next_update"],
+            "issue_date" :  each["issue_date"].replace(tzinfo=datetime.timezone.utc),
+            "next_update":  each["next_update"].replace(tzinfo=datetime.timezone.utc),
             "status":   each["status"],
             "schemeTerritory": each["schemeTerritory"]
         }

@@ -35,23 +35,23 @@ class ConfService:
 
     secret_key = os.urandom(32).hex()
 
-    #service_url = "https://trustedlist.serviceproviders.eudiw.dev/"
+    #service_url = "http://127.0.0.1:5000/"
     service_url = os.getenv("SERVICE_URL", "https://trustedlist.serviceproviders.eudiw.dev/")
 
     #trusted_CAs_path = "app\certs"
-    trusted_CAs_path = os.getenv("TRUSTED_CAS_PATH","/etc/eudiw/pid-issuer/cert/")
+    trusted_CAs_path = os.getenv("TRUSTED_CAS_PATH")
 
     deffered_expiry = 100
     
-    #cert_UT = "app/xml_gen/cert_UT.der"
-    cert_UT = os.getenv("CERT","/etc/eudiw/pid-issuer/cert/PID-DS-0001_UT_cert.der")
+    #cert_UT = "app/xml_gen/ecdsa_cert.pem"
+    cert_UT = os.getenv("CERT","")
 
-    #priv_key_UT = "app/xml_gen/privkey_UT.pem"
-    priv_key_UT = os.getenv("PRIV_KEY", "/etc/eudiw/pid-issuer/privKey/PID-DS-0001_UT.pem")
+    #priv_key_UT = "app/xml_gen/ecdsa_key.pem"
+    priv_key_UT = os.getenv("PRIV_KEY")
 
-    url_verifier= os.getenv("VERIFIER", "verifier-backend.eudiw.dev")
+    url_verifier= os.getenv("VERIFIER")
     
-    sca_signer_url=os.getenv("SCA_SIGNER_URL","http://localhost:8086")
+    sca_signer_url=os.getenv("SCA_SIGNER_URL")
 
 
 
