@@ -167,7 +167,7 @@ def insert_user_info(role, operator_name, PostalAddress, electronicAddress, id, 
             connection.close()
 
 
-def check_country(user_country, log_id):
+def check_country(log_id):
     try:
         connection = conn()
         if connection:
@@ -176,23 +176,22 @@ def check_country(user_country, log_id):
             select_query = """
                 SELECT country_id
                 FROM countries
-                WHERE country_code = %s
             """
             
-            cursor.execute(select_query, (user_country,))
+            cursor.execute(select_query)
             result = cursor.fetchone()
             
             if result:
                 country_id = result[0]
                 
                 extra = {'code': log_id} 
-                logger.info(f"Getting Countries information, for the Country Code: {user_country}", extra=extra)
-                print(f"Getting Countries information, for the Country Code: {user_country}")
+                logger.info(f"Getting Countries information", extra=extra)
+                print(f"Getting Countries information")
                 return country_id
             else:
                 extra = {'code': log_id} 
-                logger.error(f"Error Getting Countries information, for the Country Code: {user_country}", extra=extra)
-                print(f"Error Getting Countries information, for the Country Code: {user_country}")
+                logger.error(f"Error Getting Countries information", extra=extra)
+                print(f"Error Getting Countries information")
                 return None
         else:
             return None
@@ -2157,7 +2156,7 @@ def get_lotl_old_cert(id, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting lotl_old_certificates information, for the TSL: {id}", extra=extra)
+                logger.info(f"Getting lotl_old_certificates information, for the TSL: {id}", extra=extra)
                 print(f"Getting lotl_old_certificates information, for the TSL: {id}")
                 return result
             else:
@@ -2227,7 +2226,7 @@ def get_service_history_xml(service_ids, log_id):
             if result:
                 
                 extra = {'code': log_id} 
-                logger.error(f"Getting SERVICE_history information, for the services: {service_ids}", extra=extra)
+                logger.info(f"Getting SERVICE_history information, for the services: {service_ids}", extra=extra)
                 print(f"Getting SERVICE_HISTORY information, for the services: {service_ids}")
                 return result
             else:

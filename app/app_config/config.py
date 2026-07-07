@@ -43,8 +43,8 @@ class ConfService:
 
     deffered_expiry = 100
     
-    #cert_UT = "app/xml_gen/ecdsa_cert.pem"
-    cert_UT = os.getenv("CERT","")
+    cert_UT = "app/xml_gen/ecdsa_cert.pem"
+    #cert_UT = os.getenv("CERT")
 
     #priv_key_UT = "app/xml_gen/ecdsa_key.pem"
     priv_key_UT = os.getenv("PRIV_KEY")

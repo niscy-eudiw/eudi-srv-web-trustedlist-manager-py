@@ -201,9 +201,9 @@ def user_db_info(role, operator_name, PostalAddress, electronicAddress, id, log_
         print(f"Error processing the form, user_db_info: {e}")
         return "Error processing the form.", 500
 
-def check_country(user_country, log_id):
+def check_country( log_id):
     try:
-        check = db.check_country(user_country, log_id)
+        check = db.check_country( log_id)
 
         return check
 

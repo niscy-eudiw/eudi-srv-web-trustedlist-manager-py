@@ -23,6 +23,12 @@ NOTE: You should only change it if you understand what you're doing.
 
 class ConfXML:
 
+    #cert_location and privkey_location for each country
+    #Example
+    countries={
+      "FC":["app/xml_gen/ecdsa_cert.pem", "app/xml_gen/ecdsa_key.pem"]
+    }
+
     TLSVersionIdentifier=6
 
     TSLType={
