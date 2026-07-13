@@ -127,7 +127,11 @@ def xml_TE():
     if  tsl_info["schemeTerritory"] in cfgxml.countries:
         cert_location = cfgxml.countries[tsl_info["schemeTerritory"]][0]
         privkey_location = cfgxml.countries[tsl_info["schemeTerritory"]][1]
-    
+
+    else:
+        cert_location = cfgxml.countries["UT"][0]
+        privkey_location = cfgxml.countries["UT"][1]
+
     dictFromDB_trusted_lists={
         "Version":  confxml.LoTEVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"] + 1 ,
@@ -258,7 +262,11 @@ def json_file():
     if  tsl_info["schemeTerritory"] in cfgxml.countries:
         cert_location = cfgxml.countries[tsl_info["schemeTerritory"]][0]
         privkey_location = cfgxml.countries[tsl_info["schemeTerritory"]][1]
-    
+
+    else:
+        cert_location = cfgxml.countries["UT"][0]
+        privkey_location = cfgxml.countries["UT"][1] 
+
     dictFromDB_trusted_lists={
         "Version":  confxml.LoTEVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"] + 1,
@@ -501,13 +509,13 @@ def create_lote_db():
 
     check = func.check_country(session["session_id"])
     
-    if user['issuing_country'] not in check:
+    if user['issuing_country'] not in check.keys():
 
         return ("err")
 
     check = func.tsl_db_info(user['id'], Version, Sequence_number,Type, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
-                             AdditionalInformation, schemeTerritory, lotl, check, session["session_id"])
+                             AdditionalInformation, schemeTerritory, lotl, check[user['issuing_country']], session["session_id"])
     
     if check is None:
         return ("err")

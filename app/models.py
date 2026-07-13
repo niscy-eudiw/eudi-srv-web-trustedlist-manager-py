@@ -174,20 +174,19 @@ def check_country(log_id):
             cursor = connection.cursor()
 
             select_query = """
-                SELECT country_id
+                SELECT country_code,country_id
                 FROM countries
             """
             
             cursor.execute(select_query)
-            result = cursor.fetchone()
+            result = cursor.fetchall()
             
             if result:
-                country_id = result[0]
-                
+                country_codes = dict(result)
                 extra = {'code': log_id} 
                 logger.info(f"Getting Countries information", extra=extra)
                 print(f"Getting Countries information")
-                return country_id
+                return country_codes
             else:
                 extra = {'code': log_id} 
                 logger.error(f"Error Getting Countries information", extra=extra)

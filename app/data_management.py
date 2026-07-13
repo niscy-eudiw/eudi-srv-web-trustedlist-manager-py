@@ -73,7 +73,7 @@ def auto_update_tsl_and_lote():
     #update automatically
     now = datetime.now()
 
-    lote_and_tsl_ids= cfgserv.lote_and_tsls_ids
+    lote_and_tsl_ids= cfgserv.lote_and_tsl_ids
 
     for lote_or_tsl_id in lote_and_tsl_ids.keys():
 
@@ -221,4 +221,4 @@ def run_scheduler_lote_and_tsl():
     auto_update_tsl_and_lote()
 
 run_scheduler()
-run_scheduler_lote_and_tsl()
+#run_scheduler_lote_and_tsl()

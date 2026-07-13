@@ -54,6 +54,8 @@ class ConfService:
     sca_signer_url=os.getenv("SCA_SIGNER_URL")
 
 
+    lote_and_tsl_ids={
+    }
 
     test_lotl=[
         "https://trustedlist.serviceproviders.eudiw.dev/TL/EU/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/AT/01.xml", 

@@ -312,8 +312,9 @@ def getpidoid4vp():
 
     check = func.check_country(session["session_id"])
 
-    if(user_country in check):
-        aux, check = func.user_db(user, user_name, check, session["session_id"])
+    if(user_country in check.keys()):
+
+        aux, check = func.user_db(user, user_name, check[user_country], session["session_id"])
         session[temp_user_id]['id'] = aux
 
         if(check == 1):
@@ -345,7 +346,7 @@ def getpidoid4vp():
             attributesForm.update(form_items)
             
             return render_template("form_create.html", user_name = user_name, h3 = "Operator information form", countries=cfgserv.eu_countries, title="Trusted List", data = cfgserv.roles, status = cfgserv.statusDetermination,  TSLType= cfgserv.TSLType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id,  redirect_url = cfgserv.service_url + "user_auth")
-        else:
+        elif check == 0:
             check = func.check_role_user(aux, session["session_id"])
             if(cfgserv.two_operators == True):
                 if(check == "tsl_op"):
@@ -360,6 +361,8 @@ def getpidoid4vp():
                 if(check == "lotl_op"):
                     return redirect(url_for('RPR.menu_lotl'))
                 return redirect(url_for('RPR.menu'))
+        else:
+            return "Error creating user.", 500
     else:
         return ("Invalid Country")
 
@@ -687,7 +690,11 @@ def xml():
     if  tsl_info["schemeTerritory"] in confxml.countries:
         cert_location = confxml.countries[tsl_info["schemeTerritory"]][0]
         privkey_location = confxml.countries[tsl_info["schemeTerritory"]][1]
-
+    
+    else:
+        cert_location = confxml.countries["UT"][0]
+        privkey_location = confxml.countries["UT"][1]
+        
     service_data = []
 
     for item in tsp_data:
@@ -952,8 +959,8 @@ def create_tsl_db():
     #Status = request.form.get('Status determination approach')
     AdditionalInformation = request.form.get('Additional Information')
 
-    # if TSLType == "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist":
-    #     TSLType="http://uri.etsi.org/TrstSvc/TrustedList/TSLType/"+ schemeTerritory + "list"
+    if TSLType == "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist":
+        TSLType="http://uri.etsi.org/TrstSvc/TrustedList/TSLType/"+ schemeTerritory + "list"
     
     # if  "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/" in options:
     #    i= options.index("http://uri.etsi.org/TrstSvc/TrustedList/schemerules/")
@@ -971,13 +978,13 @@ def create_tsl_db():
 
     check = func.check_country(session["session_id"])
     
-    if user['issuing_country'] not in check:
+    if user['issuing_country'] not in check.keys():
 
         return ("err")
 
     check = func.tsl_db_info(user['id'], Version, Sequence_number,Type, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
-                             AdditionalInformation, schemeTerritory, lotl, check, session["session_id"])
+                             AdditionalInformation, schemeTerritory, lotl, check[user['issuing_country']], session["session_id"])
     
     if check is None:
         return ("err")
@@ -2379,13 +2386,13 @@ def create_lotl_db():
     
     check = func.check_country(session["session_id"])
     
-    if user['issuing_country'] not in check:
+    if user['issuing_country'] not in check.keys():
 
         return ("err")
     
     check = func.tsl_db_info_lotl(user['id'], Version, Sequence_number, TSLType, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, PointerstootherTSL, DistributionPoints, Issue_date, NextUpdate, Status, 
-                             AdditionalInformation, schemeTerritory, check, session["session_id"])
+                             AdditionalInformation, schemeTerritory, check[user['issuing_country']], session["session_id"])
     
     if check is None:
         return ("err")
