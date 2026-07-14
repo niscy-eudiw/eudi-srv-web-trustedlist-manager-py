@@ -148,8 +148,8 @@ def auto_update_tsl_and_lote():
                 cert_location = confxml.countries[tsl_info["schemeTerritory"]][0]
                 privkey_location = confxml.countries[tsl_info["schemeTerritory"]][1]
             else :
-                cert_location = confxml.countries["EU"][0]
-                privkey_location = confxml.countries["EU"][1]
+                cert_location = confxml.countries["UT"][0]
+                privkey_location = confxml.countries["UT"][1]
 
             service_data = []
 
@@ -204,7 +204,7 @@ def auto_update_tsl_and_lote():
                 )
 
                 if check is None:
-                    print("error")
+                    print("error updating dates")
         
         else:
             continue
