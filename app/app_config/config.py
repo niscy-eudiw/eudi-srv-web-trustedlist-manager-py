@@ -43,11 +43,11 @@ class ConfService:
 
     deffered_expiry = 100
     
-    cert_UT = "app/xml_gen/ecdsa_cert.pem"
-    #cert_UT = os.getenv("CERT")
+    # cert_UT = "app/xml_gen/PID-DS-0002_UT_cert.der"
+    # cert_UT = os.getenv("CERT")
 
-    #priv_key_UT = "app/xml_gen/ecdsa_key.pem"
-    priv_key_UT = os.getenv("PRIV_KEY")
+    # priv_key_UT = "app/xml_gen/PID-DS-0002_UT.pem"
+    # priv_key_UT = os.getenv("PRIV_KEY")
 
     url_verifier= os.getenv("VERIFIER")
     
