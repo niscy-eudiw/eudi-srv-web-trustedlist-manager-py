@@ -47,7 +47,7 @@ def parse_json_field(field):
 def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
 
     der_data=open(cert_location, "rb").read()
-    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
@@ -486,7 +486,7 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
     return base64.b64encode(jwt.encode()).decode(), thumbprint, json_hash_before_sign
 
-
+#not used
 def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()

@@ -51,7 +51,7 @@ def xml_gen_xml(user_info, cert_location, privkey_location, dictFromDB_trusted_l
     #service_data = [service for sublist in service_data for service in sublist]
 
     der_data=open(cert_location, "rb").read()
-    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
