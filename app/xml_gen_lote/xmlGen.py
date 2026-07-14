@@ -46,9 +46,9 @@ def parse_json_field(field):
     except json.JSONDecodeError:
         return field
     
-def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
+def xml_gen_xml_LoTE(user_info, cert_location, privkey_location, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
     
-    der_data=open(cfgserv.cert_UT, "rb").read()
+    der_data=open(cert_location, "rb").read()
     cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
@@ -478,7 +478,7 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     # with open ("privkey_UT.pem", "rb") as key_file: 
     #     key = serialization.load_pem_private_key(key_file.read(),password=None,backend=default_backend())
         
-    key=open(cfgserv.priv_key_UT, "rb").read()
+    key=open(privkey_location, "rb").read()
     
     ET.register_namespace("", "http://uri.etsi.org/019602/v1#")
 
@@ -525,9 +525,9 @@ def xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data
     return encoded_file, thumbprint, xml_hash_before_sign
 
 
-def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
+def xml_gen_lote_xml(user_info, cert_location, privkey_location, tsl_list, dict_tsl_mom, log_id):
 
-    der_data=open(cfgserv.cert_UT, "rb").read()
+    der_data=open(cert_location, "rb").read()
     cert_der= x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
@@ -828,7 +828,7 @@ def xml_gen_lote_xml(user_info, tsl_list, dict_tsl_mom, log_id):
     # with open ("privkey_UT.pem", "rb") as key_file: 
     #     key = serialization.load_pem_private_key(key_file.read(),password=None,backend=default_backend())
         
-    key=open(cfgserv.priv_key_UT, "rb").read()
+    key=open(privkey_location, "rb").read()
     
     rootTemp=ET.fromstring(content)
 

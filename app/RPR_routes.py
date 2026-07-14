@@ -19,7 +19,7 @@
 This rpr_routes.py file is the blueprint of the Web Trusted List Manager service.
 """
 
-from app import logger
+from app import logger, login_required
 import base64
 import binascii
 from collections import defaultdict
@@ -80,6 +80,7 @@ def initial_page():
                            test_lote=cfgserv.test_lote)
 
 @rpr.route('/menu', methods=['GET','POST'])
+@login_required
 def menu():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -87,6 +88,7 @@ def menu():
     return render_template("operator_menu.html", user = user['given_name'], temp_user_id = temp_user_id)
     
 @rpr.route('/menu_tsp', methods=['GET','POST'])
+@login_required
 def menu_tsp():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -94,6 +96,7 @@ def menu_tsp():
     return render_template("operator_menu_tsp.html", user = user['given_name'], temp_user_id = temp_user_id)
 
 @rpr.route('/menu_tsl', methods=['GET','POST'])
+@login_required
 def menu_tsl():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -101,6 +104,7 @@ def menu_tsl():
     return render_template("operator_menu_tsl.html", user = user['given_name'], temp_user_id = temp_user_id)
 
 @rpr.route('/menu_lotl', methods=['GET','POST'])
+@login_required
 def menu_lotl():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -306,10 +310,11 @@ def getpidoid4vp():
     user_name=user["given_name"] + " " + user["family_name"]
     user_country = user["issuing_country"]
 
-    check = func.check_country(user_country, session["session_id"])
+    check = func.check_country(session["session_id"])
 
-    if(check != None):
-        aux, check = func.user_db(user, user_name, check, session["session_id"])
+    if(user_country in check.keys()):
+
+        aux, check = func.user_db(user, user_name, check[user_country], session["session_id"])
         session[temp_user_id]['id'] = aux
 
         if(check == 1):
@@ -341,7 +346,7 @@ def getpidoid4vp():
             attributesForm.update(form_items)
             
             return render_template("form_create.html", user_name = user_name, h3 = "Operator information form", countries=cfgserv.eu_countries, title="Trusted List", data = cfgserv.roles, status = cfgserv.statusDetermination,  TSLType= cfgserv.TSLType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id,  redirect_url = cfgserv.service_url + "user_auth")
-        else:
+        elif check == 0:
             check = func.check_role_user(aux, session["session_id"])
             if(cfgserv.two_operators == True):
                 if(check == "tsl_op"):
@@ -356,6 +361,8 @@ def getpidoid4vp():
                 if(check == "lotl_op"):
                     return redirect(url_for('RPR.menu_lotl'))
                 return redirect(url_for('RPR.menu'))
+        else:
+            return "Error creating user.", 500
     else:
         return ("Invalid Country")
 
@@ -422,6 +429,7 @@ def certificate_List(temp_user_id):
 
 # OP
 @rpr.route('/op_data_lang')
+@login_required
 def op_lang():
     
     temp_user_id = session['temp_user_id']
@@ -457,6 +465,7 @@ def op_lang():
 
 
 @rpr.route('/op_data_lang_db', methods=["GET", "POST"])
+@login_required
 def op_lang_db():
 
     temp_user_id = session['temp_user_id']
@@ -530,6 +539,7 @@ def op_lang_db():
             return redirect(url_for('RPR.menu'))
 
 @rpr.route('/op_edit')
+@login_required
 def op_edit():
         
     temp_user_id = session['temp_user_id']
@@ -543,6 +553,7 @@ def op_edit():
     return render_template("dynamic-form_edit_TLS.html", h3 = "Operator Information", title = "Scheme Operator", lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "op_edit_db")
 
 @rpr.route('/op_edit_db', methods=["GET", "POST"])
+@login_required
 def op_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -603,6 +614,7 @@ def op_edit_db():
 # TSL
 
 @rpr.route('/tsl/xml', methods=["GET", "POST"])
+@login_required
 def xml():
     
     temp_user_id = session['temp_user_id']
@@ -656,7 +668,7 @@ def xml():
     dictFromDB_trusted_lists={
         "Version":  confxml.TLSVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"] + 1,
-        #"TSLType":  confxml.TSLType.get("EU"),
+        "TSLType":  tsl_info["TSLType"],
         "SchemeName":   tsl_info["SchemeName_lang"],
         "SchemeInformationURI": tsl_info["Uri_lang"],
         #"StatusDeterminationApproach":  confxml.StatusDeterminationApproach.get("EU"),
@@ -675,6 +687,14 @@ def xml():
     
     tsp_data = func.get_tsp_info_xml(tsl_id, session["session_id"])
 
+    if  tsl_info["schemeTerritory"] in confxml.countries:
+        cert_location = confxml.countries[tsl_info["schemeTerritory"]][0]
+        privkey_location = confxml.countries[tsl_info["schemeTerritory"]][1]
+    
+    else:
+        cert_location = confxml.countries["UT"][0]
+        privkey_location = confxml.countries["UT"][1]
+        
     service_data = []
 
     for item in tsp_data:
@@ -700,7 +720,7 @@ def xml():
     #     for service in service_list:
     #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
 
-    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_info["tsl_id"], session["session_id"])
+    file, thumbprint, xml_hash_before_sign = xml_gen_xml(user_info, cert_location, privkey_location, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_info["tsl_id"], session["session_id"])
 
 
     check = func.edit_tsl_dates_and_sequence_number(
@@ -782,6 +802,7 @@ def validate_xml():
     
 
 @rpr.route('/operator_menu_tsl', methods=["GET"])
+@login_required
 def operator_menu_tsl():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -792,6 +813,7 @@ def operator_menu_tsl():
         return render_template("operator_menu.html", user = user['given_name'], temp_user_id = temp_user_id)
 
 @rpr.route('/tsl/list')
+@login_required
 def list_tsl():
         
     temp_user_id = session['temp_user_id']
@@ -869,6 +891,7 @@ def list_tsl():
 
     
 @rpr.route('/tsl/create')
+@login_required
 def create_tsl():
     
     temp_user_id = session['temp_user_id']
@@ -912,6 +935,7 @@ def create_tsl():
     return render_template("form_create.html", h3 = "Trusted List or LoTE information form", countries=cfgserv.eu_countries, title="Trusted Lists or LoTEs", status = cfgserv.statusDetermination,  TSLType= cfgserv.TSLType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsl/create/db")
 
 @rpr.route('/tsl/create/db', methods=["GET", "POST"])
+@login_required
 def create_tsl_db():
     
     temp_user_id = session['temp_user_id']
@@ -935,8 +959,8 @@ def create_tsl_db():
     #Status = request.form.get('Status determination approach')
     AdditionalInformation = request.form.get('Additional Information')
 
-    # if TSLType == "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist":
-    #     TSLType="http://uri.etsi.org/TrstSvc/TrustedList/TSLType/"+ schemeTerritory + "list"
+    if TSLType == "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist":
+        TSLType="http://uri.etsi.org/TrstSvc/TrustedList/TSLType/"+ schemeTerritory + "list"
     
     # if  "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/" in options:
     #    i= options.index("http://uri.etsi.org/TrstSvc/TrustedList/schemerules/")
@@ -952,10 +976,15 @@ def create_tsl_db():
 
     lotl = 0
 
-    check = func.check_country(user['issuing_country'], session["session_id"])
+    check = func.check_country(session["session_id"])
+    
+    if user['issuing_country'] not in check.keys():
+
+        return ("err")
+
     check = func.tsl_db_info(user['id'], Version, Sequence_number,Type, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
-                             AdditionalInformation, schemeTerritory, lotl, check, session["session_id"])
+                             AdditionalInformation, schemeTerritory, lotl, check[user['issuing_country']], session["session_id"])
     
     if check is None:
         return ("err")
@@ -963,6 +992,7 @@ def create_tsl_db():
         return redirect('/tsl/list')
 
 @rpr.route('/tsl/edit', methods=["GET", "POST"])
+@login_required
 def tsl_edit():
     
     if not request.args.get("id"):
@@ -986,6 +1016,7 @@ def tsl_edit():
     return render_template("dynamic-form_edit_TLS.html", h3 = "Trusted Service Lists or LoTEs Information", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "tsl/edit_db")
 
 @rpr.route('/tsl/edit_db', methods=["GET", "POST"])
+@login_required
 def tsl_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -1050,6 +1081,7 @@ def update_tsps():
     return redirect('/tsl/list')
 
 @rpr.route('/tsl/data_lang')
+@login_required
 def tsl_lang():
     temp_user_id = session['temp_user_id']
     
@@ -1078,6 +1110,7 @@ def tsl_lang():
 
 
 @rpr.route('/tsl/tsl_db_data_lang', methods=["GET", "POST"])
+@login_required
 def tsl_db_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -1145,6 +1178,7 @@ def tsl_db_lang():
 
 # TSP
 @rpr.route('/tsp/list')
+@login_required
 def list_tsp():
 
     temp_user_id = session['temp_user_id']
@@ -1218,6 +1252,7 @@ def list_tsp():
         return render_template("CertificateList.html", h1 = "Trust Service Providers", menu = menu, data=data, title="Trust Service Providers", list= list, header_table=header_table, url=cfgserv.service_url +"tsp", temp_user_id = temp_user_id)
 
 @rpr.route('/tsp/create')
+@login_required
 def create_tsp():
     
     temp_user_id = session['temp_user_id']
@@ -1256,6 +1291,7 @@ def create_tsp():
 
 
 @rpr.route('/tsp/create/db', methods=["GET", "POST"])
+@login_required
 def create_tsp_db():
     
     temp_user_id = session['temp_user_id']
@@ -1287,6 +1323,7 @@ def create_tsp_db():
         
 
 @rpr.route('/tsp/data_lang')
+@login_required
 def tsp_lang():
     temp_user_id = session['temp_user_id']
     
@@ -1323,6 +1360,7 @@ def tsp_lang():
 
 
 @rpr.route('/tsp/tsp_db_data_lang', methods=["GET", "POST"])
+@login_required
 def tsp_db_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -1401,6 +1439,7 @@ def tsp_db_lang():
 
 
 @rpr.route('/tsp/edit')
+@login_required
 def tsp_edit():
         
     temp_user_id = session['temp_user_id']
@@ -1416,6 +1455,7 @@ def tsp_edit():
     return render_template("dynamic-form_edit_TLS.html", h3 = "Trusted Service Provider/Trusted Entity Information", title = "Trust Service Provider/Trusted Entity", id = tsp_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/tsp/tsp_edit_db")
 
 @rpr.route('/tsp/tsp_edit_db', methods=["GET", "POST"])
+@login_required
 def tsp_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -1481,6 +1521,7 @@ def update_services():
     
 # Service
 @rpr.route('/service/list')
+@login_required
 def list_service():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -1543,6 +1584,7 @@ def list_service():
         return render_template("CertificateList.html", h1 = "Services",  menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"service", temp_user_id = temp_user_id)
 
 @rpr.route('/service/create')
+@login_required
 def create_service():
     
     temp_user_id = session['temp_user_id']
@@ -1609,6 +1651,7 @@ def checkcertificate():
         
 
 @rpr.route('/service/create/db', methods=["GET", "POST"])
+@login_required
 def service_tsp_db():
     
     temp_user_id = session['temp_user_id']
@@ -1636,6 +1679,7 @@ def service_tsp_db():
         return redirect('/service/list')
        
 @rpr.route('/service/data_lang')
+@login_required
 def service_lang():
     
     temp_user_id = session['temp_user_id']
@@ -1662,6 +1706,7 @@ def service_lang():
 
 
 @rpr.route('/service/service_lang_db', methods=["GET", "POST"])
+@login_required
 def service_db():
     
     temp_user_id = session['temp_user_id']
@@ -1704,6 +1749,7 @@ def service_db():
        
 
 @rpr.route('/service/edit')
+@login_required
 def service_edit():
         
     temp_user_id = session['temp_user_id']
@@ -1722,6 +1768,7 @@ def service_edit():
                             qualified = cfgserv.qualified,non_qualified = cfgserv.non_qualified, national = cfgserv.national, status = cfgserv.ServiceStatus)
 
 @rpr.route('/service/service_edit_db', methods=["GET", "POST"])
+@login_required
 def service_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -1785,6 +1832,7 @@ def service_edit_db():
 # lotl
 
 @rpr.route('/lotl/update')
+@login_required
 def update_lotl():
 
     temp_user_id = session['temp_user_id']
@@ -1811,6 +1859,7 @@ def update_lotl():
     return "sucess"
     
 @rpr.route('/lotl/list')
+@login_required
 def list_lotl():
         
     temp_user_id = session['temp_user_id']
@@ -1852,6 +1901,7 @@ def list_lotl():
 
 
 @rpr.route('/lotl/xml', methods=["GET", "POST"])
+@login_required
 def lotl_xml():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -1907,6 +1957,9 @@ def lotl_xml():
         "status":   tsl_mom["status"]
     }
 
+    cert_location= confxml.countries["EU"][0]
+    privkey_location= confxml.countries["EU"][1]
+
     for each in tsl_info:
         for key in lang_based_fields:
             try:
@@ -1938,7 +1991,7 @@ def lotl_xml():
         }
         tsl_list.append(dictFromDB_trusted_lists) 
         
-    file, thumbprint, xml_hash_before_sign = xml_gen_lotl_xml(user_info, tsl_list, dict_tsl_mom, session["session_id"])
+    file, thumbprint, xml_hash_before_sign = xml_gen_lotl_xml(user_info, cert_location, privkey_location, tsl_list, dict_tsl_mom, session["session_id"])
 
     check = func.edit_tsl_dates_and_sequence_number(
         Issue_date, NextUpdate,
@@ -2195,6 +2248,7 @@ def lotl_json():
         return render_template("download_lotl.html", menu = menu, json=True, xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, tsl_list = tsl_list, file_data = file, temp_user_id = temp_user_id)
 
 @rpr.route('/lotl/tsl_list')
+@login_required
 def list_tsl_lotl():
         
     temp_user_id = session['temp_user_id']
@@ -2257,6 +2311,7 @@ def list_tsl_lotl():
         
     
 @rpr.route('/lotl/create')
+@login_required
 def create_tsl_lotl():
     
     temp_user_id = session['temp_user_id']
@@ -2294,6 +2349,7 @@ def create_tsl_lotl():
                            redirect_url= cfgserv.service_url + "lotl/create/db")
 
 @rpr.route('/lotl/create/db', methods=["GET", "POST"])
+@login_required
 def create_lotl_db():
     
     temp_user_id = session['temp_user_id']
@@ -2328,10 +2384,15 @@ def create_lotl_db():
     #SchemeTypeCommunityRules_lang = '[{"lang":"' + lang + '", "URI":"'+ SchemeTypeCommunityRules_lang + '"}]'
     PolicyOrLegalNotice_lang = '[{"lang":"' + lang + '", "text":"'+ PolicyOrLegalNotice_lang + '"}]'
     
-    check = func.check_country(user['issuing_country'], session["session_id"])
+    check = func.check_country(session["session_id"])
+    
+    if user['issuing_country'] not in check.keys():
+
+        return ("err")
+    
     check = func.tsl_db_info_lotl(user['id'], Version, Sequence_number, TSLType, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, PointerstootherTSL, DistributionPoints, Issue_date, NextUpdate, Status, 
-                             AdditionalInformation, schemeTerritory, check, session["session_id"])
+                             AdditionalInformation, schemeTerritory, check[user['issuing_country']], session["session_id"])
     
     if check is None:
         return ("err")
@@ -2339,6 +2400,7 @@ def create_lotl_db():
         return redirect('/lotl/tsl_list')
     
 @rpr.route('lotl/edit', methods=["GET", "POST"])
+@login_required
 def lotl_tsl_edit():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -2367,6 +2429,7 @@ def lotl_tsl_edit():
                            Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "lotl/edit_db")
 
 @rpr.route('/lotl/edit_db', methods=["GET", "POST"])
+@login_required
 def lotl_tsl_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -2417,6 +2480,7 @@ def lotl_tsl_edit_db():
         return redirect('/lotl/tsl_list')
 
 @rpr.route('/lotl/data_lang')
+@login_required
 def lotl_tsl_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -2447,6 +2511,7 @@ def lotl_tsl_lang():
     return render_template("form.html", id = tsp_id, countries=cfgserv.eu_countries, title="Trusted Lists", lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "lotl/lotl_tsl_db_data_lang")
 
 @rpr.route('/lotl/lotl_tsl_db_data_lang', methods=["GET", "POST"])
+@login_required
 def lotl_tsl_db_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]

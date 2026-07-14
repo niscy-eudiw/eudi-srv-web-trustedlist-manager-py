@@ -19,7 +19,7 @@
 This lote_routes.py file is the blueprint of the Web Trusted List Manager service.
 """
 
-from app import logger
+from app import logger, login_required
 import base64
 import binascii
 from collections import defaultdict
@@ -52,6 +52,7 @@ import urllib.parse
 from app.xml_gen_lote.xmlGen import xml_gen_lote_xml, xml_gen_xml_LoTE, xml_lote_validator
 from app.json_gen.jsonGen import json_gen_json, json_gen_lote_json
 from app_config.config import ConfService as cfgserv
+from app_config.xml_config import ConfXML as cfgxml
 import segno
 
 from app.data_management import oid4vp_requests
@@ -74,6 +75,7 @@ lote = Blueprint("LoTE", __name__, url_prefix="/")
 lote.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template/')
 
 @lote.route('/lote/xml_TE', methods=["GET", "POST"])
+@login_required
 def xml_TE():
     
     temp_user_id = session['temp_user_id']
@@ -122,7 +124,14 @@ def xml_TE():
 
     Issue_date = datetime.now(timezone.utc).replace(microsecond=0)
     NextUpdate = Issue_date + timedelta(days=6*30)
-    
+    if  tsl_info["schemeTerritory"] in cfgxml.countries:
+        cert_location = cfgxml.countries[tsl_info["schemeTerritory"]][0]
+        privkey_location = cfgxml.countries[tsl_info["schemeTerritory"]][1]
+
+    else:
+        cert_location = cfgxml.countries["UT"][0]
+        privkey_location = cfgxml.countries["UT"][1]
+
     dictFromDB_trusted_lists={
         "Version":  confxml.LoTEVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"] + 1 ,
@@ -170,7 +179,7 @@ def xml_TE():
     #     for service in service_list:
     #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
 
-    file, thumbprint, xml_hash_before_sign = xml_gen_xml_LoTE(user_info, dictFromDB_trusted_lists, tsp_data, service_data, service_history, tsl_info["tsl_id"], session["session_id"])
+    file, thumbprint, xml_hash_before_sign = xml_gen_xml_LoTE(user_info,cert_location, privkey_location, dictFromDB_trusted_lists, tsp_data, service_data, service_history, tsl_info["tsl_id"], session["session_id"])
     
     check = func.edit_tsl_dates_and_sequence_number(
         Issue_date, NextUpdate,
@@ -200,6 +209,7 @@ def xml_TE():
         return render_template("download_tsl.html", menu = menu, lote="True" , xml_hash_before_sign = xml_hash_before_sign, thumbprint = thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
 @lote.route('/lote/json', methods=["GET", "POST"])
+@login_required
 def json_file():
     
     temp_user_id = session['temp_user_id']
@@ -249,7 +259,14 @@ def json_file():
     Issue_date = datetime.now(timezone.utc).replace(microsecond=0)
     NextUpdate = Issue_date + timedelta(days=6*30)
 
-    
+    if  tsl_info["schemeTerritory"] in cfgxml.countries:
+        cert_location = cfgxml.countries[tsl_info["schemeTerritory"]][0]
+        privkey_location = cfgxml.countries[tsl_info["schemeTerritory"]][1]
+
+    else:
+        cert_location = cfgxml.countries["UT"][0]
+        privkey_location = cfgxml.countries["UT"][1] 
+
     dictFromDB_trusted_lists={
         "Version":  confxml.LoTEVersionIdentifier,
         "SequenceNumber":   tsl_info["SequenceNumber"] + 1,
@@ -297,7 +314,7 @@ def json_file():
     #     for service in service_list:
     #         service['qualifier'] = cfgserv.qualifiers.get(service["qualifier"])
 
-    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_info["tsl_id"], session["session_id"])
+    json_file, json_thumbprint, json_hash_before_sign = json_gen_json(user_info, cert_location, privkey_location, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_info["tsl_id"], session["session_id"])
     
     check = func.edit_tsl_dates_and_sequence_number(
         Issue_date, NextUpdate,
@@ -327,6 +344,7 @@ def json_file():
         return render_template("download_tsl.html", menu = menu,json=True, xml_hash_before_sign = json_hash_before_sign, thumbprint = json_thumbprint, dictFromDB_trusted_lists = dictFromDB_trusted_lists, file_data = json_file, temp_user_id = temp_user_id, url= cfgserv.service_url)
 
 @lote.route('/lote/list')
+@login_required
 def list_lote():
         
     temp_user_id = session['temp_user_id']
@@ -404,6 +422,7 @@ def list_lote():
 
     
 @lote.route('/lote/create')
+@login_required
 def create_lote():
     
     temp_user_id = session['temp_user_id']
@@ -447,6 +466,7 @@ def create_lote():
     return render_template("form_create.html", h3 = "LoTE information form", countries=cfgserv.eu_countries, title="LoTEs", TSLType= cfgserv.LoTEType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "lote/create/db")
 
 @lote.route('/lote/create/db', methods=["GET", "POST"])
+@login_required
 def create_lote_db():
     
     temp_user_id = session['temp_user_id']
@@ -487,10 +507,15 @@ def create_lote_db():
 
     lotl = 0
 
-    check = func.check_country(user['issuing_country'], session["session_id"])
+    check = func.check_country(session["session_id"])
+    
+    if user['issuing_country'] not in check.keys():
+
+        return ("err")
+
     check = func.tsl_db_info(user['id'], Version, Sequence_number,Type, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
-                             AdditionalInformation, schemeTerritory, lotl, check, session["session_id"])
+                             AdditionalInformation, schemeTerritory, lotl, check[user['issuing_country']], session["session_id"])
     
     if check is None:
         return ("err")
@@ -498,6 +523,7 @@ def create_lote_db():
         return redirect('/lote/list')
 
 @lote.route('/lote/edit', methods=["GET", "POST"])
+@login_required
 def lote_edit():
     
     if not request.args.get("id"):
@@ -521,6 +547,7 @@ def lote_edit():
     return render_template("dynamic-form_edit_TLS.html", h3 = "LoTEs Information", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "lote/edit_db")
 
 @lote.route('/lote/edit_db', methods=["GET", "POST"])
+@login_required
 def lote_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -567,6 +594,7 @@ def lote_edit_db():
         return redirect('/lote/list')
 #depois
 @lote.route('/lote/update_tes', methods=["GET", "POST"])
+@login_required
 def update_TEs():
 
     tsl_id = request.args.get("id")
@@ -585,6 +613,7 @@ def update_TEs():
     return redirect('/lote/list')
 
 @lote.route('/lote/data_lang')
+@login_required
 def lote_lang():
     temp_user_id = session['temp_user_id']
     
@@ -613,6 +642,7 @@ def lote_lang():
 
 
 @lote.route('/lote/lote_db_data_lang', methods=["GET", "POST"])
+@login_required
 def lote_db_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -680,6 +710,7 @@ def lote_db_lang():
 
 # TSP
 @lote.route('/te/list')
+@login_required
 def list_te():
 
     temp_user_id = session['temp_user_id']
@@ -754,6 +785,7 @@ def list_te():
         return render_template("CertificateList.html", h1 = "Trusted Entities", menu = menu, data=data, title="Trusted Entities", list= list, header_table=header_table, url=cfgserv.service_url +"te", temp_user_id = temp_user_id)
 
 @lote.route('/te/create')
+@login_required
 def create_te():
     
     temp_user_id = session['temp_user_id']
@@ -792,6 +824,7 @@ def create_te():
 
 
 @lote.route('/te/create/db', methods=["GET", "POST"])
+@login_required
 def create_te_db():
     
     temp_user_id = session['temp_user_id']
@@ -823,6 +856,7 @@ def create_te_db():
         
 
 @lote.route('/te/data_lang')
+@login_required
 def te_lang():
     temp_user_id = session['temp_user_id']
     
@@ -859,6 +893,7 @@ def te_lang():
 
 
 @lote.route('/te/te_db_data_lang', methods=["GET", "POST"])
+@login_required
 def te_db_lang():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -937,6 +972,7 @@ def te_db_lang():
 
 
 @lote.route('/te/edit')
+@login_required
 def te_edit():
         
     temp_user_id = session['temp_user_id']
@@ -952,6 +988,7 @@ def te_edit():
     return render_template("dynamic-form_edit_TLS.html", h3 = "Trusted Entity Information", title = "Trusted Entity", id = tsp_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "/te/te_edit_db")
 
 @lote.route('/te/te_edit_db', methods=["GET", "POST"])
+@login_required
 def te_edit_db():
 
     temp_user_id = session['temp_user_id']
@@ -996,6 +1033,7 @@ def te_edit_db():
         return ("erro")
     else:
         return redirect('/te/list')
+    
 #depois        
 @lote.route('/te/update_services', methods=["GET", "POST"])
 def update_services():
@@ -1017,6 +1055,7 @@ def update_services():
     
 # Service
 @lote.route('/te_service/list')
+@login_required
 def list_te_service():
     temp_user_id = session['temp_user_id']
     user = session[temp_user_id]
@@ -1079,6 +1118,7 @@ def list_te_service():
         return render_template("CertificateList.html", h1 = "Services",  menu = menu, data=data, title="Services", list= list, header_table=header_table, url=cfgserv.service_url +"te_service", temp_user_id = temp_user_id)
 
 @lote.route('/te_service/create')
+@login_required
 def create_service():
     
     temp_user_id = session['temp_user_id']
@@ -1113,6 +1153,7 @@ def create_service():
                            non_qualified = [], national = [], LoTE=cfgserv.providers, url_certificate=cfgserv.service_url + "checkcertificate")
 
 @lote.route('/te_service/create/db', methods=["GET", "POST"])
+@login_required
 def service_te_db():
     
     temp_user_id = session['temp_user_id']
@@ -1140,6 +1181,7 @@ def service_te_db():
         return redirect('/te_service/list')
        
 @lote.route('/te_service/data_lang')
+@login_required
 def service_lang():
     
     temp_user_id = session['temp_user_id']
@@ -1166,6 +1208,7 @@ def service_lang():
 
 
 @lote.route('/te_service/service_lang_db', methods=["GET", "POST"])
+@login_required
 def service_db():
     
     temp_user_id = session['temp_user_id']
@@ -1208,6 +1251,7 @@ def service_db():
        
 
 @lote.route('/te_service/edit')
+@login_required
 def service_edit():
         
     temp_user_id = session['temp_user_id']
@@ -1224,6 +1268,7 @@ def service_edit():
     return render_template("dynamic-form_edit_TLS.html", h3 = "Service Information", title = "Service", id = service_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, status = cfgserv.LoTE_ServiceStatus, redirect_url= cfgserv.service_url + "/te_service/service_edit_db")
 
 @lote.route('/te_service/service_edit_db', methods=["GET", "POST"])
+@login_required
 def service_edit_db():
 
     temp_user_id = session['temp_user_id']

@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 ###############################################################################
+from functools import wraps
 from http.client import HTTPException
 import json
 import logging
@@ -32,7 +33,7 @@ from app.app_config.config import ConfService
 sys.path.append(os.path.dirname(__file__))
 
 
-from flask import Flask, render_template
+from flask import Flask, redirect, render_template, session, url_for
 from flask_session import Session
 from flask_cors import CORS
 from pycose.keys import EC2Key
@@ -207,6 +208,14 @@ def initialize_db():
         connection.close()
 
 initialize_db()
+
+def login_required(f):                                                                                                                                                            
+      @wraps(f)                                                                                                                                                                     
+      def decorated_function(*args, **kwargs):                                                                                                                                      
+          if 'temp_user_id' not in session:                                                                                                                                         
+              return redirect(url_for('RPR.initial_page'))                                                                                                                          
+          return f(*args, **kwargs)                                                                                                                                                 
+      return decorated_function     
 
 def create_app():
 

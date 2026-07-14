@@ -43,8 +43,8 @@ class ConfService:
 
     deffered_expiry = 100
     
-    #cert_UT = "app/xml_gen/ecdsa_cert.pem"
-    cert_UT = os.getenv("CERT","")
+    cert_UT = "app/xml_gen/ecdsa_cert.pem"
+    #cert_UT = os.getenv("CERT")
 
     #priv_key_UT = "app/xml_gen/ecdsa_key.pem"
     priv_key_UT = os.getenv("PRIV_KEY")
@@ -54,6 +54,8 @@ class ConfService:
     sca_signer_url=os.getenv("SCA_SIGNER_URL")
 
 
+    lote_and_tsl_ids={
+    }
 
     test_lotl=[
         "https://trustedlist.serviceproviders.eudiw.dev/TL/EU/01.xml", "https://trustedlist.serviceproviders.eudiw.dev/TL/AT/01.xml", 

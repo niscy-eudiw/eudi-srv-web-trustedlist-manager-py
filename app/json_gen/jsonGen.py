@@ -44,9 +44,9 @@ def parse_json_field(field):
     except json.JSONDecodeError:
         return field
     
-def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
+def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
 
-    der_data=open(cfgserv.cert_UT, "rb").read()
+    der_data=open(cert_location, "rb").read()
     cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
@@ -470,7 +470,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data,se
  
     #key=open(cfgserv.priv_key_UT, "rb").read()
 
-    encoded_file, json_hash_before_sign= jadesigner(base64.b64encode(json_bytes).decode("utf-8"),base64.b64encode(cert).decode("utf-8"), cfgserv.priv_key_UT )
+    encoded_file, json_hash_before_sign= jadesigner(base64.b64encode(json_bytes).decode("utf-8"),base64.b64encode(cert).decode("utf-8"), privkey_location )
 
     # with open ("teste.xml", "w") as file: 
     #     signed_root.write(file, level=0)
@@ -486,7 +486,7 @@ def json_gen_json(user_info, dictFromDB_trusted_lists, tsp_data, service_data,se
 
     return base64.b64encode(jwt.encode()).decode(), thumbprint, json_hash_before_sign
 
-
+#not used
 def json_gen_lote_json(user_info, tsl_list, dict_tsl_mom, log_id):
 
     der_data=open(cfgserv.cert_UT, "rb").read()

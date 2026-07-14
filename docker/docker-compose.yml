@@ -12,22 +12,23 @@ services:
       VERIFIER: "verifier-backend.eudiw.dev"
       SCA_SIGNER_URL: "http://localhost:8086"
       LOG_PATH: "/app/logs"
-      #For signing TSL/LoTL XML 
-      CERT: "/app/xml_gen/cert.der"
-      #For signing TSL/LoTL XML 
-      PRIV_KEY: "app/xml_gen/privkey.pem"
       DB_HOST: "host.docker.internal"
       DB_PORT: 
       DB_USER: 
       DB_PASSWORD: 
       DB_NAME: "trusted_lists"
+      #dictionary containing certificate and privake key locations for signing TSL and LoTEs
+      #Example
+      #{
+      # "UT":["app/certs/certs_and_privkeys/ecdsa_cert.pem", "app/certs/certs_and_privkeys/ecdsa_key.pem"]
+      # }
+      CERT_AND_PRIVKEY_LOCATIONS: 
 
     # local path : container path
     volumes:
-      - ./CAs:/app/certs/CAs
-      #Cert and priv key
-      - ./cert.der:/app/xml_gen/cert.der
-      - ./privkey.pem:/app/xml_gen/privkey.pem
+      - ./CAs: /app/certs/CAs
+      - ./certs_and_privkeys: /app/certs/certs_and_privkeys
+
 
 
 
