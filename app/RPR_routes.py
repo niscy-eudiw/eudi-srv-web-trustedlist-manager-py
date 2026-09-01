@@ -171,6 +171,7 @@ def authentication():
     payload ={
         "type": "vp_token",
         "nonce": "hiCV7lZi5qAeCy7NFzUWSR4iCfSmRb99HfIvCkPaCLc=",
+        "intended_use_id": "TEST-01",
         "dcql_query": cred
     }
 
@@ -190,16 +191,11 @@ def authentication():
     session["session_id"]=str(uuid.uuid4())
     session["certificate_List"]=False
 
-    payload_sameDevice ={
-        "type": "vp_token",
-        "nonce": "hiCV7lZi5qAeCy7NFzUWSR4iCfSmRb99HfIvCkPaCLc=",
-        "request_uri_method": "get",
-        "dcql_query": cred,
-        "profile": "haip",
+    payload.update({
         "wallet_response_redirect_uri_template": f"{cfgserv.service_url}getpidoid4vp?response_code={{RESPONSE_CODE}}&session_id=" + session["session_id"]
-    }
+    })
 
-    response_same_device= requests.request("POST", url, headers=headers, json=payload_sameDevice).json()
+    response_same_device= requests.request("POST", url, headers=headers, json=payload).json()
     
     deeplink_url = (
         "eudi-openid4vp://" + cfgserv.url_verifier + "?client_id="

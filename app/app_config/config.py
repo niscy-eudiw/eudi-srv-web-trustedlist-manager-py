@@ -42,12 +42,6 @@ class ConfService:
     trusted_CAs_path = os.getenv("TRUSTED_CAS_PATH")
 
     deffered_expiry = 100
-    
-    # cert_UT = "app/xml_gen/PID-DS-0002_UT_cert.der"
-    # cert_UT = os.getenv("CERT")
-
-    # priv_key_UT = "app/xml_gen/PID-DS-0002_UT.pem"
-    # priv_key_UT = os.getenv("PRIV_KEY")
 
     url_verifier= os.getenv("VERIFIER")
     
@@ -187,7 +181,7 @@ class ConfService:
 
     log_dir = os.getenv("LOG_PATH", "app/log")
     #log_dir = "/tmp/log"
-    log_file_info = "logs.log"
+    log_file_info = "_t.log"
 
     eu_languages = [
     "bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr",
