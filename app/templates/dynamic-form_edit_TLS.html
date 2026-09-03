@@ -179,45 +179,36 @@
                             {% endif %}
                             {% elif name == "SchemeTypeCommunityRules_lang" %}
                             {% if value is not none and value|length > 0 %}
-                            <button type="button" class="collapsible col-xs-12 col-md-12 btn btn-default">
-                                Scheme Type Community Rules
-                            </button>
-                            <div class="content">
-                                {% for data in value %}
-                                {% set outer_loop = loop %}
-                                <div class="content_child">
-                                    {% for key, key_data in data.items() %}
-                                    {% if key == "lang" %}
-                                    <label for="Lang">Lang</label>
-                                    <select class="form-control js-example-basic-single"
-                                        style="width: 100%; box-sizing: border-box;"
-                                        name="{{key}}_{{name}}.{{outer_loop.index0}}" required>
-                                        {% for lang in Langs %}
-                                        <option value="{{ lang }}" {% if key_data==lang %} selected {% endif %}>{{ lang
-                                            }}</option>
+                            <div class="row g-3">
+                                <button type="button" class="collapsible col-xs-12 col-md-12 btn btn-default">
+                                    Scheme Type Community Rules
+                                </button>
+                                <div class="content">
+                                    {% for data in value %}
+                                    {% set outer_loop = loop %}
+                                    <div class="content_child">
+                                        {% for key, key_data in data.items() %}
+                                        {% if key == "lang" %}
+                                        <label for="Lang">Lang</label>
+                                        <select class="form-control js-example-basic-single"
+                                            style="width: 100%; box-sizing: border-box;"
+                                            name="{{key}}_{{name}}.{{outer_loop.index0}}" required>
+                                            {% for lang in Langs %}
+                                            <option value="{{ lang }}" {% if key_data==lang %} selected {% endif %}>{{ lang
+                                                }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% elif key == "URI" %}
+                                        <label for="{{ key }}">{{ key }}</label>
+                                        <input type="text" class="form-control" placeholder="{{ key }}"
+                                            aria-label="{{ key }}" name="{{ key }}_{{ name }}.{{ outer_loop.index0 }}"
+                                            value="{{ key_data }}" required>
+                                        {% endif %}
                                         {% endfor %}
-                                    </select>
-                                    {% elif key == "URI" %}
-                                    <label for="{{ key }}">{{ key }}</label>
-                                    <select class="form-control" name="{{ key }}_{{ name }}.{{ outer_loop.index0 }}"
-                                        required>
-                                        {% for rule_name, rule_value in rules.items() %}
-                                        <option value="{{ rule_value }}" {% if key_data==rule_value %} selected {% endif
-                                            %}>
-                                            {{ rule_name }} - {{ rule_value }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                    {% else %}
-                                    <label for="{{ key }}">{{ key }}</label>
-                                    <input type="text" class="form-control" placeholder="{{ key }}"
-                                        aria-label="{{ key }}" name="{{ key }}_{{ name }}.{{ outer_loop.index0 }}"
-                                        value="{{ key_data }}" required>
-                                    {% endif %}
+                                    </div>
                                     {% endfor %}
+                                    {% endif %}
                                 </div>
-                                {% endfor %}
-                                {% endif %}
                             </div>
                             {% elif name == 'status' %}
                             <div class="row g-3">
@@ -379,8 +370,7 @@
 
         categories = ["Qualified", "Others"]
         var secondSelect = document.getElementById("status");
-        var status = {{ status | tojson | safe
-    }};
+        var status = {{ status | tojson | safe}};
 
     secondSelect.innerHTML = "";
 

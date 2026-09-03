@@ -209,7 +209,7 @@ def check_country(log_id):
 
 def insert_tsl_info(user_id, Version, Sequence_number,TSLType, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
-                             AdditionalInformation, schemeTerritory, lotl, country, log_id):
+                             AdditionalInformation, Status, SchemeTypeCommunityRules_lang, DistributionPoints, schemeTerritory, lotl, country, log_id):
     try:
         connection = conn()
         if connection:
@@ -219,13 +219,13 @@ def insert_tsl_info(user_id, Version, Sequence_number,TSLType, SchemeName_lang, 
                             INSERT INTO trusted_lists 
                             (Version, SequenceNumber, TSLType, SchemeName_lang, Uri_lang, schemeTerritory,
                             PolicyOrLegalNotice_lang, 
-                            issue_date, next_update, Additional_Information, country_id, operator_id, lotl) 
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            issue_date, next_update, Additional_Information, Status, SchemeTypeCommunityRules_lang, DistributionPoints, country_id, operator_id, lotl) 
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                             """
             
             cursor.execute(insert_query, (Version, Sequence_number,TSLType, SchemeName_lang, Uri_lang, 
                     schemeTerritory, PolicyOrLegalNotice_lang, 
-                    Issue_date, NextUpdate, AdditionalInformation, country, user_id, lotl,))
+                    Issue_date, NextUpdate, AdditionalInformation, Status, SchemeTypeCommunityRules_lang, DistributionPoints, country, user_id, lotl,))
             
             connection.commit()
             

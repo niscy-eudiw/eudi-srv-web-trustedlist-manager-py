@@ -544,7 +544,7 @@ def lote_edit():
                 extra = {'code': session["session_id"]} 
                 logger.error(f"error: {e}", extra=extra)
 
-    return render_template("dynamic-form_edit_TLS.html", h3 = "LoTEs Information", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "lote/edit_db")
+    return render_template("dynamic-form_edit_TLS.html", h3 = "LoTEs Information", title="LoTEs", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "lote/edit_db")
 
 @lote.route('/lote/edit_db', methods=["GET", "POST"])
 @login_required
@@ -623,7 +623,7 @@ def lote_lang():
         "Lang": "lang",
         "Scheme Name": "string", 
         "Uri": "string",
-        "Scheme Type Community Rules": "string",
+        #"Scheme Type Community Rules": "string",
         "Policy Or Legal Notice": "string",
         "Distribution Points": "string"
     }
@@ -631,7 +631,7 @@ def lote_lang():
         "Lang": "lang",
         "Scheme Name": "string", 
         "Uri": "string",
-        "Scheme Type Community Rules": "string",
+        #"Scheme Type Community Rules": "string",
         "Policy Or Legal Notice": "string",
         "Distribution Points": "string"
     }

@@ -139,14 +139,15 @@ def xml_gen_xml(user_info, cert_location, privkey_location, dictFromDB_trusted_l
     schemeInfo.set_SchemeInformationURI(schemeInformationURI)
 
     #StatusDeterminationApproach
-    schemeInfo.StatusDeterminationApproach=test.NonEmptyURIType(confxml.StatusDeterminationApproach["EU"])
+    schemeInfo.StatusDeterminationApproach=test.NonEmptyURIType(dictFromDB_trusted_lists["status"])
     
     #schemeTypeCommunityRules
     schemeCRules= test.NonEmptyMultiLangURIListType()
 
     #for cycle
-    schemeCRules.add_URI(test.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["EU"]))
-    schemeCRules.add_URI(test.NonEmptyMultiLangURIType("en", confxml.SchemeTypeCommunityRules["Country"] + dictFromDB_trusted_lists["schemeTerritory"] ))
+    for rules in dictFromDB_trusted_lists["SchemeTypeCommunityRules"]:
+       schemeCRules.add_URI(test.NonEmptyMultiLangURIType(rules["lang"], rules["URI"]))
+
     schemeInfo.set_SchemeTypeCommunityRules(schemeCRules)
 
     #SchemeTerritory
@@ -257,12 +258,9 @@ def xml_gen_xml(user_info, cert_location, privkey_location, dictFromDB_trusted_l
     URIDP=test.NonEmptyURIListType()
 
     #for cycle
-    
-    # for dp in dictFromDB_trusted_lists["DistributionPoints"]:
-    #     URIDP.add_URI(test.NonEmptyURIType(dp))
-    last= dictFromDB_trusted_lists["SchemeInformationURI"][-1].get("URI")
+    for dp in dictFromDB_trusted_lists["DistributionPoints"]:
+        URIDP.add_URI(test.NonEmptyURIType(dp))
 
-    URIDP.add_URI(test.NonEmptyURIType(last))
 
     schemeInfo.DistributionPoints=URIDP
 

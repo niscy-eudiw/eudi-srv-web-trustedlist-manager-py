@@ -81,7 +81,7 @@
               <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">{% if title == "Trusted Lists" or title == "LoTES" %}Add existing Trust Service Providers/Trusted Entities {% elif title == "Trust Service Providers" or title == "Trusted Entities"  %} Add existing services {% endif %}</h4>
+                        <h4 class="modal-title">{% if title == "Trusted Lists" %} Add existing Trust Service Providers {% elif title == "LoTEs" %} Add existing Trusted Entities {% elif title == "Trust Service Providers" or title == "Trusted Entities"  %} Add existing services {% endif %}</h4>
                     </div>
                     <div class="modal-body">
                         <table class="table table-striped" id="Add_list" >
