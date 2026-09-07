@@ -205,11 +205,11 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
     #for cycle
     
-    # for dp in dictFromDB_trusted_lists["DistributionPoints"]:
-    #     URIDP.add_URI(test.NonEmptyURIType(dp))
-    last= dictFromDB_trusted_lists["SchemeInformationURI"][-1].get("URI")
+    for dp in dictFromDB_trusted_lists["DistributionPoints"]:
+        URIDP.append(dp)
+    # last= dictFromDB_trusted_lists["SchemeInformationURI"][-1].get("URI")
 
-    URIDP.append(last)
+    # URIDP.append(last)
 
     schemeInfo=JSON.ListAndSchemeInformation(
         LoTEVersionIdentifier=confxml.LoTEVersionIdentifier,

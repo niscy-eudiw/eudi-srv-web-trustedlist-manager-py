@@ -263,11 +263,11 @@ def xml_gen_xml_LoTE(user_info, cert_location, privkey_location, dictFromDB_trus
 
     #for cycle
     
-    # for dp in dictFromDB_trusted_lists["DistributionPoints"]:
-    #     URIDP.add_URI(LOTE.NonEmptyURIType(dp))
-    last= dictFromDB_trusted_lists["SchemeInformationURI"][-1].get("URI")
+    for dp in dictFromDB_trusted_lists["DistributionPoints"]:
+        URIDP.add_URI(LOTE.NonEmptyURIType(dp))
+    #last= dictFromDB_trusted_lists["SchemeInformationURI"][-1].get("URI")
 
-    URIDP.add_URI(LOTE.NonEmptyURIType(last))
+    # URIDP.add_URI(LOTE.NonEmptyURIType(last))
 
     schemeInfo.DistributionPoints=URIDP
 

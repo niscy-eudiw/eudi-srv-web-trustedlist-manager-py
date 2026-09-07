@@ -145,71 +145,72 @@
                                 </div>
                             </div>
                             {% elif name=="schemeTerritory" %}
-                            {% if value is not none and value|length > 0 %}
-                            <div class="row g-3">
-                                <button type="button" class="collapsible col-xs-12 col-md-12 btn btn-default">Scheme
-                                    Territory</button>
-                                <div class="content">
-                                    <label for="SchemeCountry">SchemeCountry</label>
-                                    <select class="form-control js-example-basic-single"
-                                        style="width: 100%; box-sizing: border-box;" name="SchemeCountry" required>
-                                        {% for country in Countries %}
-                                        <option value="{{ country}}" {% if value==country %} selected {% endif %}>{{
-                                            country }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            {% endif %}
-                            {% elif name=="DistributionPoints" %}
-                            {% if value is not none and value|length > 0 %}
-                            <div class="row g-3">
-                                <button type="button"
-                                    class="collapsible col-xs-12 col-md-12 btn btn-default">Distribution Points</button>
-                                <div class="content">
-                                    {% for data in value %}
-                                    <div class="content_child">
-                                        <label for="URI">URI</label>
-                                        <input type="text" class="form-control" placeholder="URI"
-                                            name="DistributionPoints.{{ loop.index0 }}" value="{{ data }}" required>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% endif %}
-                            {% elif name == "SchemeTypeCommunityRules_lang" %}
-                            {% if value is not none and value|length > 0 %}
-                            <div class="row g-3">
-                                <button type="button" class="collapsible col-xs-12 col-md-12 btn btn-default">
-                                    Scheme Type Community Rules
-                                </button>
-                                <div class="content">
-                                    {% for data in value %}
-                                    {% set outer_loop = loop %}
-                                    <div class="content_child">
-                                        {% for key, key_data in data.items() %}
-                                        {% if key == "lang" %}
-                                        <label for="Lang">Lang</label>
+                                {% if value is not none and value|length > 0 %}
+                                <div class="row g-3">
+                                    <button type="button" class="collapsible col-xs-12 col-md-12 btn btn-default">Scheme
+                                        Territory</button>
+                                    <div class="content">
+                                        <label for="SchemeCountry">SchemeCountry</label>
                                         <select class="form-control js-example-basic-single"
-                                            style="width: 100%; box-sizing: border-box;"
-                                            name="{{key}}_{{name}}.{{outer_loop.index0}}" required>
-                                            {% for lang in Langs %}
-                                            <option value="{{ lang }}" {% if key_data==lang %} selected {% endif %}>{{ lang
-                                                }}</option>
+                                            style="width: 100%; box-sizing: border-box;" name="SchemeCountry" required>
+                                            {% for country in Countries %}
+                                            <option value="{{ country}}" {% if value==country %} selected {% endif %}>{{
+                                                country }}</option>
                                             {% endfor %}
                                         </select>
-                                        {% elif key == "URI" %}
-                                        <label for="{{ key }}">{{ key }}</label>
-                                        <input type="text" class="form-control" placeholder="{{ key }}"
-                                            aria-label="{{ key }}" name="{{ key }}_{{ name }}.{{ outer_loop.index0 }}"
-                                            value="{{ key_data }}" required>
-                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% elif name=="DistributionPoints" %}
+                                {% if value is not none and value|length > 0 %}
+                                <div class="row g-3">
+                                    <button type="button"
+                                        class="collapsible col-xs-12 col-md-12 btn btn-default">Distribution Points</button>
+                                    <div class="content">
+                                        {% for data in value %}
+                                        <div class="content_child">
+                                            <label for="URI">URI</label>
+                                            <input type="text" class="form-control" placeholder="URI"
+                                                name="DistributionPoints.{{ loop.index0 }}" value="{{ data }}" required>
+                                        </div>
                                         {% endfor %}
                                     </div>
-                                    {% endfor %}
-                                    {% endif %}
                                 </div>
-                            </div>
+                                {% endif %}
+                            {% elif name == "SchemeTypeCommunityRules_lang" %}
+                                {% if value is not none and value|length > 0 %}
+                                <div class="row g-3">
+                                    <button type="button" class="collapsible col-xs-12 col-md-12 btn btn-default">
+                                        Scheme Type Community Rules
+                                    </button>
+                                    <div class="content">
+                                        {% for data in value %}
+                                        {% set outer_loop = loop %}
+                                        <div class="content_child">
+                                            {% for key, key_data in data.items() %}
+                                            {% if key == "lang" %}
+                                            <label for="Lang">Lang</label>
+                                            <select class="form-control js-example-basic-single"
+                                                style="width: 100%; box-sizing: border-box;"
+                                                name="{{key}}_{{name}}.{{outer_loop.index0}}" required>
+                                                {% for lang in Langs %}
+                                                <option value="{{ lang }}" {% if key_data==lang %} selected {% endif %}>{{
+                                                    lang
+                                                    }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            {% elif key == "URI" %}
+                                                <label for="{{ key }}">{{ key }}</label>
+                                                <input type="text" class="form-control" placeholder="{{ key }}"
+                                                    aria-label="{{ key }}" name="{{ key }}_{{ name }}.{{ outer_loop.index0 }}"
+                                                    value="{{ key_data }}" required>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
                             {% elif name == 'status' %}
                             <div class="row g-3">
                                 <button type="button" class="collapsible col-xs-12 col-md-12 btn btn-default">Service
@@ -221,15 +222,15 @@
                                         <select class="js-example-basic-single" id="{{name}}" name="{{name}}"
                                             style="width: 100%; box-sizing: border-box;" required>
                                             {%for status_key in status %}
-                                                {% if key_data in status[status_key]%}
-                                                    {% for value in status[status_key] %}
-                                                        {%if value == key_data %}
-                                                            <option selected value="{{ value }}">{{ value }}</option >
-                                                        {% else %}
-                                                            <option selected value="{{ value }}">{{ value }}</option >
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                {% endif %}
+                                            {% if key_data in status[status_key]%}
+                                            {% for value in status[status_key] %}
+                                            {%if value == key_data %}
+                                            <option selected value="{{ value }}">{{ value }}</option>
+                                            {% else %}
+                                            <option selected value="{{ value }}">{{ value }}</option>
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% endif %}
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -366,11 +367,10 @@
     data_edit = {{ data_edit | tojson | safe }}
 
     $(document).ready(function () {
-        $('.js-example-basic-single').select2();
-
+        $('.js-example-basic-single').select2(); 
         categories = ["Qualified", "Others"]
         var secondSelect = document.getElementById("status");
-        var status = {{ status | tojson | safe}};
+        var status = {{ (status or {}) | tojson | safe }};
 
     secondSelect.innerHTML = "";
 
@@ -380,7 +380,7 @@
             status[x].forEach(item => {
                 const option = document.createElement("option");
                 if (item == data_edit["status"]) {
-                    option.selected = true
+                    option.selected = true;
                 }
                 option.value = item;
                 option.textContent = item;

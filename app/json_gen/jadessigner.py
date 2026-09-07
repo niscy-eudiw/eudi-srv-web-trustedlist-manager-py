@@ -80,7 +80,6 @@ def jadesigner(base64_payload, base64_cert, privkey_location):
 
     calculate_hash=requests.post(url=cfgserv.sca_signer_url+"/signatures/calculate_hash",headers=headers, data=payload)
 
-
     hashes1 = calculate_hash.json()["hashes"]
 
     base64_string = urllib.parse.unquote(hashes1[0])

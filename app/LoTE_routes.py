@@ -146,7 +146,7 @@ def xml_TE():
         "schemeTerritory": tsl_info["schemeTerritory"],
         #AdditionalInformation,ver
 
-        #"DistributionPoints" :  tsl_info["DistributionPoints"],
+        "DistributionPoints" :  tsl_info["DistributionPoints"],
         "issue_date" :  Issue_date,
         "next_update":  NextUpdate,
         "status":   tsl_info["status"]
@@ -281,7 +281,7 @@ def json_file():
         "schemeTerritory": tsl_info["schemeTerritory"],
         #AdditionalInformation,ver
 
-        #"DistributionPoints" :  tsl_info["DistributionPoints"],
+        "DistributionPoints" :  tsl_info["DistributionPoints"],
         "issue_date" :  Issue_date,
         "next_update":  NextUpdate,
         "status":   tsl_info["status"]
@@ -439,26 +439,26 @@ def create_lote():
         #"Scheme Type Community Rules": "rules",
         "Policy Or Legal Notice": "string",
         #"Pointers to other TSL": "string",
-        #"Distribution Points": "string",
-        #"Status determination approach": "StatusDetermination",
+        "Distribution Points": "string",
+        #"Status determination approach": "string",
         "Additional Information": "string"
     }
     descriptions = {
         "Lang": "lang",
-        #"TSL Type" : "string",
+        "Type" : "string",
         "Scheme Name": "string", 
         "Scheme Information URI": "string",
         "Scheme Territory": "country",
         #"Scheme Type Community Rules": "string",
         "Policy Or Legal Notice": "string",
         #"Pointers to other TSL": "string",
-        #"Distribution Points": "string",
+        "Distribution Points": "string",
         #"Status": "string",
         "Additional Information": "string"
     }
 
     attributesForm.update(form_items)
-    #rules = cfgserv.SchemeTypeCommunityRules
+    # rules = cfgserv.SchemeTypeCommunityRules
     # for items in rules:
     #     if 'Scheme Territory' in items:
     #         rules[items] = rules[items] + user['issuing_country']
@@ -484,10 +484,10 @@ def create_lote_db():
     schemeTerritory = request.form.get('Scheme Territory')
     PolicyOrLegalNotice_lang = request.form.get('Policy Or Legal Notice')
     #PointerstootherTSL = request.form.get('Pointers to other TSL')
-    #DistributionPoints = request.form.get('Distribution Points')
+    DistributionPoints = request.form.get('Distribution Points')
     Issue_date = datetime.now(timezone.utc)
     NextUpdate = Issue_date + timedelta(days=6*30)
-    #Status = request.form.get('Status determination approach')
+    # Status = request.form.get('Status determination approach')
     AdditionalInformation = request.form.get('Additional Information')
 
     # if TSLType == "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist":
@@ -503,7 +503,7 @@ def create_lote_db():
     Uri_lang = '[{"lang":"' + lang + '", "URI":"'+ Uri_lang + '"}]'
     #SchemeTypeCommunityRules_lang = '[{"lang":"' + lang + '", "URI":"'+ SchemeTypeCommunityRules_lang + '"}]'
     PolicyOrLegalNotice_lang = '[{"lang":"' + lang + '", "text":"'+ PolicyOrLegalNotice_lang + '"}]'
-    #DistributionPoints = '["'+ DistributionPoints + '"]'
+    DistributionPoints = '["'+ DistributionPoints + '"]'
 
     lotl = 0
 
@@ -515,7 +515,7 @@ def create_lote_db():
 
     check = func.tsl_db_info(user['id'], Version, Sequence_number,Type, SchemeName_lang, Uri_lang,
                              PolicyOrLegalNotice_lang, Issue_date, NextUpdate, 
-                             AdditionalInformation, schemeTerritory, lotl, check[user['issuing_country']], session["session_id"])
+                             AdditionalInformation, None, None, DistributionPoints ,schemeTerritory, lotl, check[user['issuing_country']], session["session_id"])
     
     if check is None:
         return ("err")
@@ -544,7 +544,7 @@ def lote_edit():
                 extra = {'code': session["session_id"]} 
                 logger.error(f"error: {e}", extra=extra)
 
-    return render_template("dynamic-form_edit_TLS.html", h3 = "LoTEs Information", title="LoTEs", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "lote/edit_db")
+    return render_template("dynamic-form_edit_TLS.html", h3 = "LoTEs Information", status = cfgserv.lotestatusDetermination, title="LoTEs", id = tsl_id, lang = cfgserv.lang, role = cfgserv.roles, data_edit = db_data, Langs=cfgserv.eu_languages,Countries=cfgserv.eu_countries, temp_user_id=temp_user_id, redirect_url= cfgserv.service_url + "lote/edit_db")
 
 @lote.route('/lote/edit_db', methods=["GET", "POST"])
 @login_required
