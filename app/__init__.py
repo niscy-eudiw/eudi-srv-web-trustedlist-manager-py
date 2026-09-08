@@ -22,6 +22,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
+from pathlib import Path
 
 import pymysql
 from requests import Session
@@ -186,7 +187,8 @@ def page_not_found(e):
     )
 
 def initialize_db():
-    with open('app/script_db.sql', 'r') as f:
+    db_script = Path(__file__).parent / 'script_db.sql'
+    with open(db_script, 'r') as f:
         sql = f.read()
 
     connection = pymysql.connect(
