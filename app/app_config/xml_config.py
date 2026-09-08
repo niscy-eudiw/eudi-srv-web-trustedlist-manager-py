@@ -21,6 +21,9 @@ This xml_config.py contains configuration data for the xml generator.
 NOTE: You should only change it if you understand what you're doing.
 """
 
+import os
+
+
 class ConfXML:
 
     #cert_location and privkey_location for each country
