@@ -60,7 +60,8 @@ def jadesigner(base64_payload, base64_cert, privkey_location):
                 "signature_format": "J",
                 "conformance_level":"Ades-B-B",
                 "signed_envelope_property": "ENVELOPING",
-                "container": "No"
+                "container": "No",
+                "type": "JOSE+JSON"
 
             } ],
         "endEntityCertificate": base64_cert,
@@ -109,7 +110,8 @@ def jadesigner(base64_payload, base64_cert, privkey_location):
                 "signature_format": "J",
                 "conformance_level":"Ades-B-B",
                 "signed_envelope_property": "ENVELOPING",
-                "container": "No"
+                "container": "No",
+                "type": "JOSE+JSON"
             }
         ],
         "hashAlgorithmOID": "2.16.840.1.101.3.4.2.1",
