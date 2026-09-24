@@ -153,16 +153,23 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
         PolicyOrLegalNotice.append(policy)
 
     #PointerToOtherTSL
-    Pointers= JSON.PointersToOtherLoTE()
-
+    Pointers= None
+    if LoTEType != "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
+        Pointers= JSON.PointersToOtherLoTE()
+        for dp in dictFromDB_trusted_lists["DistributionPoints"]:
+            Pointer= JSON.OtherLoTEPointer(
+                LoTELocation=dp,
+            )
+            Pointers.append(Pointer)
+    
     #OtherTSLPointerType-LoTL
 
-    ServiceDigitalIdentities= list()
-    X509Certificates=list()
-    X509Certificates.append(cert_cleaned)
-    serviceDigitalIdentity=JSON.ServiceDigitalIdentity(X509Certificates=X509Certificates, X509SubjectNames=None, PublicKeyValues=None, X509SKIs=None, OtherIds=None, additionalProperties=None)
+    # ServiceDigitalIdentities= list()
+    # X509Certificates=list()
+    # X509Certificates.append(cert_cleaned)
+    # serviceDigitalIdentity=JSON.ServiceDigitalIdentity(X509Certificates=X509Certificates, X509SubjectNames=None, PublicKeyValues=None, X509SKIs=None, OtherIds=None, additionalProperties=None)
 
-    ServiceDigitalIdentities.append(serviceDigitalIdentity)
+    # ServiceDigitalIdentities.append(serviceDigitalIdentity)
 
 
     #additional Info
@@ -180,25 +187,25 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
     #for cycle
     schemetypeCommunityRules_add.append(JSON.NonEmptyMultiLangURI("en", confxml.LoTESchemeTypeCommunityRules["LoTL"]))
 
-    AdditionalInfo=JSON.LoTEQualifier(
-        LoTEType=LoTEType,
-        SchemeOperatorName=AdditionalInfo_SchemeOperatorName,
-        SchemeTerritory="EU",
-        SchemeTypeCommunityRules=schemetypeCommunityRules_add,
-        MimeType= "application/json",
+    # AdditionalInfo=JSON.LoTEQualifier(
+    #     LoTEType=LoTEType,
+    #     SchemeOperatorName=AdditionalInfo_SchemeOperatorName,
+    #     SchemeTerritory="EU",
+    #     SchemeTypeCommunityRules=schemetypeCommunityRules_add,
+    #     MimeType= "application/json",
 
-    )
+    # )
 
-    Lote_qualifiers=list()
-    Lote_qualifiers.append(AdditionalInfo)
+    # Lote_qualifiers=list()
+    # Lote_qualifiers.append(AdditionalInfo)
 
-    Pointer= JSON.OtherLoTEPointer(
-        LoTELocation=confxml.LoTElotl_location,
-        ServiceDigitalIdentities=ServiceDigitalIdentities,
-        LoTEQualifiers=Lote_qualifiers
-    )
+    # Pointer= JSON.OtherLoTEPointer(
+    #     LoTELocation=confxml.LoTElotl_location,
+    #     ServiceDigitalIdentities=ServiceDigitalIdentities,
+    #     LoTEQualifiers=Lote_qualifiers
+    # )
 
-    Pointers.append(Pointer)
+    # Pointers.append(Pointer)
 
     #DistribuitionPoints
     URIDP=list()
@@ -225,7 +232,7 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
         SchemeTypeCommunityRules=schemeCRules,
         SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
         PolicyOrLegalNotice=PolicyOrLegalNotice,
-        #PointersToOtherLoTE=Pointers,
+        PointersToOtherLoTE=Pointers,
         DistributionPoints=URIDP,
 
 
