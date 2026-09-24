@@ -457,8 +457,9 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
         Lote_qualifiers=list()
 
         AdditionalInfo=JSON.LoTEQualifier(
-            LoTeType=LoTEType,
+            LoTEType=LoTEType,
             SchemeOperatorName=schemeOName,
+            MimeType= "application/json",
             SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
             SchemeTypeCommunityRules=schemeCRules,
         ) 
