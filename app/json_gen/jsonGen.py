@@ -152,15 +152,6 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
         }
         PolicyOrLegalNotice.append(policy)
 
-    #PointerToOtherTSL
-    Pointers= None
-    if LoTEType != "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
-        Pointers= JSON.PointersToOtherLoTE()
-        for dp in dictFromDB_trusted_lists["DistributionPoints"]:
-            Pointer= JSON.OtherLoTEPointer(
-                LoTELocation=dp,
-            )
-            Pointers.append(Pointer)
     
     #OtherTSLPointerType-LoTL
 
@@ -232,7 +223,6 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
         SchemeTypeCommunityRules=schemeCRules,
         SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
         PolicyOrLegalNotice=PolicyOrLegalNotice,
-        PointersToOtherLoTE=Pointers,
         DistributionPoints=URIDP,
 
 
@@ -240,13 +230,14 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
     if LoTEType == "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
         schemeInfo.HistoricalInformationPeriod=dictFromDB_trusted_lists["HistoricalInformationPeriod"]
-
+    
     #--------------------------------------------#
 
     #TrustServiceProviderList
 
     TrustServiceProviderList=JSON.TrustedEntitiesList()
 
+    PointerServices=list()
 
     for tsp in tsp_data:
         TSPName=list()
@@ -448,6 +439,7 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
                     TSPService.ServiceHistory=ServiceHistoryList
 
                 TSPServices.append(TSPService)
+                PointerServices.append(TSPService)
 
         #AdditionalServiceInformation		
 
@@ -457,6 +449,30 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
         )
 
         TrustServiceProviderList.append(TrustServiceProvider)
+
+    #PointerToOtherTSL
+    if LoTEType != "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
+        Pointers= JSON.PointersToOtherLoTE()
+        dp= dictFromDB_trusted_lists["DistributionPoints"][0]
+        Lote_qualifiers=list()
+
+        AdditionalInfo=JSON.LoTEQualifier(
+            LoTeType=LoTEType,
+            SchemeOperatorName=schemeOName,
+            SchemeTerritory=dictFromDB_trusted_lists["schemeTerritory"],
+            SchemeTypeCommunityRules=schemeCRules,
+        ) 
+
+        Lote_qualifiers.append(AdditionalInfo)   
+
+        Pointer= JSON.OtherLoTEPointer(
+            LoTELocation=dp,
+            ServiceDigitalIdentities=PointerServices,
+            LoTEQualifiers=Lote_qualifiers
+        )
+        Pointers.append(Pointer)
+
+        schemeInfo.PointersToOtherLoTE=Pointers
 
     root= JSON.LoTE(
         TrustedEntitiesList=TrustServiceProviderList,
