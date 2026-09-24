@@ -237,8 +237,6 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
     TrustServiceProviderList=JSON.TrustedEntitiesList()
 
-    PointerServices=list()
-
     for tsp in tsp_data:
         TSPName=list()
         TSPTradeName= list()
@@ -439,7 +437,6 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
                     TSPService.ServiceHistory=ServiceHistoryList
 
                 TSPServices.append(TSPService)
-                PointerServices.append(TSPService)
 
         #AdditionalServiceInformation		
 
@@ -450,11 +447,16 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
         TrustServiceProviderList.append(TrustServiceProvider)
 
+    
+    cert_digital_identity= base64.b64encode(cert).decode("utf-8")
     #PointerToOtherTSL
     if LoTEType != "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
         Pointers= JSON.PointersToOtherLoTE()
         dp= dictFromDB_trusted_lists["DistributionPoints"][0]
         Lote_qualifiers=list()
+        ServiceDigitalIdentities=list()
+        DigitalIdentity=JSON.ServiceDigitalIdentity(X509Certificates=[JSON.PkiOb(val=cert_digital_identity)])
+        ServiceDigitalIdentities.append(DigitalIdentity)
 
         AdditionalInfo=JSON.LoTEQualifier(
             LoTEType=LoTEType,
@@ -468,7 +470,7 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
         Pointer= JSON.OtherLoTEPointer(
             LoTELocation=dp,
-            ServiceDigitalIdentities=PointerServices,
+            ServiceDigitalIdentities=ServiceDigitalIdentities,
             LoTEQualifiers=Lote_qualifiers
         )
         Pointers.append(Pointer)
