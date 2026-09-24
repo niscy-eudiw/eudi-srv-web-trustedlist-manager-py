@@ -47,7 +47,7 @@ def parse_json_field(field):
 def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_lists, tsp_data, service_data,service_history, tsl_id, log_id):
 
     der_data=open(cert_location, "rb").read()
-    cert_der = x509.load_der_x509_certificate(der_data, backend=default_backend())
+    cert_der = x509.load_pem_x509_certificate(der_data, backend=default_backend())
     cert = cert_der.public_bytes(encoding=serialization.Encoding.PEM)
 
     pem_str = cert.decode('utf-8')
@@ -449,6 +449,7 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
     
     cert_digital_identity= base64.b64encode(cert).decode("utf-8")
+    print(cert_digital_identity)
     #PointerToOtherTSL
     if LoTEType != "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
         Pointers= JSON.PointersToOtherLoTE()
