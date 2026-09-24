@@ -447,16 +447,13 @@ def json_gen_json(user_info,cert_location, privkey_location, dictFromDB_trusted_
 
         TrustServiceProviderList.append(TrustServiceProvider)
 
-    
-    cert_digital_identity= base64.b64encode(cert).decode("utf-8")
-    print(cert_digital_identity)
     #PointerToOtherTSL
     if LoTEType != "http://uri.etsi.org/19602/LoTEType/EUPubEAAProvidersList":
         Pointers= JSON.PointersToOtherLoTE()
         dp= dictFromDB_trusted_lists["DistributionPoints"][0]
         Lote_qualifiers=list()
         ServiceDigitalIdentities=list()
-        DigitalIdentity=JSON.ServiceDigitalIdentity(X509Certificates=[JSON.PkiOb(val=cert_digital_identity)])
+        DigitalIdentity=JSON.ServiceDigitalIdentity(X509Certificates=[JSON.PkiOb(val=cert_cleaned)])
         ServiceDigitalIdentities.append(DigitalIdentity)
 
         AdditionalInfo=JSON.LoTEQualifier(
