@@ -959,7 +959,7 @@ def create_tsl_db():
         Type="http://uri.etsi.org/TrstSvc/TrustedList/TSLType/"+ schemeTerritory + "list"
     
     if  "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/CC" in options:
-       i= options.index("http://uri.etsi.org/TrstSvc/TrustedList/schemerules/")
+       i= options.index("http://uri.etsi.org/TrstSvc/TrustedList/schemerules/CC")
        options[i]= "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/" + schemeTerritory
 
     SchemeTypeCommunityRules_lang = []
