@@ -924,9 +924,9 @@ def create_tsl():
 
     attributesForm.update(form_items)
     rules = cfgserv.SchemeTypeCommunityRules
-    for items in rules:
-        if 'Scheme Territory' in items:
-            rules[items] = rules[items] + user['issuing_country']
+    # for items in rules:
+    #     if 'Scheme Territory' in items:
+    #         rules[items] = rules[items] + user['issuing_country']
             
     return render_template("form_create.html", h3 = "Trusted List information form", rules= rules, countries=cfgserv.eu_countries, title="Trusted Lists", status = cfgserv.statusDetermination,  TSLType= cfgserv.TSLType, lang = cfgserv.eu_languages, desc = descriptions, attributes = attributesForm, temp_user_id = temp_user_id, redirect_url= cfgserv.service_url + "tsl/create/db")
 

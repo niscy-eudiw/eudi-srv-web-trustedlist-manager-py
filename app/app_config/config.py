@@ -90,7 +90,7 @@ class ConfService:
 
     SchemeTypeCommunityRules ={
       "Eu Common": "https://uri.etsi.org/TrstSvc/TrustedList/schemerules/EUcommon", 
-      "Scheme Territory": "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/",
+      "Scheme Territory": "http://uri.etsi.org/TrstSvc/TrustedList/schemerules/CC",
     }
 
     TSLType = ["http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric","http://uri.etsi.org/TrstSvc/TrustedList/TSLType/CClist"]
