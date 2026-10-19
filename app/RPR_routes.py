@@ -1991,8 +1991,8 @@ def lotl_xml():
             "HistoricalInformationPeriod":  confxml.HistoricalInformationPeriod,
             "TSLLocation"	:   "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
             #"DistributionPoints" :  each["DistributionPoints"],
-            "issue_date" :  each["issue_date"].replace(tzinfo=datetime.timezone.utc),
-            "next_update":  each["next_update"].replace(tzinfo=datetime.timezone.utc),
+            "issue_date" :  each["issue_date"],
+            "next_update":  each["next_update"],
             "status":   each["status"],
             "schemeTerritory": each["schemeTerritory"]
         }
