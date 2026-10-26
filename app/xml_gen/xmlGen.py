@@ -822,6 +822,8 @@ def xml_gen_lotl_xml(user_info, cert_location, privkey_location, tsl_list, dict_
         
     key=open(privkey_location, "rb").read()
     
+    ET.register_namespace("", "http://uri.etsi.org/02231/v2#")
+
     rootTemp=ET.fromstring(content)
 
     new_root = ET.Element(rootTemp.tag, attrib=rootTemp.attrib)
